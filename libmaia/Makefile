@@ -3238,10 +3238,9 @@ xmlRPCParser.o: xmlRPCParser.cpp xmlRPCParser.h \
 		../../../../../Qt5.2.1/5.2.1/clang_64/lib/QtCore.framework/Versions/5/Headers/QTextStream \
 		maiaFault.h \
 		qHttpRequest.h \
-		maiaXmlRpcServer.h \
+		xmlRPCTextServer.h \
 		maiaObject.h \
-		../../../../../Qt5.2.1/5.2.1/clang_64/lib/QtNetwork.framework/Versions/5/Headers/QNetworkReply \
-		maiaXmlRpcServerConnection.h
+		../../../../../Qt5.2.1/5.2.1/clang_64/lib/QtNetwork.framework/Versions/5/Headers/QNetworkReply
 	$(CXX) -c $(CXXFLAGS) $(INCPATH) -o xmlRPCParser.o xmlRPCParser.cpp
 
 xmlRPCTextServer.o: xmlRPCTextServer.cpp xmlRPCTextServer.h \
