@@ -1,11 +1,13 @@
 #include <QApplication>
-#include <QDebug>
 #include "graphic/systray.h"
 #include "bonjourbrowser.h"
 #include "bonjourdiscoverer.h"
 #include "bonjoursql.h"
 #include "poller.h"
 #include "pollercontroller.h"
+#include "rawsocket.h"
+
+#include <QDebug>
 
 #if 0
 int main(int argc, char *argv[])
@@ -45,6 +47,8 @@ int main(int argc, char *argv[])
     // start systray
     SysTray* st = new SysTray();
 
+    // test ip raw socket
+    //RawSocket raw(30000);
     return a.exec();
 }
 #endif

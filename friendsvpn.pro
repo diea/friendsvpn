@@ -20,7 +20,8 @@ SOURCES += main.cpp \
     bonjoursql.cpp \
     poller.cpp \
     pollercontroller.cpp \
-    datareceiver.cpp
+    datareceiver.cpp \
+    rawsocket.cpp
 
 HEADERS  += \
     graphic/systray.h \
@@ -32,7 +33,8 @@ HEADERS  += \
     config.h \
     poller.h \
     pollercontroller.h \
-    datareceiver.h
+    datareceiver.h \
+    rawsocket.h
 
 FORMS    +=
 

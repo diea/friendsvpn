@@ -2,7 +2,7 @@
 #define POLLER_H
 
 #include <QObject>
-#include "xmlRPCTextServer.h"
+#include "libmaia/xmlRPCTextServer.h"
 #include "bonjoursql.h"
 
 /**
