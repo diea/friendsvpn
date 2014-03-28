@@ -45,10 +45,10 @@ void BonjourSQL::uidOK() {
 
 void BonjourSQL::initDB() {
     db = QSqlDatabase::addDatabase("QMYSQL");
-    db.setDatabaseName("localhost");
-    db.setDatabaseName("friendsvpn");
-    db.setUserName("diea");
-    db.setPassword("");
+    db.setHostName(DBHOST);
+    db.setDatabaseName(DBNAME);
+    db.setUserName(DBUSER);
+    db.setPassword(DBPASS);
 }
 
 bool BonjourSQL::insertService(QString name, QString trans_prot) {

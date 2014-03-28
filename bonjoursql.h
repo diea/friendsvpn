@@ -8,6 +8,7 @@
 #include <QMessageBox>
 #include <QApplication>
 #include <QNetworkInterface>
+#include "config.h"
 
 class BonjourSQL : public QObject
 {
