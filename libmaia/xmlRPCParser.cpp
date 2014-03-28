@@ -2,8 +2,8 @@
  * libMaia - XmlRPCParser.cpp (inspired by MaiaXmlRpcServerConnection.hpp)
  */
 
-#include "XmlRPCParser.h"
-#include "XmlRPCTextServer.h"
+#include "xmlRPCParser.h"
+#include "xmlRPCTextServer.h"
 
 XmlRPCParser::XmlRPCParser(QObject* parent) : QObject(parent) {
 	qDebug() << "yeay new xmlrpc parser";
