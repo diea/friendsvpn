@@ -41,5 +41,11 @@ FORMS    +=
 INCLUDEPATH += $$_PRO_FILE_PWD_/libmaia
 LIBS += $$_PRO_FILE_PWD_/libmaia/libmaia.a
 
+# if on linux
+unix:!macx {
+    INCLUDEPATH += /usr/lib
+    LIBS += /usr/lib/libdns_sd.so
+}
+
 RESOURCES += \
     images.qrc
