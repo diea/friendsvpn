@@ -9,7 +9,7 @@
 
 #include <QDebug>
 
-#if 0
+#if 1
 int main(int argc, char *argv[])
 {
     QApplication a(argc, argv);
@@ -37,7 +37,7 @@ int main(int argc, char *argv[])
 
     return a.exec();
 }
-#else if 1
+#else if 0
 // test main
 int main(int argc, char *argv[])
 {
