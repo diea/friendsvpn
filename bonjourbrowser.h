@@ -8,7 +8,10 @@
 #include <QSocketNotifier>
 #include <QString>
 #include <QDebug>
-
+/**
+ * @brief The BonjourBrowser class will browse records for a given service type. These types
+ * are given by the BonjourDiscoverer (which discovers the available types on the network).
+ */
 class BonjourBrowser : public QObject
 {
     Q_OBJECT
@@ -18,7 +21,10 @@ private:
     QSocketNotifier *bonjourSocket;
     QList<BonjourRecord*> bonjourRecords;
     QString browsingType;
-
+    /**
+      * @brief reply is the callback function given to DNSServiceBrowse(). It will add or delete a
+      * Record to the bonjourRecords list and will launch a BonjourResolver on it (if it was an add).
+      */
     static void DNSSD_API reply(DNSServiceRef , DNSServiceFlags flags, quint32,
                                    DNSServiceErrorType errorCode, const char *serviceName,
                                 const char *regType, const char *replyDomain, void *context);
@@ -41,7 +47,17 @@ signals:
     void error(DNSServiceErrorType err);
 
 private slots:
+    /**
+     * @brief bonjourSocketReadyRead is a slot given to a QSocketNotifier, it will call
+     * DNSServiceProcessResult when the socket is ready which will in turn call the "reply"
+     * callback function.
+     */
     void bonjourSocketReadyRead();
+    /**
+     * @brief recordIsReady is a slot which is called when BonjourResolver emits a "resolved" signal,
+     * meaning the record has been resolved, and is ready.
+     * @param rec pointer to the bonjourRecord in question
+     */
     void recordIsReady(BonjourRecord* rec);
 };
 

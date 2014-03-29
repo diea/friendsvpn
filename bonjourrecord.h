@@ -4,6 +4,9 @@
 #include <QList>
 #include "dns_sd.h"
 
+/**
+ * @brief The BonjourRecord class holds the details of a specific bonjour record.
+ */
 class BonjourRecord
 {
 public:

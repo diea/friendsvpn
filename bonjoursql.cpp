@@ -59,6 +59,7 @@ bool BonjourSQL::insertService(QString name, QString trans_prot) {
     query.bindValue(2, trans_prot);
     query.exec();
     // test query
+    qDebug() << "Insert Service error" << query.lastError();
     return true;
 }
 
@@ -98,7 +99,7 @@ bool BonjourSQL::insertDevice(QString hostname, int port, QString service_name, 
     query.exec();
     // test qry
     qDebug() << hostname << " " << port << " " << service_name << " " << service_trans_prot << " " << record_name;
-    qDebug() << "last error yo : " << db.lastError().text();
+    qDebug() << "Insert device error : " << db.lastError().text();
     return true;
 }
 
