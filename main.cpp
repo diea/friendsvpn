@@ -6,10 +6,12 @@
 #include "poller.h"
 #include "pollercontroller.h"
 #include "rawsocket.h"
-
+#include "controlplane/connectioninitiator.h"
+#include "controlplane/controlplaneserver.h"
+#include "controlplane/controlplaneclient.h"
 #include <QDebug>
 
-#if 1
+#if 0
 int main(int argc, char *argv[])
 {
     QApplication a(argc, argv);
@@ -35,9 +37,12 @@ int main(int argc, char *argv[])
     BonjourDiscoverer* disco = BonjourDiscoverer::getInstance(qSql, qApp);
     disco->discoverServices();
 
+    // open dataplane tunnel
+
+
     return a.exec();
 }
-#else if 0
+#else if 1
 // test main
 int main(int argc, char *argv[])
 {
@@ -49,6 +54,17 @@ int main(int argc, char *argv[])
 
     // test ip raw socket
     //RawSocket raw(30000);
+
+    // test SSL server
+    ControlPlaneServer* con = new ControlPlaneServer(QHostAddress("192.168.1.64"), 61323);
+    qDebug() << QThread::currentThreadId();
+
+    /*QThread clientCon;
+    ControlPlaneClient* cli = new ControlPlaneClient(QHostAddress("192.168.1.64"), 61323);
+    cli->moveToThread(&clientCon);
+    cli->connect(&clientCon, SIGNAL(started()), SLOT(run()));
+    clientCon.start();*/
+
     return a.exec();
 }
 #endif

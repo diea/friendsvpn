@@ -21,7 +21,10 @@ SOURCES += main.cpp \
     poller.cpp \
     pollercontroller.cpp \
     datareceiver.cpp \
-    rawsocket.cpp
+    rawsocket.cpp \
+    controlplane/connectioninitiator.cpp \
+    controlplane/controlplaneclient.cpp \
+    controlplane/controlplaneserver.cpp
 
 HEADERS  += \
     graphic/systray.h \
@@ -34,7 +37,10 @@ HEADERS  += \
     poller.h \
     pollercontroller.h \
     datareceiver.h \
-    rawsocket.h
+    rawsocket.h \
+    controlplane/connectioninitiator.h \
+    controlplane/controlplaneserver.h \
+    controlplane/controlplaneclient.h
 
 FORMS    +=
 
