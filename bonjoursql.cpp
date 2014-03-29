@@ -107,6 +107,7 @@ QString BonjourSQL::fetchXmlRpc() {
     QList<QHostAddress> list = QNetworkInterface::allAddresses();
     QString sqlString;
     bool first = true;
+    bool skipOr = false;
     foreach(QHostAddress addr, list) {
         QString stringAddr = addr.toString();
         // crop off the interface names: "%en1" for example
@@ -116,10 +117,11 @@ QString BonjourSQL::fetchXmlRpc() {
 
         // remove local addresses, only used global ones
         if (stringAddr.startsWith("::") || stringAddr.startsWith("fe80")) { // TODO more precise
-            first = true;
+            skipOr = true;
             continue;
-        }
-        if (!first)
+        } else skipOr = false;
+
+        if (!first && !skipOr)
             sqlString = sqlString % " OR ";
         sqlString = sqlString % "\"" % stringAddr % "\"";
         first = false;
