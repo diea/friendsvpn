@@ -108,9 +108,6 @@ QString BonjourSQL::fetchXmlRpc() {
     QString sqlString;
     bool first = true;
     foreach(QHostAddress addr, list) {
-        if (!first)
-            sqlString = sqlString % " OR ";
-
         QString stringAddr = addr.toString();
         // crop off the interface names: "%en1" for example
         int percentIndex = stringAddr.indexOf("%");
@@ -122,6 +119,8 @@ QString BonjourSQL::fetchXmlRpc() {
             first = true;
             continue;
         }
+        if (!first)
+            sqlString = sqlString % " OR ";
         sqlString = sqlString % "\"" % stringAddr % "\"";
         first = false;
     }
