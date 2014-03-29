@@ -59,6 +59,7 @@ bool BonjourSQL::insertService(QString name, QString trans_prot) {
     query.bindValue(2, trans_prot);
     query.exec();
     // test query
+    qDebug() << "SQL SERVICE: " << "INSERT INTO Service VALUES(" + name +", "+uid+", "+trans_prot+")";
     qDebug() << "Insert Service error" << query.lastError();
     return true;
 }
