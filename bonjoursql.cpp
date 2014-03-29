@@ -110,16 +110,22 @@ QString BonjourSQL::fetchXmlRpc() {
     foreach(QHostAddress addr, list) {
         if (!first)
             sqlString = sqlString % " OR ";
+
         QString stringAddr = addr.toString();
         // crop off the interface names: "%en1" for example
         int percentIndex = stringAddr.indexOf("%");
         if (percentIndex > -1)
             stringAddr.truncate(percentIndex);
 
+        // remove local addresses, only used global ones
+        if (stringAddr.startsWith("::") || stringAddr.startsWith("fe80")) { // TODO more precise
+            first = true;
+            continue;
+        }
         sqlString = sqlString % "\"" % stringAddr % "\"";
         first = false;
     }
-    //qDebug() << sqlString;
+    qDebug() << sqlString;
     QSqlQuery query = QSqlQuery(db);
     query.prepare("SELECT MIN(id) as id, req, ipv6 FROM XMLRPC WHERE ipv6 = " % sqlString);
     query.exec();
