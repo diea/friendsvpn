@@ -9,69 +9,63 @@ ControlPlaneServer::ControlPlaneServer(QHostAddress listenAdr, int listenPort, Q
 
     tcpSrv->listen(listenAdr, listenPort);
     connect(tcpSrv, SIGNAL(newConnection()), this, SLOT(newIncoming()));
+    cfg = QSslConfiguration();
 
-    sslSrv = new QSslSocket(this);
+    sslSockList = QList<QSslSocket*>();
     QFile certFile("/Users/diea/tests/Qtssl/servCert.pem");
     if (!certFile.open(QIODevice::ReadOnly))
         qDebug() << "Could not open cert file";
     QSslCertificate cert(certFile.readAll(), QSsl::Pem);
     certFile.close();
-    sslSrv->setLocalCertificate(cert);
+    cfg.setLocalCertificate(cert);
 
     QFile keyFile("/Users/diea/tests/Qtssl/servKey.pem");
     if (!keyFile.open(QIODevice::ReadOnly))
         qDebug() << "cloud not open key file";
     QSslKey ssl_key(keyFile.readAll(), QSsl::Rsa);
     keyFile.close();
-    sslSrv->setPrivateKey(ssl_key);
-
-    QSslConfiguration cfg = sslSrv->sslConfiguration();
-    cfg.caCertificates();
+    cfg.setPrivateKey(ssl_key);
 }
 
 void ControlPlaneServer::newIncoming() {
-    socket = tcpSrv->nextPendingConnection();
+    QTcpSocket* socket = tcpSrv->nextPendingConnection();
     qDebug() << "Incoming !" << socket->state();
+    QSslSocket* sslSock = new QSslSocket(this);
+    sslSock->setSslConfiguration(cfg);
+    sslSock->setSocketDescriptor(socket->socketDescriptor());
 
-    sslSrv->setSocketDescriptor(socket->socketDescriptor());
-    //sslSrv->setProtocol(QSsl::Rsa);
-
-    connect(sslSrv, SIGNAL(encrypted()), this, SLOT(sslSrvReady()));
-    //connect(sslSrv, SIGNAL(sslErrors(const QList<QSslError>&)), this, SLOT(sslSrvError(const QList<QSslError>&)));
-    connect(sslSrv, SIGNAL(sslErrors(const QList<QSslError>&)), sslSrv, SLOT(ignoreSslErrors()));
-
-
-    sslSrv->startServerEncryption();
+    connect(sslSock, SIGNAL(encrypted()), this, SLOT(sslSockReady()));
+    // XXX ignore safety concerns about the self signed certificate...
+    connect(sslSock, SIGNAL(sslErrors(const QList<QSslError>&)), sslSock, SLOT(ignoreSslErrors()));
+    sslSockList.append(sslSock);
+    sslSock->startServerEncryption();
     qDebug() << "after incoming !" << socket->state();
-    //qDebug() << sslSrv->waitForEncrypted();
 }
 
-void ControlPlaneServer::sslSrvReady() {
-    qDebug() << "encrypted!" << sslSrv->state();
-    connect(sslSrv, SIGNAL(readyRead()), this, SLOT(sslSrvReadyRead()));
-
-    //sslNotifier = new QSocketNotifier(sslSrv->socketDescriptor(), QSocketNotifier::Read, this); <= GRÔÔSE ERREUR ! :D => BLOG !
-    //connect(sslNotifier, SIGNAL(activated(int)), this, SLOT(sslSrvReadyRead()));
+void ControlPlaneServer::sslSockReady() {
+    QSslSocket* sslSock = qobject_cast<QSslSocket*>(sender());
+    qDebug() << "encrypted!" << sslSock->state();
+    connect(sslSock, SIGNAL(readyRead()), this, SLOT(sslSockReadyRead()));
 }
 
-void ControlPlaneServer::sslSrvError(const QList<QSslError>& errors) {
+void ControlPlaneServer::sslSockError(const QList<QSslError>& errors) {
+    QSslSocket* sslSock = qobject_cast<QSslSocket*>(sender());
     qDebug() << "ssl error";
     qDebug() << errors;
 }
 
 
-void ControlPlaneServer::sslSrvReadyRead() {
+void ControlPlaneServer::sslSockReadyRead() {
+    QSslSocket* sslSock = qobject_cast<QSslSocket*>(sender());
     qDebug() << "Read ready";
-    /*char buf[2048];
-    qint64 lineLength = sslSrv->readLine(buf, sizeof(buf));
+    char buf[2048];
+    qint64 lineLength = sslSock->readLine(buf, sizeof(buf));
     if (lineLength > 0) {
         QString buff (buf);
         buff.truncate(lineLength);
         qDebug() << buff;
-    }*/
-    qDebug() << sslSrv->readAll().data();
-    sslSrv->write("He ouais ça marche :)");
-    //qDebug() << socket->readAll().data();
-    //sslSrv->close();
+    }
+    qDebug() << sslSock->readAll().data();
+    sslSock->write("He ouais ça marche :)");
 }
 

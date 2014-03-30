@@ -17,9 +17,9 @@ class ControlPlaneServer : public QObject
     Q_OBJECT
 private:
     QTcpServer* tcpSrv;
-    QSslSocket* sslSrv;
-    QTcpSocket* socket;
-    QSocketNotifier* sslNotifier;
+    QList<QSslSocket*> sslSockList;
+    QSslConfiguration cfg;
+
 public:
     explicit ControlPlaneServer(QHostAddress listenAdr, int listenPort, QObject *parent = 0);
     // TODO destructor
@@ -27,9 +27,9 @@ signals:
 
 public slots:
     void newIncoming();
-    void sslSrvReady();
-    void sslSrvError(const QList<QSslError>& errors);
-    void sslSrvReadyRead();
+    void sslSockReady();
+    void sslSockError(const QList<QSslError>& errors);
+    void sslSockReadyRead();
 };
 
 #endif // CONTROLPLANECONNECTION_H
