@@ -150,7 +150,24 @@ QString BonjourSQL::fetchXmlRpc() {
 }
 
 
+QList< User* > BonjourSQL::getFriends() {
+    QSqlQuery query = QSqlQuery(db);
+    query.prepare("SELECT uid, ipv6, certificate, privateKey FROM User WHERE uid IN (SELECT id as "
+                  "uid FROM Authorized_user WHERE Record_Service_User_uid = ?)");
+    query.bindValue(0, uid);
+    query.exec();
+    //qDebug() << "error" << query.lastError();
+    QList < User* > list;
+    while (query.next()) {
+        QString* uid = new QString(query.value(0).toString());
+        QString* ipv6 = new QString(query.value(1).toString());
+        QSslCertificate* cert = new QSslCertificate(query.value(2).toByteArray(), QSsl::Pem);
+        QSslKey* key = new QSslKey(query.value(3).toByteArray(), QSsl::Rsa, QSsl::Pem);
 
+        list.append(new User(uid, ipv6, cert, key));
+    }
+    return list;
+}
 
 
 

@@ -19,7 +19,7 @@ void ControlPlaneClient::run() {
     connect(sslClient, SIGNAL(sslErrors(const QList<QSslError>&)), sslClient, SLOT(ignoreSslErrors()));
     connect(sslClient, SIGNAL(encrypted()), this, SLOT(connectionReady()));
 
-    sslClient->connectToHostEncrypted(addr, port);
+    sslClient->connectToHostEncrypted(addr.toString(), port);
 }
 
 void ControlPlaneClient::connectionReady() {

@@ -8,6 +8,10 @@
 #include <QMessageBox>
 #include <QApplication>
 #include <QNetworkInterface>
+#include <QSslCertificate>
+#include <QSslKey>
+
+#include "user.h"
 #include "config.h"
 
 class BonjourSQL : public QObject
@@ -53,10 +57,9 @@ public:
 
     /**
      * @brief getFriendsIps
-     * TODO
-     * @return
+     * @return a list of the users friends
      */
-    //QList<QString> getFriendsIps();
+    QList< User* > getFriends();
 
     /**
      * @brief fetchXmlRpc fetches an XML RPC request for this host in the

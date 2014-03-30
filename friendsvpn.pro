@@ -24,7 +24,8 @@ SOURCES += main.cpp \
     rawsocket.cpp \
     controlplane/connectioninitiator.cpp \
     controlplane/controlplaneclient.cpp \
-    controlplane/controlplaneserver.cpp
+    controlplane/controlplaneserver.cpp \
+    user.cpp
 
 HEADERS  += \
     graphic/systray.h \
@@ -40,7 +41,8 @@ HEADERS  += \
     rawsocket.h \
     controlplane/connectioninitiator.h \
     controlplane/controlplaneserver.h \
-    controlplane/controlplaneclient.h
+    controlplane/controlplaneclient.h \
+    user.h
 
 FORMS    +=
 
