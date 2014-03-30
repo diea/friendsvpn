@@ -1,6 +1,5 @@
 #ifndef CONTROLPLANESERVER_H
 #define CONTROLPLANESERVER_H
-#include <QThread> // TODO remove
 #include <QObject>
 #include <QSslSocket>
 #include <QTcpServer>
@@ -11,7 +10,7 @@
 #include <QFile>
 #include <QSslKey>
 #include <QSslConfiguration>
-
+#include <QSslCertificate>
 class ControlPlaneServer : public QObject
 {
     Q_OBJECT
@@ -21,10 +20,11 @@ private:
 
     QTcpServer* tcpSrv;
     QList<QSslSocket*> sslSockList;
-    QSslConfiguration cfg;
+    QSslConfiguration cfg; // contains configuration used for each SSL connection
 
 public:
-    explicit ControlPlaneServer(QHostAddress listenAdr, int listenPort, QObject *parent = 0);
+    explicit ControlPlaneServer(QSslCertificate servCert, QSslKey myKey,
+                                QHostAddress listenAdr, int listenPort, QObject *parent = 0);
     ~ControlPlaneServer();
     // TODO destructor
 signals:

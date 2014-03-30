@@ -9,22 +9,15 @@ Poller::Poller(BonjourSQL* qSql, QObject *parent) :
 }
 
 void Poller::run() {
-    //QTimer *timer = new QTimer(this);
-    //connect(timer, SIGNAL(timeout()), this, SLOT(fetchXmlRPC()));
     QTimer::singleShot(2000, this, SLOT(fetchXmlRPC()));
-    //timer->start(500);
-    //fetchXmlRPC();
-    qDebug() << QThread::currentThreadId();
 }
 
 void Poller::fetchXmlRPC() {
-    qDebug() << QThread::currentThreadId();
-
     qDebug() << "fetching and current time : " << QDateTime::currentMSecsSinceEpoch();
     QString fetched = qSql->fetchXmlRpc();
     if (fetched != NULL)
         server->newConnection(fetched);
-    this->run();
+    this->run(); // call has returned, call run again !
 }
 
 bool Poller::setUid(QString uid) {

@@ -1,24 +1,29 @@
 #include "controlplaneclient.h"
-#include <QThread>
-ControlPlaneClient::ControlPlaneClient(QHostAddress addr, int port, QObject *parent) :
+ControlPlaneClient::ControlPlaneClient(QSslCertificate servCert, QSslKey myKey,
+                                       QHostAddress addr, int port, QObject *parent) :
     QObject(parent)
 {
     sslClient = new QSslSocket();
+    sslClient->addCaCertificate(servCert);
+    sslClient->setPrivateKey(myKey);
 }
 
-void ControlPlaneClient::run() {
-    sleep(2);
-    qDebug() << QThread::currentThreadId();
-    if (!sslClient->waitForEncrypted()) {
-        qDebug() << sslClient->errorString();
-    } else {
-        sslClient->write("GET / HTTP/1.0\r\n\r\n");
-        while (sslClient->waitForReadyRead())
-            qDebug() << sslClient->readAll().data();
-    }
-}
-
-ControlPlaneClient::~ControlPlaneClient() {
+ControlPlaneClient::~ControlPlaneClient()
+{
     sslClient->close();
     delete sslClient;
 }
+
+void ControlPlaneClient::run() {
+    // ignore errors since we are using self-signed certificates
+    connect(sslClient, SIGNAL(sslErrors(const QList<QSslError>&)), sslClient, SLOT(ignoreSslErrors()));
+    connect(sslClient, SIGNAL(encrypted()), this, SLOT(connectionReady()));
+
+    sslClient->connectToHostEncrypted(addr, port);
+}
+
+void ControlPlaneClient::connectionReady() {
+    // TODO protocol starts here
+    sslClient->write("Hello world");
+}
+
