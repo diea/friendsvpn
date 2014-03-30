@@ -58,7 +58,7 @@ int main(int argc, char *argv[])
     // test SSL server
     qDebug() << "Main Thread : " << QThread::currentThreadId();
     ControlPlaneServer* con = new ControlPlaneServer(QHostAddress("192.168.1.64"), 61323);
-    //con->start();
+    con->start();
 
 
     /*QThread clientCon;
