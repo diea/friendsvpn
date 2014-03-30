@@ -3,14 +3,12 @@
 ControlPlaneServer::ControlPlaneServer(QHostAddress listenAdr, int listenPort, QObject *parent) :
     QObject(parent)
 {
-    // create listen socket
+    this->listenAdr = listenAdr;
+    this->listenPort = listenPort;
+
     tcpSrv = new QTcpServer(this);
-    // get my ip from SQL here
 
-    tcpSrv->listen(listenAdr, listenPort);
-    connect(tcpSrv, SIGNAL(newConnection()), this, SLOT(newIncoming()));
     cfg = QSslConfiguration();
-
     sslSockList = QList<QSslSocket*>();
     QFile certFile("/Users/diea/tests/Qtssl/servCert.pem");
     if (!certFile.open(QIODevice::ReadOnly))
@@ -27,14 +25,35 @@ ControlPlaneServer::ControlPlaneServer(QHostAddress listenAdr, int listenPort, Q
     cfg.setPrivateKey(ssl_key);
 }
 
+ControlPlaneServer::~ControlPlaneServer()
+{
+    foreach (QSslSocket* sock, sslSockList) {
+        sock->close();
+        delete sock;
+    }
+
+    tcpSrv->close();
+    delete tcpSrv;
+}
+
+void ControlPlaneServer::start() {
+    qDebug() << "ControlPlaneServer Thread : " << QThread::currentThreadId();
+    tcpSrv->listen(listenAdr, listenPort);
+    connect(tcpSrv, SIGNAL(newConnection()), this, SLOT(newIncoming()));
+}
+
 void ControlPlaneServer::newIncoming() {
+    qDebug() << "Incoming Thread : " << QThread::currentThreadId();
     QTcpSocket* socket = tcpSrv->nextPendingConnection();
     qDebug() << "Incoming !" << socket->state();
+
     QSslSocket* sslSock = new QSslSocket(this);
     sslSock->setSslConfiguration(cfg);
+     qDebug() << "NEW SOCKET";
     sslSock->setSocketDescriptor(socket->socketDescriptor());
-
+     qDebug() << "NEW SOCKET";
     connect(sslSock, SIGNAL(encrypted()), this, SLOT(sslSockReady()));
+    connect(sslSock, SIGNAL(disconnected()), this, SLOT(sslDisconnected()));
     // XXX ignore safety concerns about the self signed certificate...
     connect(sslSock, SIGNAL(sslErrors(const QList<QSslError>&)), sslSock, SLOT(ignoreSslErrors()));
     sslSockList.append(sslSock);
@@ -67,5 +86,13 @@ void ControlPlaneServer::sslSockReadyRead() {
     }
     qDebug() << sslSock->readAll().data();
     sslSock->write("He ouais ça marche :)");
+}
+
+void ControlPlaneServer::sslDisconnected() {
+    QSslSocket* sslSock = qobject_cast<QSslSocket*>(sender());
+    if (!sslSock)
+        return;
+    sslSockList.removeAll(sslSock);
+    sslSock->deleteLater();
 }
 

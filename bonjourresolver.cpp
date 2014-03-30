@@ -98,6 +98,6 @@ void BonjourResolver::hostInfoReady(const QHostInfo &info) {
     serviceName.chop(6);
     qSql->insertDevice(record->hostname, record->port, serviceName, transProt, record->serviceName);
     emit resolved(record);
-    delete this;
+    this->deleteLater();
 }
 

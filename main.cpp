@@ -56,15 +56,19 @@ int main(int argc, char *argv[])
     //RawSocket raw(30000);
 
     // test SSL server
+    qDebug() << "Main Thread : " << QThread::currentThreadId();
     ControlPlaneServer* con = new ControlPlaneServer(QHostAddress("192.168.1.64"), 61323);
-    qDebug() << QThread::currentThreadId();
+    //con->start();
+
 
     /*QThread clientCon;
     ControlPlaneClient* cli = new ControlPlaneClient(QHostAddress("192.168.1.64"), 61323);
     cli->moveToThread(&clientCon);
     cli->connect(&clientCon, SIGNAL(started()), SLOT(run()));
     clientCon.start();*/
-
+    //sleep(5);
+    //qDebug() << "Deleting!";
+    //delete con;
     return a.exec();
 }
 #endif
