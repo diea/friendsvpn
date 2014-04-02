@@ -50,7 +50,7 @@ int main(int argc, char *argv[])
     a.setQuitOnLastWindowClosed(false);
 
     // start systray
-    SysTray* st = new SysTray();
+    //SysTray* st = new SysTray();
 
     // connect to sql database
     BonjourSQL* qSql = new BonjourSQL();
