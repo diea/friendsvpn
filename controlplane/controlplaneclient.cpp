@@ -35,15 +35,6 @@ void ControlPlaneClient::run() {
 
     qDebug() << "CONNECT TO HOST " << addr.toString() << ":" << port;
     sslClient->connectToHostEncrypted(addr.toString(), port);
-    if (!sslClient->waitForEncrypted()) {
-            qDebug() << "failed";
-            qDebug() << sslClient->errorString();
-        } else {
-            qDebug() << "writing ! ";
-            sslClient->write("GET / HTTP/1.0\r\n\r\n");
-            while (sslClient->waitForReadyRead())
-                qDebug() << sslClient->readAll().data();
-        }
 }
 
 void ControlPlaneClient::sslErrors(const QList<QSslError>& errors) {

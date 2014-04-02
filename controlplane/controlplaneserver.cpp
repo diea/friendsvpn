@@ -44,6 +44,10 @@ void ControlPlaneServer::newIncoming() {
     // connect(sslSock, SIGNAL(sslErrors(const QList<QSslError>&)), sslSock, SLOT(ignoreSslErrors()));
     sslSockList.append(sslSock);
     sslSock->startServerEncryption();
+
+    if (sslSock->waitForEncrypted()) { // XXX Bug fix
+        emit sslSock->encrypted();
+    }
 }
 
 void ControlPlaneServer::sslSockReady() {
