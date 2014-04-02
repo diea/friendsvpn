@@ -41,7 +41,7 @@ void ControlPlaneServer::newIncoming() {
     connect(sslSock, SIGNAL(encrypted()), this, SLOT(sslSockReady()));
     connect(sslSock, SIGNAL(disconnected()), this, SLOT(sslDisconnected()));
     // XXX ignore safety concerns about the self signed certificate...
-    connect(sslSock, SIGNAL(sslErrors(const QList<QSslError>&)), sslSock, SLOT(ignoreSslErrors()));
+    // connect(sslSock, SIGNAL(sslErrors(const QList<QSslError>&)), sslSock, SLOT(ignoreSslErrors()));
     sslSockList.append(sslSock);
     sslSock->startServerEncryption();
 }
