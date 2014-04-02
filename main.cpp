@@ -56,8 +56,11 @@ int main(int argc, char *argv[])
     BonjourSQL* qSql = new BonjourSQL();
 
     // create facebook app xmlrpc poller
-    PollerController* polCtrl = new PollerController(qSql);
-    emit polCtrl->start();
+    QThread pollerThread;
+    Poller* poller = new Poller(qSql);
+    poller->moveToThread(&pollerThread);
+    poller->connect(&pollerThread, SIGNAL(started()), SLOT(run()));
+    pollerThread.start();
     //poller->run();
     // listen for commands from facebook app
     //AppListener* app = new AppListener(qSql);

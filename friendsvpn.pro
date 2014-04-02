@@ -19,7 +19,6 @@ SOURCES += main.cpp \
     bonjourresolver.cpp \
     bonjoursql.cpp \
     poller.cpp \
-    pollercontroller.cpp \
     datareceiver.cpp \
     rawsocket.cpp \
     controlplane/connectioninitiator.cpp \
@@ -36,7 +35,6 @@ HEADERS  += \
     bonjoursql.h \
     config.h \
     poller.h \
-    pollercontroller.h \
     datareceiver.h \
     rawsocket.h \
     controlplane/connectioninitiator.h \
