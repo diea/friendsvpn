@@ -13,7 +13,7 @@ void Poller::run() {
 }
 
 void Poller::fetchXmlRPC() {
-    qDebug() << "fetching and current time : " << QDateTime::currentMSecsSinceEpoch();
+    //qDebug() << "fetching and current time : " << QDateTime::currentMSecsSinceEpoch();
     QString fetched = qSql->fetchXmlRpc();
     if (fetched != NULL)
         server->newConnection(fetched);

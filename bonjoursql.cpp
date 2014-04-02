@@ -1,5 +1,4 @@
 #include "bonjoursql.h"
-
 BonjourSQL::BonjourSQL(QObject *parent) :
     QObject(parent)
 {
@@ -105,7 +104,7 @@ bool BonjourSQL::insertDevice(QString hostname, int port, QString service_name, 
 }
 
 QString BonjourSQL::fetchXmlRpc() {
-    qDebug() << "sql threadid " << QThread::currentThreadId();
+    //qDebug() << "sql threadid " << QThread::currentThreadId();
     QList<QHostAddress> list = QNetworkInterface::allAddresses();
     QString sqlString;
     bool first = true;
@@ -128,16 +127,16 @@ QString BonjourSQL::fetchXmlRpc() {
         sqlString = sqlString % "\"" % stringAddr % "\"";
         first = false;
     }
-    qDebug() << sqlString;
+    //qDebug() << sqlString;
     QSqlQuery query = QSqlQuery(db);
     query.prepare("SELECT MIN(id) as id, req, ipv6 FROM XMLRPC WHERE ipv6 = " % sqlString);
     query.exec();
-    //qDebug() << "error" << query.lastError();
+    //qDebug() << "XMLRPC Query error" << query.lastError();
     if (query.next()) {
         QString ipv6 = query.value(2).toString();
         QString id = query.value(0).toString();
         QString xmlrpcReq = query.value(1).toString();
-        qDebug() << xmlrpcReq;
+        //qDebug() << xmlrpcReq;
 
         query.prepare("DELETE FROM XMLRPC WHERE id = ? AND ipv6 = ?");
         query.bindValue(0, id);
@@ -169,8 +168,35 @@ QList< User* > BonjourSQL::getFriends() {
     return list;
 }
 
+QSslCertificate BonjourSQL::getLocalCert() {
+    QSqlQuery query = QSqlQuery(db);
+    query.prepare("SELECT certificate FROM User WHERE uid = ?");
+    query.bindValue(0, uid);
+    query.exec();
 
+    if (query.next()) {
+        QSslCertificate cert(query.value(0).toByteArray(), QSsl::Pem);
+        return cert;
+    } else {
+        // error
+        qDebug() << "No certificate for user " << uid;
+    }
+}
 
+QSslKey BonjourSQL::getMyKey() {
+    QSqlQuery query = QSqlQuery(db);
+    query.prepare("SELECT privateKey FROM User WHERE uid = ?");
+    query.bindValue(0, uid);
+    query.exec();
+
+    if (query.next()) {
+        QSslKey key(query.value(0).toByteArray(), QSsl::Rsa, QSsl::Pem);
+        return key;
+    } else {
+        // error
+        qDebug() << "No certificate for user " << uid;
+    }
+}
 
 
 

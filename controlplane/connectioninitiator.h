@@ -4,12 +4,19 @@
 #include <QObject>
 #include "user.h"
 #include "bonjoursql.h"
+#include "controlplaneserver.h"
+#include "controlplaneclient.h"
 
 class ConnectionInitiator : public QObject
 {
     Q_OBJECT
 private:
     BonjourSQL* qSql;
+
+    QSslCertificate cert;
+    QSslKey key;
+    ControlPlaneServer* server;
+    QList<ControlPlaneClient*> clients;
 
     /**
      * @brief startServer iniate an SSL server to receive connections from friends

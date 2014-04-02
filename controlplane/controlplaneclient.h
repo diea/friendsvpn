@@ -12,7 +12,7 @@ class ControlPlaneClient: public QObject
     Q_OBJECT
 private:
     QSslSocket* sslClient;
-
+    QSslCertificate servCert;
     QHostAddress addr;
     int port;
 
@@ -25,7 +25,13 @@ private slots:
      * @brief connectionReady is entered when the SSL handshake has succeeded
      */
     void connectionReady();
+
+    void sslErrors(const QList<QSslError>& errs);
 public slots:
+    /**
+     * @brief run will connect to the host given in the constructor; it won't do anything if
+     * servCert was a NULL certificate. A qWarning() is emitted in that case.
+     */
     void run();
 };
 

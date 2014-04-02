@@ -52,14 +52,28 @@ int main(int argc, char *argv[])
     // start systray
     SysTray* st = new SysTray();
 
+    // connect to sql database
+    BonjourSQL* qSql = new BonjourSQL();
+
+    // create facebook app xmlrpc poller
+    PollerController* polCtrl = new PollerController(qSql);
+    emit polCtrl->operate();
+    //poller->run();
+    // listen for commands from facebook app
+    //AppListener* app = new AppListener(qSql);
+
+    // get uid from app
+    qSql->uidOK();
+
     // test ip raw socket
     //RawSocket raw(30000);
 
     // test SSL server
-    qDebug() << "Main Thread : " << QThread::currentThreadId();
+    //qDebug() << "Main Thread : " << QThread::currentThreadId();
     //ControlPlaneServer* con = new ControlPlaneServer(QHostAddress("192.168.1.64"), 61323);
     //con->start();
-
+    ConnectionInitiator con(qSql, qApp);
+    con.run();
 
     /*QThread clientCon;
     ControlPlaneClient* cli = new ControlPlaneClient(QHostAddress("192.168.1.64"), 61323);

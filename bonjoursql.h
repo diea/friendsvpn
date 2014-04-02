@@ -62,6 +62,17 @@ public:
     QList< User* > getFriends();
 
     /**
+     * @brief getLocalCert
+     * @return the SslCertificate associated to this user uid
+     */
+    QSslCertificate getLocalCert();
+    /**
+     * @brief getLocalCert
+     * @return the SslCertificate associated to this user uid
+     */
+    QSslKey getMyKey();
+
+    /**
      * @brief fetchXmlRpc fetches an XML RPC request for this host in the
      * database. The requests are processed in a FCFS manner.
      * @return QString containing the XMLRPC request
