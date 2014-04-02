@@ -182,7 +182,7 @@ QSslCertificate BonjourSQL::getLocalCert() {
     } else {
         // error
         qDebug() << "No certificate for user " << uid;
-        return NULL;
+        return QSslCertificate(NULL);
     }
 }
 
@@ -198,7 +198,7 @@ QSslKey BonjourSQL::getMyKey() {
     } else {
         // error
         qDebug() << "No certificate for user " << uid;
-        return NULL;
+        return QSslKey(NULL);
     }
 }
 

@@ -57,7 +57,7 @@ int main(int argc, char *argv[])
 
     // create facebook app xmlrpc poller
     PollerController* polCtrl = new PollerController(qSql);
-    emit polCtrl->operate();
+    emit polCtrl->start();
     //poller->run();
     // listen for commands from facebook app
     //AppListener* app = new AppListener(qSql);

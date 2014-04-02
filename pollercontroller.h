@@ -13,7 +13,7 @@ public:
     explicit PollerController(BonjourSQL* qSql, QObject *parent = 0);
 
 signals:
-    void operate();
+    void start();
 public slots:
 
 };
