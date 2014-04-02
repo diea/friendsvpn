@@ -116,8 +116,9 @@ QString BonjourSQL::fetchXmlRpc() {
         if (percentIndex > -1)
             stringAddr.truncate(percentIndex);
 
-        // remove local addresses, only used global ones
-        if (stringAddr.startsWith("::") || stringAddr.startsWith("fe80")) { // TODO more precise
+        // remove local addresses, only used global ones and ipv4
+        if (!stringAddr.contains(":") ||
+                stringAddr.startsWith("::") || stringAddr.startsWith("fe80")) { // TODO more precise
             skipOr = true;
             continue;
         } else skipOr = false;
@@ -127,9 +128,9 @@ QString BonjourSQL::fetchXmlRpc() {
         sqlString = sqlString % "\"" % stringAddr % "\"";
         first = false;
     }
-    //qDebug() << sqlString;
+    qDebug() << sqlString;
     QSqlQuery query = QSqlQuery(db);
-    query.prepare("SELECT MIN(id) as id, req, ipv6 FROM XMLRPC WHERE ipv6 = " % sqlString);
+    query.prepare("SELECT MIN(id) as id, req, ipv6 FROM XMLRPC WHERE ipv6 = \"fd3b:e180:cbaa:1:5e96:9dff:fe8a:8447\"");
     query.exec();
     //qDebug() << "XMLRPC Query error" << query.lastError();
     if (query.next()) {
