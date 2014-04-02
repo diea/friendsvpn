@@ -109,6 +109,7 @@ QString BonjourSQL::fetchXmlRpc() {
     QString sqlString;
     bool first = true;
     bool skipOr = false;
+    sqlString = sqlString % "ipv6 = ";
     foreach(QHostAddress addr, list) {
         QString stringAddr = addr.toString();
         // crop off the interface names: "%en1" for example
@@ -124,13 +125,13 @@ QString BonjourSQL::fetchXmlRpc() {
         } else skipOr = false;
 
         if (!first && !skipOr)
-            sqlString = sqlString % " OR ";
+            sqlString = sqlString % " OR ipv6 = ";
         sqlString = sqlString % "\"" % stringAddr % "\"";
         first = false;
     }
-    qDebug() << sqlString;
+    //qDebug() << sqlString;
     QSqlQuery query = QSqlQuery(db);
-    query.prepare("SELECT MIN(id) as id, req, ipv6 FROM XMLRPC WHERE ipv6 = \"fd3b:e180:cbaa:1:5e96:9dff:fe8a:8447\"");
+    query.prepare("SELECT MIN(id) as id, req, ipv6 FROM XMLRPC WHERE " + sqlString);
     query.exec();
     //qDebug() << "XMLRPC Query error" << query.lastError();
     if (query.next()) {
