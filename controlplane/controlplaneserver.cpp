@@ -45,9 +45,9 @@ void ControlPlaneServer::newIncoming() {
     sslSockList.append(sslSock);
     sslSock->startServerEncryption();
 
-    if (sslSock->waitForEncrypted()) { // XXX Bug fix
-        emit sslSock->encrypted();
-    }
+    //if (sslSock->waitForEncrypted()) { // XXX Bug fix
+    //    emit sslSock->encrypted();
+    //}
 }
 
 void ControlPlaneServer::sslSockReady() {

@@ -15,8 +15,10 @@ void ConnectionInitiator::run() {
 }
 
 void ConnectionInitiator::startServer() {
-    server = new ControlPlaneServer(cert, key, QHostAddress::AnyIPv6, 61323, this);
-    server->start();
+    //server = new ControlPlaneServer(cert, key, QHostAddress::AnyIPv6, 61323, this);
+    //server->start();
+    threadedServ = new ThreadedCpServer(cert, key, QHostAddress::AnyIPv6, 61323, this);
+    threadedServ->start();
 }
 
 void ConnectionInitiator::startClients() {

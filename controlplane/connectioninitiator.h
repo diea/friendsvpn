@@ -4,6 +4,7 @@
 #include <QObject>
 #include "user.h"
 #include "bonjoursql.h"
+#include "threadedcpserver.h"
 #include "controlplaneserver.h"
 #include "controlplaneclient.h"
 
@@ -16,6 +17,7 @@ private:
     QSslCertificate cert;
     QSslKey key;
     ControlPlaneServer* server;
+    ThreadedCpServer* threadedServ;
     QList<ControlPlaneClient*> clients;
 
     /**

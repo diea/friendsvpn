@@ -24,7 +24,9 @@ SOURCES += main.cpp \
     controlplane/connectioninitiator.cpp \
     controlplane/controlplaneclient.cpp \
     controlplane/controlplaneserver.cpp \
-    user.cpp
+    user.cpp \
+    controlplane/threadedcpserver.cpp \
+    controlplane/sslserverthread.cpp
 
 HEADERS  += \
     graphic/systray.h \
@@ -40,7 +42,9 @@ HEADERS  += \
     controlplane/connectioninitiator.h \
     controlplane/controlplaneserver.h \
     controlplane/controlplaneclient.h \
-    user.h
+    user.h \
+    controlplane/threadedcpserver.h \
+    controlplane/sslserverthread.h
 
 FORMS    +=
 
