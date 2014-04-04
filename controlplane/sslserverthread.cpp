@@ -6,9 +6,14 @@ SslServerThread::SslServerThread(qintptr sockfd, QSslConfiguration sslConfig, QO
 }
 
 void SslServerThread::run() {
+    QTcpSocket tcpSock;
+    if (!tcpSock.setSocketDescriptor(sockfd)) {
+        qDebug() << tcpSock.errorString();
+        return;
+    }
     QSslSocket sslSock;
     sslSock.setSslConfiguration(sslConfig);
-    sslSock.setSocketDescriptor(sockfd);
+    sslSock.setSocketDescriptor(tcpSock.socketDescriptor());
 
     sslSock.startServerEncryption();
 
