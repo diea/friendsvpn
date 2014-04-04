@@ -9,10 +9,10 @@ class SslServerThread : public QThread
 {
     Q_OBJECT
 private:
-    int sockfd;
+    qintptr sockfd;
     QSslConfiguration sslConfig;
 public:
-    explicit SslServerThread(int sockfd, QSslConfiguration sslConfig, QObject *parent = 0);
+    explicit SslServerThread(qintptr sockfd, QSslConfiguration sslConfig, QObject *parent = 0);
 
     void run();
 signals:

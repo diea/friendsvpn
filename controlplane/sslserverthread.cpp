@@ -1,6 +1,6 @@
 #include "sslserverthread.h"
 
-SslServerThread::SslServerThread(int sockfd, QSslConfiguration sslConfig, QObject *parent) :
+SslServerThread::SslServerThread(qintptr sockfd, QSslConfiguration sslConfig, QObject *parent) :
     QThread(parent), sockfd(sockfd), sslConfig(sslConfig)
 {
 }
