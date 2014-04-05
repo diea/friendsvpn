@@ -1,17 +1,21 @@
 #include "controlplaneclient.h"
+#include "connectioninitiator.h"
 ControlPlaneClient::ControlPlaneClient(QSslCertificate servCert, QSslKey myKey,
                                        QHostAddress addr, int port, QObject *parent) :
     QObject(parent)
 {
+    this->con = con;
     this->addr = addr;
     this->port = port;
     this->servCert = servCert;
 
-    sslClient = new QSslSocket();
+    sslClient = new SslSocket();
 
     sslClient->addCaCertificate(servCert);
     sslClient->setPrivateKey(myKey);
     sslClient->setPeerVerifyName("facebookApp"); // common name for all our certificates
+
+    init = ConnectionInitiator::getInstance();
 }
 
 ControlPlaneClient::~ControlPlaneClient()
@@ -44,8 +48,22 @@ void ControlPlaneClient::sslErrors(const QList<QSslError>& errors) {
 }
 
 void ControlPlaneClient::connectionReady() {
+    connect(sslClient, SIGNAL(readyRead()), this, SLOT(sslClientReadyRead()));
     qDebug() << "Sending a write !!";
     // TODO protocol starts here
-    sslClient->write("Hello world");
+    // Send HELLO packet
+    QString hello("HELLO\r\nUid:" + init->getMyUid() + "\r\n");
+    sslClient->write(hello.toUtf8().constData());
+}
+
+void ControlPlaneClient::sslClientReadyRead() {
+    if (!sslClient->isAssociated()) { // not associated with a ControlPlaneConnection
+        const char* buf = sslClient->readAll();
+        QString bufStr(buf);
+        if (bufStr.startsWith("HELLO")) {
+            qDebug() << bufStr.left(2).right(11);
+            //ControlPlaneConnection* con =  init->getConnection(bufStr.left(2).right(11));
+        }
+    }
 }
 

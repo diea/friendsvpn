@@ -79,6 +79,12 @@ public:
      */
     QString fetchXmlRpc();
 
+    /**
+     * @brief getLocalUid
+     * @return the user's local UID.
+     */
+    QString getLocalUid();
+
 signals:
 
 public slots:

@@ -1,7 +1,6 @@
 #ifndef CONTROLPLANESERVER_H
 #define CONTROLPLANESERVER_H
 #include <QObject>
-#include <QSslSocket>
 #include <QTcpServer>
 #include <QSocketNotifier>
 #include <QHostAddress>
@@ -11,6 +10,11 @@
 #include <QSslKey>
 #include <QSslConfiguration>
 #include <QSslCertificate>
+#include "sslsocket.h"
+#include "controlplaneconnection.h"
+
+class ConnectionInitiator;
+
 class ControlPlaneServer : public QObject
 {
     Q_OBJECT
@@ -19,9 +23,10 @@ private:
     int listenPort;
 
     QTcpServer* tcpSrv;
-    QList<QSslSocket*> sslSockList;
+    QList<SslSocket*> sslSockList;
     QSslConfiguration cfg; // contains configuration used for each SSL connection
 
+    ConnectionInitiator* init;
 public:
     explicit ControlPlaneServer(QSslCertificate servCert, QSslKey myKey,
                                 QHostAddress listenAdr, int listenPort, QObject *parent = 0);

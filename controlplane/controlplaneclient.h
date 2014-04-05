@@ -2,16 +2,21 @@
 #define CONTROLPLANECLIENT_H
 
 #include <QObject>
-#include <QSslSocket>
 #include <QHostAddress>
 #include <QSslCertificate>
 #include <QSslKey>
+#include "controlplaneconnection.h"
+#include "sslsocket.h"
+class ConnectionInitiator;
 
 class ControlPlaneClient: public QObject
 {
     Q_OBJECT
 private:
-    QSslSocket* sslClient;
+    ConnectionInitiator* init;
+
+    ControlPlaneConnection* con;
+    SslSocket* sslClient;
     QSslCertificate servCert;
     QHostAddress addr;
     int port;
@@ -25,7 +30,10 @@ private slots:
      * @brief connectionReady is entered when the SSL handshake has succeeded
      */
     void connectionReady();
-
+    /**
+     * @brief sslClientReadyRead data is ready to be read
+     */
+    void sslClientReadyRead();
     void sslErrors(const QList<QSslError>& errs);
 public slots:
     /**

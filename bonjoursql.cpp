@@ -202,7 +202,9 @@ QSslKey BonjourSQL::getMyKey() {
     }
 }
 
-
+QString BonjourSQL::getLocalUid() {
+    return uid;
+}
 
 
 

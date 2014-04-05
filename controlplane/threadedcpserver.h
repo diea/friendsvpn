@@ -11,8 +11,8 @@
 #include <QSslKey>
 #include <QSslConfiguration>
 #include <QSslCertificate>
-
 #include "sslserverthread.h"
+
 class ThreadedCpServer : public QObject
 {
     Q_OBJECT

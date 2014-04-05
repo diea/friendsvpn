@@ -41,7 +41,7 @@ int main(int argc, char *argv[])
 
     return a.exec();
 }
-#else if 1
+#elif 1
 // test main
 int main(int argc, char *argv[])
 {
@@ -65,8 +65,8 @@ int main(int argc, char *argv[])
     qSql->uidOK();
 
     // Control plane
-    ConnectionInitiator con(qSql, qApp);
-    con.run();
+    ConnectionInitiator* con = ConnectionInitiator::getInstance(qSql);
+    con->run();
 
     return a.exec();
 }
