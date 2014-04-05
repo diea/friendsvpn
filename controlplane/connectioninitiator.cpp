@@ -12,7 +12,8 @@ ConnectionInitiator::ConnectionInitiator(BonjourSQL* qSql, QObject *parent) :
 
 ConnectionInitiator* ConnectionInitiator::getInstance(BonjourSQL* qSql = 0) {
     if ((instance == NULL) && (qSql != 0)) {
-        return new ConnectionInitiator(qSql);
+        instance = new ConnectionInitiator(qSql);
+        return instance;
     } else {
         return NULL;
     }
