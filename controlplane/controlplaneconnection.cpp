@@ -79,6 +79,7 @@ void ControlPlaneConnection::readBuffer(const char* buf) {
 }
 
 void ControlPlaneConnection::sendBonjour() {
+    qDebug() << "Writing bjr packet !";
     static QMutex mutex; // XXX should maybe mutex more than this function (with the mode that can change)
     mutex.lock();
     if (curMode == Client_mode) {
