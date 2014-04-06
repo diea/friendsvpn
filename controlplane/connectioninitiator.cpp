@@ -55,19 +55,21 @@ void ConnectionInitiator::startClients() {
     }
 }
 
-void ConnectionInitiator::addControlPlaneConnection(ControlPlaneConnection *con) {
-    connections.append(con);
-}
-
 ControlPlaneConnection* ConnectionInitiator::getConnection(QString uid) {
+    getConnectionMutex.lock();
     QListIterator< ControlPlaneConnection* > i(connections);
     while (i.hasNext()) {
         ControlPlaneConnection* nxt = i.next();
         if (nxt->getUid() == uid) {
+            getConnectionMutex.unlock();
             return nxt;
         }
     }
-    return NULL;
+    // doesn't exist, create a new one
+    ControlPlaneConnection* newCon = new ControlPlaneConnection(uid);
+    connections.append(newCon);
+    getConnectionMutex.unlock();
+    return newCon;
 }
 
 QString ConnectionInitiator::getMyUid() {

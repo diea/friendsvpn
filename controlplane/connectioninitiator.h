@@ -26,6 +26,8 @@ private:
     QList<ControlPlaneClient*> clients;
     QList<ControlPlaneConnection*> connections;
 
+    QMutex getConnectionMutex;
+
     static ConnectionInitiator* instance;
     /**
      * @brief startServer iniate an SSL server to receive connections from friends
@@ -51,11 +53,12 @@ public:
     static ConnectionInitiator* getInstance();
     void run();
 
-    void addControlPlaneConnection(ControlPlaneConnection* con);
     /**
-     * @brief getConnection
+     * @brief getConnection will return the connection with uid "uid" and will create one if
+     * one did not exist
+     * Is protected with a Mutex
      * @param uid
-     * @return the connection that has uid "uid" and NULL if it doesn't exist
+     * @return the connection that has uid "uid"
      */
     ControlPlaneConnection* getConnection(QString uid);
 

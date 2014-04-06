@@ -61,9 +61,23 @@ void ControlPlaneServer::sslSockError(const QList<QSslError>& errors) {
 
 void ControlPlaneServer::sslSockReadyRead() {
     SslSocket* sslSock = qobject_cast<SslSocket*>(sender());
-
-    qDebug() << sslSock->readAll().data();
-    sslSock->write("ça marche :)");
+    if (!sslSock->isAssociated()) { // not associated with a ControlPlaneConnection
+        const char* buf = sslSock->readLine();
+        QString bufStr(buf);
+        qDebug() << bufStr;
+        if (bufStr.startsWith("HELLO")) {
+            QString uidStr(sslSock->readLine());
+            uidStr.chop(1); // drop \0
+            qDebug() << uidStr.remove(0, 4);
+            // drop the Uid: part with the .remove and get the CPConnection* correspoding to this UID
+            ControlPlaneConnection* con =  init->getConnection(bufStr.remove(0, 4));
+            sslSock->setControlPlaneConnection(con); // associate the sslSock with it
+        }
+    } else { // socket is associated with controlplaneconnection
+        //sslSock->getControlPlaneConnection()->
+    }
+    //qDebug() << sslSock->readAll().data();
+    //sslSock->write("ça marche :)");
 }
 
 void ControlPlaneServer::sslDisconnected() {

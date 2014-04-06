@@ -5,14 +5,12 @@
 
 enum plane_mode { Closed, Server_mode, Client_mode,
        Both_mode };
-enum plane_state { Wait_uid, Wait_data };
 
 class ControlPlaneConnection : public QObject
 {
     Q_OBJECT
 private:
     plane_mode curMode;
-    plane_state curState;
 
     /**
      * @brief friendUid is the uid of the friend with which the connection is made.
@@ -21,9 +19,8 @@ private:
 
     void setMode(plane_mode m);
 public:
-    explicit ControlPlaneConnection(QObject *parent = 0);
+    explicit ControlPlaneConnection(QString uid, QObject *parent = 0);
 
-    void setState(plane_state s);
     /**
      * @brief setUid sets the uid of the friend for which this connection is.
      * @param friendUid
@@ -32,7 +29,6 @@ public:
     QString getUid();
 
     plane_mode getMode();
-    plane_state getState();
     void receiveBonjour();
 
     /**
