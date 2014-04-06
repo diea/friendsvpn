@@ -1,9 +1,9 @@
 #include "bonjourresolver.h"
 
-BonjourResolver::BonjourResolver(BonjourSQL* qSql, BonjourRecord* record, QObject *parent) :
+BonjourResolver::BonjourResolver(BonjourRecord* record, QObject *parent) :
     QObject(parent)
 {
-    this->qSql = qSql;
+    this->qSql = BonjourSQL::getInstance();
     this->record = record;
     dnsref = 0;
 }

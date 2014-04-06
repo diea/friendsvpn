@@ -4,30 +4,20 @@
 
 ConnectionInitiator* ConnectionInitiator::instance = NULL;
 
-ConnectionInitiator::ConnectionInitiator(BonjourSQL* qSql, QObject *parent) :
+ConnectionInitiator::ConnectionInitiator(QObject *parent) :
     QObject(parent)
 {
-    this->qSql = qSql;
-}
-
-ConnectionInitiator* ConnectionInitiator::getInstance(BonjourSQL* qSql = 0) {
-    static QMutex mutex;
-    mutex.lock();
-    if ((instance == NULL) && (qSql != 0)) {
-        instance = new ConnectionInitiator(qSql);
-        mutex.unlock();
-        return instance;
-    } else {
-        mutex.unlock();
-        return NULL;
-    }
+    this->qSql = BonjourSQL::getInstance();
 }
 
 ConnectionInitiator* ConnectionInitiator::getInstance() {
-    if (instance != NULL)
-        return instance;
-    else
-        return NULL;
+    static QMutex mutex;
+    mutex.lock();
+    if (instance == NULL) {
+        instance = new ConnectionInitiator();
+    }
+    mutex.unlock();
+    return instance;
 }
 
 void ConnectionInitiator::run() {

@@ -34,7 +34,7 @@ private:
                              void *context);
 
 public:
-    explicit BonjourResolver(BonjourSQL* qSql, BonjourRecord* record, QObject *parent = 0);
+    explicit BonjourResolver(BonjourRecord* record, QObject *parent = 0);
 
     void resolve();
 signals:

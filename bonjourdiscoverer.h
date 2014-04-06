@@ -30,10 +30,10 @@ private:
                                 quint32 , DNSServiceErrorType errorCode,
                                 const char *serviceName, const char *regType,
                                 const char *replyDomain, void *context);
-    explicit BonjourDiscoverer(BonjourSQL* qSql, QObject *parent = 0);
+    explicit BonjourDiscoverer(QObject *parent = 0);
 
 public:
-    static BonjourDiscoverer* getInstance(BonjourSQL* qSql, QObject* parent = NULL);
+    static BonjourDiscoverer* getInstance(QObject* parent = NULL);
     ~BonjourDiscoverer();
     /**
      * @brief discoverServices utilises a DNS PTR record query for the name

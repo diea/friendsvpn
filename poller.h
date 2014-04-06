@@ -18,7 +18,7 @@ private:
 
 
 public:
-    explicit Poller(BonjourSQL* qSql, QObject *parent = 0);
+    explicit Poller(QObject *parent = 0);
 
 signals:
 

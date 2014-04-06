@@ -1,10 +1,10 @@
 #include "bonjourbrowser.h"
 #include <QApplication>
 
-BonjourBrowser::BonjourBrowser(BonjourSQL* qSql, QObject *parent)
+BonjourBrowser::BonjourBrowser(QObject *parent)
 {
     setParent(parent);
-    this->qSql = qSql;
+    this->qSql = BonjourSQL::getInstance();
     dnsref = 0;
     bonjourSocket = 0;
 }
@@ -71,7 +71,7 @@ void BonjourBrowser::reply(DNSServiceRef , DNSServiceFlags flags,
             emit serviceBrowser->currentBonjourRecordsChanged(serviceBrowser->bonjourRecords);
         }
         if (flags & kDNSServiceFlagsAdd) {
-            BonjourResolver *resolver = new BonjourResolver(serviceBrowser->qSql, bonjourRecord);
+            BonjourResolver *resolver = new BonjourResolver(bonjourRecord);
             connect(resolver, SIGNAL(resolved(BonjourRecord*)),
                     serviceBrowser, SLOT(recordIsReady(BonjourRecord*)));
             resolver->resolve(); // resolver object is deleted in itself after signal resolved triggered

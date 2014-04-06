@@ -1,4 +1,6 @@
 #include "bonjoursql.h"
+BonjourSQL* BonjourSQL::instance = NULL;
+
 BonjourSQL::BonjourSQL(QObject *parent) :
     QObject(parent)
 {
@@ -19,6 +21,16 @@ BonjourSQL::BonjourSQL(QObject *parent) :
             }
         }
     }
+}
+
+BonjourSQL* BonjourSQL::getInstance() {
+    static QMutex mutex;
+    mutex.lock();
+    if (!instance) {
+        instance = new BonjourSQL();
+    }
+    mutex.unlock();
+    return instance;
 }
 
 BonjourSQL::~BonjourSQL() {

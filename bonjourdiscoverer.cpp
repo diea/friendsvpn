@@ -1,19 +1,19 @@
 #include "bonjourdiscoverer.h"
 
-BonjourDiscoverer::BonjourDiscoverer(BonjourSQL* qSql, QObject *parent)
+BonjourDiscoverer::BonjourDiscoverer(QObject *parent)
 {
     setParent(parent);
-    this->qSql = qSql;
+    this->qSql = BonjourSQL::getInstance();
     dnsref = 0;
 }
 
 BonjourDiscoverer* BonjourDiscoverer::instance = NULL;
-BonjourDiscoverer* BonjourDiscoverer::getInstance(BonjourSQL* qSql, QObject *parent) {
+BonjourDiscoverer* BonjourDiscoverer::getInstance(QObject *parent) {
     if (instance != NULL) {
         return instance;
     }
     qDebug() << "bonjourdiscoverer thread id" << QThread::currentThreadId();
-    return new BonjourDiscoverer(qSql, parent);
+    return new BonjourDiscoverer(parent);
 }
 
 BonjourDiscoverer::~BonjourDiscoverer()
@@ -55,7 +55,7 @@ void BonjourDiscoverer::reply(DNSServiceRef dnsref, DNSServiceFlags flags,
         QString service = QString(serviceName) + "." + reg;
         if (flags & kDNSServiceFlagsAdd) {
             if (!serviceBrowser->availableServices.contains(service)) {
-                BonjourBrowser* bb = new BonjourBrowser(serviceBrowser->qSql);
+                BonjourBrowser* bb = new BonjourBrowser();
                 bb->browseForServiceType(service);
                 serviceBrowser->availableServices.insert(service, bb);
                 qDebug() << "Adding " + QString(service);

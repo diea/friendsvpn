@@ -36,19 +36,9 @@ private:
      * @brief startClients initiate an SSL connection with each friend
      */
     void startClients();
-    explicit ConnectionInitiator(BonjourSQL* qSql, QObject *parent = 0);
+    explicit ConnectionInitiator(QObject *parent = 0);
 
 public:
-    /**
-     * @brief getInstance must be called to initialize the class
-     * @param qSql
-     * @return NULL on failure
-     */
-    static ConnectionInitiator* getInstance(BonjourSQL* qSql);
-    /**
-     * @brief getInstance can only be called if the class has already been initialized
-     * @return NULL on failure
-     */
     static ConnectionInitiator* getInstance();
     void run();
 

@@ -1,9 +1,9 @@
 #include "poller.h"
 
-Poller::Poller(BonjourSQL* qSql, QObject *parent) :
+Poller::Poller(QObject *parent) :
     QObject(parent)
 {
-    this->qSql = qSql;
+    this->qSql = BonjourSQL::getInstance();
     server = new XmlRPCTextServer(this);
     server->addMethod("setUid", this, "setUid");
 }

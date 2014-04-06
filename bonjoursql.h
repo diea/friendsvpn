@@ -25,9 +25,10 @@ private:
     QString uid; // the user's facebook uid
 
     void initDB();
-
-public:
+    static BonjourSQL* instance;
     explicit BonjourSQL(QObject *parent = 0);
+public:
+    static BonjourSQL* getInstance();
     ~BonjourSQL();
     /**
      * @brief uidOK

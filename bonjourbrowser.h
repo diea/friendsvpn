@@ -29,7 +29,7 @@ private:
                                    DNSServiceErrorType errorCode, const char *serviceName,
                                 const char *regType, const char *replyDomain, void *context);
 public:
-    BonjourBrowser(BonjourSQL* qSql, QObject *parent = 0);
+    BonjourBrowser(QObject *parent = 0);
     ~BonjourBrowser();
 
     /**

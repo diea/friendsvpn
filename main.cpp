@@ -23,17 +23,17 @@ int main(int argc, char *argv[])
     BonjourSQL* qSql = new BonjourSQL();
 
     // create facebook app xmlrpc poller
-    PollerController* polCtrl = new PollerController(qSql);
+    PollerController* polCtrl = new PollerController();
     emit polCtrl->operate();
     //poller->run();
     // listen for commands from facebook app
-    //AppListener* app = new AppListener(qSql);
+    //AppListener* app = new AppListener();
 
     // get uid from app
     qSql->uidOK();
 
     // discover services
-    BonjourDiscoverer* disco = BonjourDiscoverer::getInstance(qSql, qApp);
+    BonjourDiscoverer* disco = BonjourDiscoverer::getInstance(qApp);
     disco->discoverServices();
 
     // open dataplane tunnel
@@ -52,11 +52,11 @@ int main(int argc, char *argv[])
     //SysTray* st = new SysTray();
 
     // connect to sql database
-    BonjourSQL* qSql = new BonjourSQL();
+    BonjourSQL* qSql = BonjourSQL::getInstance();
 
     // create facebook app xmlrpc poller
     QThread pollerThread;
-    Poller* poller = new Poller(qSql);
+    Poller* poller = new Poller();
     poller->moveToThread(&pollerThread);
     poller->connect(&pollerThread, SIGNAL(started()), SLOT(run()));
     pollerThread.start();
@@ -65,7 +65,7 @@ int main(int argc, char *argv[])
     qSql->uidOK();
 
     // Control plane
-    ConnectionInitiator* con = ConnectionInitiator::getInstance(qSql);
+    ConnectionInitiator* con = ConnectionInitiator::getInstance();
     con->run();
 
     return a.exec();
