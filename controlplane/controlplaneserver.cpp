@@ -79,13 +79,7 @@ void ControlPlaneServer::sslSockReadyRead() {
             ControlPlaneConnection* con =  init->getConnection(bufStr.remove(0, 4));
             con->addMode(Server_mode, sslSock); // add server mode
             sslSock->setControlPlaneConnection(con); // associate the sslSock with it
-            qDebug() << "ssl Sock associated";
-            //sslSock->readAll();
-            qDebug() << "Wait for rdy read";
-            sslSock->waitForReadyRead(5000);
-            qDebug() << "Or not";
-            qDebug() << sslSock->readAll();
-            qDebug() << "Read all there was";
+            qDebug() << "ssl Sock associated";;
         }
     } else { // socket is associated with controlplaneconnection
         qDebug() << "Server received data";

@@ -90,6 +90,7 @@ void ControlPlaneConnection::sendBonjour() {
     static QMutex mutex; // XXX should maybe mutex more than this function (with the mode that can change)
     mutex.lock();
     if (curMode == Client_mode) {
+        qDebug() << "Sending BONJOUR PACKET !!!!";
         clientSock->write("BONJOUR PACKET");
         clientSock->flush();
     } else {

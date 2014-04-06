@@ -77,8 +77,8 @@ void ControlPlaneClient::sslClientReadyRead() {
             sslClient->setControlPlaneConnection(con); // associate the sslSock with it
             con->addMode(Client_mode, sslClient);
             qDebug() << "ssl Sock associated";
-            sslClient->write("TEST TEST TEST");
-            sslClient->flush();
+            //sslClient->write("TEST TEST TEST");
+            //sslClient->flush();
         }
     } else { // socket is associated with controlplaneconnection
         sslClient->getControlPlaneConnection()->readBuffer(sslClient->readAll().data());
