@@ -54,6 +54,7 @@ void ControlPlaneServer::sslSockReady() {
     QString hello("Uid:" + init->getMyUid() + "\r\n");
     sslSock->write("HELLO \r\n");
     sslSock->write(hello.toLatin1().constData());
+    sslSock->flush();
 }
 
 void ControlPlaneServer::sslSockError(const QList<QSslError>& errors) {
@@ -65,7 +66,6 @@ void ControlPlaneServer::sslSockError(const QList<QSslError>& errors) {
 
 void ControlPlaneServer::sslSockReadyRead() {
     SslSocket* sslSock = qobject_cast<SslSocket*>(sender());
-    qDebug() << "Server in SockReadyReady";
     if (!sslSock->isAssociated()) { // not associated with a ControlPlaneConnection
         const char* buf = sslSock->readLine();
         QString bufStr(buf);
@@ -80,6 +80,12 @@ void ControlPlaneServer::sslSockReadyRead() {
             con->addMode(Server_mode, sslSock); // add server mode
             sslSock->setControlPlaneConnection(con); // associate the sslSock with it
             qDebug() << "ssl Sock associated";
+            //sslSock->readAll();
+            qDebug() << "Wait for rdy read";
+            sslSock->waitForReadyRead(5000);
+            qDebug() << "Or not";
+            qDebug() << sslSock->readAll();
+            qDebug() << "Read all there was";
         }
     } else { // socket is associated with controlplaneconnection
         qDebug() << "Server received data";
@@ -89,9 +95,8 @@ void ControlPlaneServer::sslSockReadyRead() {
 
 void ControlPlaneServer::sslDisconnected() {
     SslSocket* sslSock = qobject_cast<SslSocket*>(sender());
-    //if (!sslSock->)
-    //    return;
     sslSockList.removeAll(sslSock);
+    sslSock->getControlPlaneConnection()->removeMode(Server_mode);
     sslSock->deleteLater();
 }
 

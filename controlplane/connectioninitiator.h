@@ -51,6 +51,7 @@ public:
      */
     ControlPlaneConnection* getConnection(QString uid);
 
+    void removeConnection(ControlPlaneConnection* con);
     /**
      * @brief getMyUid
      * @return the user's local uid

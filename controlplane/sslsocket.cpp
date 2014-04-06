@@ -19,5 +19,4 @@ bool SslSocket::isAssociated() {
 }
 
 SslSocket::~SslSocket() {
-    con->deleteLater();
 }

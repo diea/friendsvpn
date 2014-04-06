@@ -54,7 +54,9 @@ void ControlPlaneClient::connectionReady() {
     // Send HELLO packet
     QString hello("HELLO\r\nUid:" + init->getMyUid() + "\r\n");
     sslClient->write(hello.toUtf8().constData());
-    sslClient->write("TEST TEST TEST2");
+    sslClient->flush();
+    //sslClient->write("TEST TEST TEST2");
+
 }
 
 void ControlPlaneClient::sslClientReadyRead() {
@@ -76,6 +78,7 @@ void ControlPlaneClient::sslClientReadyRead() {
             con->addMode(Client_mode, sslClient);
             qDebug() << "ssl Sock associated";
             sslClient->write("TEST TEST TEST");
+            sslClient->flush();
         }
     } else { // socket is associated with controlplaneconnection
         sslClient->getControlPlaneConnection()->readBuffer(sslClient->readAll().data());

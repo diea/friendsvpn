@@ -67,6 +67,10 @@ ControlPlaneConnection* ConnectionInitiator::getConnection(QString uid) {
     return newCon;
 }
 
+void ConnectionInitiator::removeConnection(ControlPlaneConnection *con) {
+    instance->connections.removeAll(con);
+}
+
 QString ConnectionInitiator::getMyUid() {
     return instance->qSql->getLocalUid();
 }

@@ -1,4 +1,6 @@
 #include "controlplaneconnection.h"
+#include "connectioninitiator.h"
+
 #include <QDebug>
 ControlPlaneConnection::ControlPlaneConnection(QString uid, QObject *parent) :
     QObject(parent), friendUid(uid)
@@ -63,6 +65,11 @@ bool ControlPlaneConnection::removeMode(plane_mode mode) {
         }
     } else {
         curMode = Closed;
+        qDebug() << "Geting init instance";
+        ConnectionInitiator* init = ConnectionInitiator::getInstance();
+        qDebug() << "Removing myself from the list";
+        init->removeConnection(this);
+        qDebug () << "emitting disconnected";
         emit disconnected();
     }
     return true;
@@ -84,8 +91,10 @@ void ControlPlaneConnection::sendBonjour() {
     mutex.lock();
     if (curMode == Client_mode) {
         clientSock->write("BONJOUR PACKET");
+        clientSock->flush();
     } else {
         serverSock->write("SERVER BJR PACKET");
+        serverSock->flush();
     }
     mutex.unlock();
 }
