@@ -62,6 +62,7 @@ void ControlPlaneClient::sslClientReadyRead() {
         const char* buf = sslClient->readLine();
         QString bufStr(buf);
         qDebug() << bufStr;
+        qDebug() << "It hangs right here";
         if (bufStr.startsWith("HELLO")) {
             QString uidStr(sslClient->readLine());
             uidStr.chop(2); // drop \r\0
