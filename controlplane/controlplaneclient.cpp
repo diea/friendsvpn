@@ -58,12 +58,22 @@ void ControlPlaneClient::connectionReady() {
 
 void ControlPlaneClient::sslClientReadyRead() {
     if (!sslClient->isAssociated()) { // not associated with a ControlPlaneConnection
-        const char* buf = sslClient->readAll();
+        const char* buf = sslClient->readLine();
         QString bufStr(buf);
+        qDebug() << bufStr;
         if (bufStr.startsWith("HELLO")) {
-            qDebug() << bufStr.left(2).right(11);
-            //ControlPlaneConnection* con =  init->getConnection(bufStr.left(2).right(11));
+            QString uidStr(sslClient->readLine());
+            uidStr.chop(2); // drop \r\0
+            qDebug() << uidStr.remove(0, 4);
+            // drop the Uid: part with the .remove and get the CPConnection* correspoding to this UID
+            qDebug() << "Going into init";
+            ControlPlaneConnection* con =  init->getConnection(bufStr.remove(0, 4));
+            sslClient->setControlPlaneConnection(con); // associate the sslSock with it
+            qDebug() << "ssl Sock associated";
         }
+    } else { // socket is associated with controlplaneconnection
+        //sslSock->getControlPlaneConnection()->
+        qDebug() << sslClient->readAll().data();
     }
 }
 

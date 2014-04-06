@@ -50,6 +50,9 @@ void ControlPlaneServer::newIncoming() {
 void ControlPlaneServer::sslSockReady() {
     SslSocket* sslSock = qobject_cast<SslSocket*>(sender());
     connect(sslSock, SIGNAL(readyRead()), this, SLOT(sslSockReadyRead()));
+    // send HELLO packet
+    QString hello("HELLO\r\nUid:" + init->getMyUid() + "\r\n");
+    sslSock->write(hello.toUtf8().constData());
 }
 
 void ControlPlaneServer::sslSockError(const QList<QSslError>& errors) {
@@ -67,14 +70,17 @@ void ControlPlaneServer::sslSockReadyRead() {
         qDebug() << bufStr;
         if (bufStr.startsWith("HELLO")) {
             QString uidStr(sslSock->readLine());
-            uidStr.chop(1); // drop \0
+            uidStr.chop(2); // drop \r\0
             qDebug() << uidStr.remove(0, 4);
             // drop the Uid: part with the .remove and get the CPConnection* correspoding to this UID
+            qDebug() << "Going into init";
             ControlPlaneConnection* con =  init->getConnection(bufStr.remove(0, 4));
             sslSock->setControlPlaneConnection(con); // associate the sslSock with it
+            qDebug() << "ssl Sock associated";
         }
     } else { // socket is associated with controlplaneconnection
         //sslSock->getControlPlaneConnection()->
+        qDebug() << sslSock->readAll().data();
     }
     //qDebug() << sslSock->readAll().data();
     //sslSock->write("ça marche :)");

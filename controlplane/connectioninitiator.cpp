@@ -11,10 +11,14 @@ ConnectionInitiator::ConnectionInitiator(BonjourSQL* qSql, QObject *parent) :
 }
 
 ConnectionInitiator* ConnectionInitiator::getInstance(BonjourSQL* qSql = 0) {
+    static QMutex mutex;
+    mutex.lock();
     if ((instance == NULL) && (qSql != 0)) {
         instance = new ConnectionInitiator(qSql);
+        mutex.unlock();
         return instance;
     } else {
+        mutex.unlock();
         return NULL;
     }
 }
@@ -56,24 +60,25 @@ void ConnectionInitiator::startClients() {
 }
 
 ControlPlaneConnection* ConnectionInitiator::getConnection(QString uid) {
-    getConnectionMutex.lock();
-    QListIterator< ControlPlaneConnection* > i(connections);
+    static QMutex mutex;
+    mutex.lock();
+    QListIterator< ControlPlaneConnection* > i(instance->connections);
     while (i.hasNext()) {
         ControlPlaneConnection* nxt = i.next();
         if (nxt->getUid() == uid) {
-            getConnectionMutex.unlock();
+            mutex.unlock();
             return nxt;
         }
     }
     // doesn't exist, create a new one
     ControlPlaneConnection* newCon = new ControlPlaneConnection(uid);
-    connections.append(newCon);
-    getConnectionMutex.unlock();
+    instance->connections.append(newCon);
+    mutex.unlock();
     return newCon;
 }
 
 QString ConnectionInitiator::getMyUid() {
-    return qSql->getLocalUid();
+    return instance->qSql->getLocalUid();
 }
 
 

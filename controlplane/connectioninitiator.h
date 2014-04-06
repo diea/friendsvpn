@@ -2,6 +2,7 @@
 #define CONNECTIONINITIATOR_H
 
 #include <QObject>
+#include <QMutex>
 #include "user.h"
 #include "bonjoursql.h"
 #include "threadedcpserver.h"
@@ -25,8 +26,6 @@ private:
     ThreadedCpServer* threadedServ;
     QList<ControlPlaneClient*> clients;
     QList<ControlPlaneConnection*> connections;
-
-    QMutex getConnectionMutex;
 
     static ConnectionInitiator* instance;
     /**
