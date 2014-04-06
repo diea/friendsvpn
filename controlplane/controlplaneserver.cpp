@@ -75,16 +75,13 @@ void ControlPlaneServer::sslSockReadyRead() {
             // drop the Uid: part with the .remove and get the CPConnection* correspoding to this UID
             qDebug() << "Going into init";
             ControlPlaneConnection* con =  init->getConnection(bufStr.remove(0, 4));
-            //con->addMode(); // add server mode
+            con->addMode(Server_mode, sslSock); // add server mode
             sslSock->setControlPlaneConnection(con); // associate the sslSock with it
             qDebug() << "ssl Sock associated";
         }
     } else { // socket is associated with controlplaneconnection
-        //sslSock->getControlPlaneConnection()->
-        qDebug() << sslSock->readAll().data();
+        sslSock->getControlPlaneConnection()->readBuffer(sslSock->readAll().data());
     }
-    //qDebug() << sslSock->readAll().data();
-    //sslSock->write("ça marche :)");
 }
 
 void ControlPlaneServer::sslDisconnected() {
