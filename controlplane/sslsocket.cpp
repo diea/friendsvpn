@@ -17,3 +17,7 @@ ControlPlaneConnection* SslSocket::getControlPlaneConnection() {
 bool SslSocket::isAssociated() {
     return (con != NULL);
 }
+
+SslSocket::~SslSocket() {
+    con->deleteLater();
+}

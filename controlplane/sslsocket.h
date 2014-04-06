@@ -14,7 +14,7 @@ private:
     ControlPlaneConnection* con;
 public:
     explicit SslSocket(QObject *parent = 0);
-
+    ~SslSocket();
     void setControlPlaneConnection(ControlPlaneConnection* con);
 
     ControlPlaneConnection* getControlPlaneConnection();
