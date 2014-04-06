@@ -20,10 +20,6 @@ plane_mode ControlPlaneConnection::getMode() {
     return curMode;
 }
 
-void ControlPlaneConnection::setUid(QString uid) {
-    this->friendUid = uid;
-}
-
 QString ControlPlaneConnection::getUid() {
     return this->friendUid;
 }

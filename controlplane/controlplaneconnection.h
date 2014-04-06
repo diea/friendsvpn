@@ -21,11 +21,6 @@ private:
 public:
     explicit ControlPlaneConnection(QString uid, QObject *parent = 0);
 
-    /**
-     * @brief setUid sets the uid of the friend for which this connection is.
-     * @param friendUid
-     */
-    void setUid(QString friendUid);
     QString getUid();
 
     plane_mode getMode();
