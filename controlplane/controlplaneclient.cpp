@@ -62,12 +62,12 @@ void ControlPlaneClient::connectionReady() {
 void ControlPlaneClient::sslClientReadyRead() {
     qDebug() << "Ready read !";
     if (!sslClient->isAssociated()) { // not associated with a ControlPlaneConnection
-        const char* buf = sslClient->readLine();
+        const char* buf = sslClient->read(7);
         qDebug() << "ConstChar buffer" << buf;
         QString bufStr(buf);
         qDebug() << "QString buf" << bufStr;
         qDebug() << "It hangs right here";
-        if (bufStr.startsWith("H")) {
+        if (bufStr.startsWith("HELLO")) {
             QString uidStr(sslClient->readLine());
             uidStr.chop(2); // drop \r\0
             qDebug() << uidStr.remove(0, 4);

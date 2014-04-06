@@ -52,7 +52,7 @@ void ControlPlaneServer::sslSockReady() {
     connect(sslSock, SIGNAL(readyRead()), this, SLOT(sslSockReadyRead()));
     // send HELLO packet
     QString hello("Uid:" + init->getMyUid() + "\r\n");
-    sslSock->write("HELLO \r\n");
+    sslSock->write("HELLO\r\n");
     sslSock->write(hello.toLatin1().constData());
     sslSock->flush();
 }
@@ -79,7 +79,7 @@ void ControlPlaneServer::sslSockReadyRead() {
             ControlPlaneConnection* con =  init->getConnection(bufStr.remove(0, 4));
             con->addMode(Server_mode, sslSock); // add server mode
             sslSock->setControlPlaneConnection(con); // associate the sslSock with it
-            qDebug() << "ssl Sock associated";;
+            qDebug() << "ssl Sock associated";
         }
     } else { // socket is associated with controlplaneconnection
         qDebug() << "Server received data";
