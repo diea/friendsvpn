@@ -89,15 +89,20 @@ void ControlPlaneConnection::sendBonjour() {
     qDebug() << "sendBonjour() !";
     static QMutex mutex; // XXX should maybe mutex more than this function (with the mode that can change)
     mutex.lock();
+    qDebug() << "passed the lock in sendbonjour";
     if (curMode == Client_mode) {
         qDebug() << "Sending BONJOUR PACKET !!!!";
         clientSock->write("BONJOUR PACKET");
         clientSock->flush();
     } else {
+        qDebug() << "Writing!";
         serverSock->write("SERVER BJR PACKET");
-        serverSock->flush();
+        qDebug() << "Flushing!";
+        //serverSock->flush();
     }
+    qDebug() << "Unlocking mutex";
     mutex.unlock();
+    qDebug("Leaving sendBonjour()");
 }
 
 bool ControlPlaneConnection::operator=(const ControlPlaneConnection& other) {
