@@ -75,7 +75,7 @@ QString ControlPlaneConnection::getUid() {
 void ControlPlaneConnection::readBuffer(const char* buf) {
     qDebug() << "Reading buffer";
     qDebug() << buf;
-    qDebug() << "end";
+    qDebug() << "end of reading buffer";
 }
 
 void ControlPlaneConnection::sendBonjour() {
