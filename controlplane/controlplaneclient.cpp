@@ -60,6 +60,7 @@ void ControlPlaneClient::sslClientReadyRead() {
     qDebug() << "Ready read !";
     if (!sslClient->isAssociated()) { // not associated with a ControlPlaneConnection
         const char* buf = sslClient->readLine();
+        qDebug() << "ConstChar buffer" << buf;
         QString bufStr(buf);
         qDebug() << bufStr;
         qDebug() << "It hangs right here";
