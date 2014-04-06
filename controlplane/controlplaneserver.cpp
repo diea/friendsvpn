@@ -51,8 +51,9 @@ void ControlPlaneServer::sslSockReady() {
     SslSocket* sslSock = qobject_cast<SslSocket*>(sender());
     connect(sslSock, SIGNAL(readyRead()), this, SLOT(sslSockReadyRead()));
     // send HELLO packet
-    QString hello("HELLO\r\nUid:" + init->getMyUid() + "\r\n");
-    sslSock->write(hello.toUtf8().constData());
+    QString hello("Uid:" + init->getMyUid() + "\r\n");
+    sslSock->write("HELLO \r\n");
+    sslSock->write(hello.toLatin1().constData());
 }
 
 void ControlPlaneServer::sslSockError(const QList<QSslError>& errors) {
