@@ -67,11 +67,13 @@ void ControlPlaneClient::sslClientReadyRead() {
             mutexx.unlock();
     }
     if (!sslClient->isAssociated()) { // not associated with a ControlPlaneConnection
-        const char* buf = sslClient->readLine();
+        char buf[300];
+        sslClient->readLine(buf, 300);
         QString bufStr(buf);
         qDebug() << "Buffer str:" << bufStr;
         if (bufStr.startsWith("HELLO")) {
-            QString uidStr(sslClient->readLine());
+            sslClient->readLine(buf, 300);
+            QString uidStr(buf);
             uidStr.chop(2); // drop \r\0
             qDebug() << uidStr.remove(0, 4);
             // drop the Uid: part with the .remove and get the CPConnection* correspoding to this UID
