@@ -41,6 +41,7 @@ public slots:
      * servCert was a NULL certificate. A qWarning() is emitted in that case.
      */
     void run();
+    void sslDisconnected();
 };
 
 #endif // CONTROLPLANECLIENT_H

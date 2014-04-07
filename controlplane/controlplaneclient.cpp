@@ -36,6 +36,7 @@ void ControlPlaneClient::run() {
     connect(sslClient, SIGNAL(sslErrors(const QList<QSslError>&)), this,
             SLOT(sslErrors(const QList<QSslError>&)));
     connect(sslClient, SIGNAL(encrypted()), this, SLOT(connectionReady()));
+    connect(sslClient, SIGNAL(disconnected()), this, SLOT(sslDisconnected()));
 
     qDebug() << "CONNECT TO HOST " << addr.toString() << ":" << port;
     sslClient->connectToHostEncrypted(addr.toString(), port);
@@ -89,5 +90,11 @@ void ControlPlaneClient::sslClientReadyRead() {
         qDebug() << sslClient->readAll();
         //sslSock->getControlPlaneConnection()->readBuffer(sslSock->readAll().data());
     }
+}
+
+void ControlPlaneClient::sslDisconnected() {
+    qDebug() << "Disco";
+    sslClient->getControlPlaneConnection()->removeMode(Client_mode);
+    sslClient->deleteLater();
 }
 
