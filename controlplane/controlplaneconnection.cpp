@@ -93,7 +93,7 @@ void ControlPlaneConnection::sendBonjour() {
     if (curMode == Client_mode) {
         qDebug() << "Sending BONJOUR PACKET !!!!";
         clientSock->write("BONJOUR PACKET");
-        clientSock->flush();
+        //clientSock->flush();
     } else {
         qDebug() << "Writing!";
         serverSock->write("SERVER BJR PACKET");
