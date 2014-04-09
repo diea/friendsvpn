@@ -7,8 +7,12 @@ ControlPlaneConnection::ControlPlaneConnection(QString uid, QObject *parent) :
 {
     curMode = Closed;
     qSql = BonjourSQL::getInstance();
-    this->connect(this, SIGNAL(disconnected()), SLOT(deleteLater()));
+    //this->connect(this, SIGNAL(disconnected()), SLOT(deleteLater()));
     this->connect(this, SIGNAL(connected()), SLOT(sendBonjour()));
+}
+
+ControlPlaneConnection::~ControlPlaneConnection() {
+    qDebug() << "Destroyed control plane connection !";
 }
 
 void ControlPlaneConnection::setMode(plane_mode m) {
@@ -49,6 +53,8 @@ bool ControlPlaneConnection::addMode(plane_mode mode, QSslSocket *socket) {
 
     if (curMode == Both_mode)
         this->removeConnection();
+
+    return true;
 }
 
 bool ControlPlaneConnection::removeMode(plane_mode mode) {
@@ -118,6 +124,7 @@ void ControlPlaneConnection::sendBonjour() {
     qDebug() << "Unlocking mutex";
     mutex.unlock();
     qDebug("Leaving sendBonjour()");
+    QTimer::singleShot(2000, this, SLOT(sendBonjour()));
 }
 
 bool ControlPlaneConnection::operator=(const ControlPlaneConnection& other) {

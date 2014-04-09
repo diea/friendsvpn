@@ -36,6 +36,7 @@ BonjourSQL* BonjourSQL::getInstance() {
 }
 
 BonjourSQL::~BonjourSQL() {
+    qDebug() << "BONJOUR SQL DESTRUCTOR HAS BEEN CALLED";
 }
 
 void BonjourSQL::uidOK() {
@@ -57,15 +58,18 @@ void BonjourSQL::uidOK() {
 }
 
 void BonjourSQL::initDB() {
+    static QMutex mut;
+    mut.lock();
     db = QSqlDatabase::addDatabase("QMYSQL");
     db.setHostName(DBHOST);
     db.setDatabaseName(DBNAME);
     db.setUserName(DBUSER);
     db.setPassword(DBPASS);
+    mut.unlock();
 }
 
 bool BonjourSQL::insertService(QString name, QString trans_prot) {
-    QSqlQuery query = QSqlQuery(db);
+    QSqlQuery query = QSqlQuery(QSqlDatabase::database());
     query.prepare("INSERT INTO Service VALUES(?, ?, ?)");
     query.bindValue(0, name);
     query.bindValue(1, uid);
@@ -79,7 +83,7 @@ bool BonjourSQL::insertService(QString name, QString trans_prot) {
 
 // TODO test this
 bool BonjourSQL::removeService(QString name, QString trans_prot) {
-    QSqlQuery query = QSqlQuery(db);
+    QSqlQuery query = QSqlQuery(QSqlDatabase::database());
     query.prepare("DELETE FROM Authorized_user WHERE Device_Service_name = ? AND Device_Service_User_uid = ? AND Device_Service_Trans_prot = ?");
     query.bindValue(0, name);
     query.bindValue(1, uid);
@@ -102,7 +106,7 @@ bool BonjourSQL::removeService(QString name, QString trans_prot) {
 }
 
 bool BonjourSQL::insertDevice(QString hostname, int port, QString service_name, QString service_trans_prot, QString record_name) {
-    QSqlQuery query = QSqlQuery(db);
+    QSqlQuery query = QSqlQuery(QSqlDatabase::database());
     query.prepare("INSERT INTO Record VALUES(?, ?, ?, ?, ?, ?)");
     query.bindValue(0, hostname);
     query.bindValue(1, port);
@@ -118,6 +122,7 @@ bool BonjourSQL::insertDevice(QString hostname, int port, QString service_name, 
 }
 
 QString BonjourSQL::fetchXmlRpc() {
+    qryMut.lock();
     //qDebug() << "sql threadid " << QThread::currentThreadId();
     QList<QHostAddress> list = QNetworkInterface::allAddresses();
     QString sqlString;
@@ -144,7 +149,7 @@ QString BonjourSQL::fetchXmlRpc() {
         first = false;
     }
     //qDebug() << sqlString;
-    QSqlQuery query = QSqlQuery(db);
+    QSqlQuery query = QSqlQuery(QSqlDatabase::database());
     query.prepare("SELECT MIN(id) as id, req, ipv6 FROM XMLRPC WHERE " + sqlString);
     query.exec();
     //qDebug() << "XMLRPC Query error" << query.lastError();
@@ -158,15 +163,17 @@ QString BonjourSQL::fetchXmlRpc() {
         query.bindValue(0, id);
         query.bindValue(1, ipv6);
         query.exec();
-
+        qryMut.unlock();
         return xmlrpcReq;
     }
+    qryMut.unlock();
     return NULL;
 }
 
 
 QList< User* > BonjourSQL::getFriends() {
-    QSqlQuery query = QSqlQuery(db);
+    qryMut.lock();
+    QSqlQuery query = QSqlQuery(QSqlDatabase::database());
     query.prepare("SELECT uid, ipv6, certificate, privateKey FROM User WHERE uid IN (SELECT id as "
                   "uid FROM Authorized_user WHERE Record_Service_User_uid = ?)");
     query.bindValue(0, uid);
@@ -181,37 +188,44 @@ QList< User* > BonjourSQL::getFriends() {
 
         list.append(new User(uid, ipv6, cert, key));
     }
+    qryMut.unlock();
     return list;
 }
 
 QSslCertificate BonjourSQL::getLocalCert() {
-    QSqlQuery query = QSqlQuery(db);
+    qryMut.lock();
+    QSqlQuery query = QSqlQuery(QSqlDatabase::database());
     query.prepare("SELECT certificate FROM User WHERE uid = ?");
     query.bindValue(0, uid);
     query.exec();
 
     if (query.next()) {
         QSslCertificate cert(query.value(0).toByteArray(), QSsl::Pem);
+        qryMut.unlock();
         return cert;
     } else {
         // error
         qDebug() << "No certificate for user " << uid;
+        qryMut.unlock();
         return QSslCertificate(NULL);
     }
 }
 
 QSslKey BonjourSQL::getMyKey() {
-    QSqlQuery query = QSqlQuery(db);
+    qryMut.lock();
+    QSqlQuery query = QSqlQuery(QSqlDatabase::database());
     query.prepare("SELECT privateKey FROM User WHERE uid = ?");
     query.bindValue(0, uid);
     query.exec();
 
     if (query.next()) {
         QSslKey key(query.value(0).toByteArray(), QSsl::Rsa, QSsl::Pem);
+        qryMut.unlock();
         return key;
     } else {
         // error
         qDebug() << "No certificate for user " << uid;
+        qryMut.unlock();
         return QSslKey(NULL);
     }
 }
@@ -221,21 +235,33 @@ QString BonjourSQL::getLocalUid() {
 }
 
 QList < BonjourRecord* > BonjourSQL::getRecordsFor(QString friendUid) {
-    QSqlQuery qry(db);
-    qry.prepare("SELECT Record_hostname, " \
+    qryMut.lock();
+    qDebug() << "qry(db)";
+    QList < BonjourRecord * > list;
+    QSqlQuery qry(QSqlDatabase::database());
+    qDebug() << "Preparing query";
+    /*qry.prepare("SELECT Record_hostname, " \
                         "Record_Service_name, " \
                         "Record_Service_Trans_prot, " \
                         "Record_name, " \
                         "Record_port " \
                         "FROM Authorized_user " \
-                        "WHERE id = ? AND Record_Service_User_uid = ?");
+                        "WHERE id = ? AND Record_Service_User_uid = ?");*/
+    if (!qry.prepare("SELECT * FROM Authorized_user WHERE id = ? AND Record_Service_User_uid = ?")) {
+        qDebug() << "ERROR SQL " << qry.lastError();
+        initDB(); // make new connection
+        qryMut.unlock();
+        return list;
+    }
 
+    qDebug() << "Biding values " << friendUid << " " << uid;
     qry.bindValue(0, friendUid);
     qry.bindValue(1, uid);
+    qDebug() << "Executing query";
     qry.exec();
+    qDebug() << "Query executed";
 
     QList < BonjourRecord * > allActiveRecords = BonjourDiscoverer::getInstance()->getAllActiveRecords();
-    QList < BonjourRecord * > list;
 
     qDebug() << "allActiveRecordsSize: " << allActiveRecords.length();
     foreach (BonjourRecord* rec, allActiveRecords) {
@@ -247,26 +273,24 @@ QList < BonjourRecord* > BonjourSQL::getRecordsFor(QString friendUid) {
 
     while (qry.next()) {
         qDebug() << "SQL got new record!";
-        /* instead of creating a new record, have a list of current active records and find in those
-         * by doing this you won't send records that are currently inactive
-         */
+        // used for comparison
         BonjourRecord newRecord(qry.value("Record_name").toString(),
                                 // using the bonjour service name notation
                                 qry.value("Record_Service_name").toString() + "._" + qry.value("Record_Service_Trans_prot").toString() + ".",
                                 "local."); // TODO Do some research here, should store in DB ?
-                                /*qry.value("Record_hostname").toString(),
-                                qry.value("Record_port").toInt());*/
+
         qDebug() << "New record: "
                     << newRecord.serviceName << " "
                     << newRecord.registeredType << " "
                     << newRecord.replyDomain;
-        foreach (BonjourRecord* rec, allActiveRecords) {
+        foreach (BonjourRecord* rec, allActiveRecords) { // if record found in active record, save it
             if (*rec == newRecord) {
                 list.append(rec);
                 qDebug() << "yeay appending to list";
             }
         }
     }
+    qryMut.unlock();
     return list;
 }
 

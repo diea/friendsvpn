@@ -15,7 +15,6 @@ class ControlPlaneClient: public QObject
 private:
     ConnectionInitiator* init;
 
-    ControlPlaneConnection* con;
     SslSocket* sslClient;
     QSslCertificate servCert;
     QHostAddress addr;

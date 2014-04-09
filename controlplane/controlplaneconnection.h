@@ -29,7 +29,7 @@ private:
     void removeConnection();
 public:
     explicit ControlPlaneConnection(QString uid, QObject *parent = 0);
-
+    ~ControlPlaneConnection();
     QString getUid();
 
     plane_mode getMode();

@@ -4,7 +4,6 @@ ControlPlaneClient::ControlPlaneClient(QSslCertificate servCert, QSslKey myKey,
                                        QHostAddress addr, int port, QObject *parent) :
     QObject(parent)
 {
-    this->con = con;
     this->addr = addr;
     this->port = port;
     this->servCert = servCert;
@@ -20,8 +19,9 @@ ControlPlaneClient::ControlPlaneClient(QSslCertificate servCert, QSslKey myKey,
 
 ControlPlaneClient::~ControlPlaneClient()
 {
+    qDebug() << "Destroy contorl plane client";
     sslClient->close();
-    delete sslClient;
+    //delete sslClient;
 }
 
 void ControlPlaneClient::run() {
@@ -94,8 +94,8 @@ void ControlPlaneClient::sslClientReadyRead() {
 
 void ControlPlaneClient::sslDisconnected() {
     qDebug() << "Disco";
-    if (sslClient->isAssociated())
+    /*if (sslClient->isAssociated())
         sslClient->getControlPlaneConnection()->removeMode(Client_mode);
-    sslClient->deleteLater();
+    sslClient->deleteLater();*/
 }
 

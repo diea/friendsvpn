@@ -26,6 +26,8 @@ private:
     QString uid; // the user's facebook uid
 
     void initDB();
+
+    QMutex qryMut;
     static BonjourSQL* instance;
     explicit BonjourSQL(QObject *parent = 0);
 public:

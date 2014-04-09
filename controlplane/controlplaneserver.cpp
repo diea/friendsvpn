@@ -19,6 +19,7 @@ ControlPlaneServer::ControlPlaneServer(QSslCertificate servCert, QSslKey myKey,
 
 ControlPlaneServer::~ControlPlaneServer()
 {
+    qDebug() << "Destroy contorl plane server";
     foreach (QSslSocket* sock, sslSockList) {
         sock->close();
         delete sock;
