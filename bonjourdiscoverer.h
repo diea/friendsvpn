@@ -19,7 +19,6 @@ class BonjourDiscoverer : public QObject
 private:
     static BonjourDiscoverer* instance;
     DNSServiceRef dnsref;
-    QHash<QString, BonjourBrowser*> availableServices;
     QSocketNotifier* bonjourSocket;
     BonjourSQL* qSql;
     /**
@@ -33,6 +32,11 @@ private:
     explicit BonjourDiscoverer(QObject *parent = 0);
 
 public:
+    /**
+     * @brief availableServices is a hash table linking a BonjourBrowser to each available service
+     */
+    QHash<QString, BonjourBrowser*> availableServices;
+
     static BonjourDiscoverer* getInstance(QObject* parent = NULL);
     ~BonjourDiscoverer();
     /**
@@ -42,6 +46,13 @@ public:
      * It will then create BonjourBrowsers for each of those services.
      */
     void discoverServices();
+
+    /**
+     * @brief getAllActiveRecords returns a list of all records that are currently active
+     * @return
+     */
+    QList< BonjourRecord* > getAllActiveRecords();
+
 signals:
     void error(DNSServiceErrorType err);
 private slots:

@@ -19,7 +19,6 @@ private:
     BonjourSQL* qSql;
     DNSServiceRef dnsref;
     QSocketNotifier *bonjourSocket;
-    QList<BonjourRecord*> bonjourRecords;
     QString browsingType;
     /**
       * @brief reply is the callback function given to DNSServiceBrowse(). It will add or delete a
@@ -29,6 +28,12 @@ private:
                                    DNSServiceErrorType errorCode, const char *serviceName,
                                 const char *regType, const char *replyDomain, void *context);
 public:
+    /**
+     * @brief bonjourRecords is a list of records that this browser has discovered and are currently
+     * active
+     */
+    QList<BonjourRecord*> bonjourRecords;
+
     BonjourBrowser(QObject *parent = 0);
     ~BonjourBrowser();
 

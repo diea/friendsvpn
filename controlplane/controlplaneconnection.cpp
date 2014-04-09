@@ -89,17 +89,32 @@ void ControlPlaneConnection::sendBonjour() {
     qDebug() << "sendBonjour() !";
     static QMutex mutex; // XXX should maybe mutex more than this function (with the mode that can change)
     mutex.lock();
+    QSslSocket* toWrite; // the socket on which the bonjour packets are to be sent
     qDebug() << "passed the lock in sendbonjour";
     if (curMode == Client_mode) {
-        qDebug() << "Sending BONJOUR PACKET !!!!";
-        clientSock->write("BONJOUR PACKET");
-        //clientSock->flush();
+        toWrite = clientSock;
     } else {
-        qDebug() << "Writing!";
-        serverSock->write("SERVER BJR PACKET");
-        qDebug() << "Flushing!";
-        //serverSock->flush();
+        toWrite = serverSock;
     }
+
+    // get bonjour records from db & send them over the connection
+    qDebug() << "fetching records for " << this->friendUid;
+    QList < BonjourRecord* > records = qSql->getRecordsFor(this->friendUid);
+    qDebug() << "Retrieved " << records.length() << " records!";
+    foreach (BonjourRecord* rec, records) {
+        QString packet;
+        packet = packet
+                 % "BONJOUR\r\n"
+                 % "Hostname:" % rec->hostname % "\r\n"
+                 % "Name:" % rec->serviceName % "\r\n"
+                 % "Type:" % rec->registeredType % "\r\n"
+                 % "Port:" % QString::number(rec->port) % "\r\n"
+                % "\r\n";
+        qDebug() << "Sending Bonjour packet";
+        qDebug() << packet;
+        toWrite->write(packet.toUtf8().data());
+    }
+
     qDebug() << "Unlocking mutex";
     mutex.unlock();
     qDebug("Leaving sendBonjour()");

@@ -1,4 +1,6 @@
 #include "bonjoursql.h"
+#include "bonjourdiscoverer.h"
+
 BonjourSQL* BonjourSQL::instance = NULL;
 
 BonjourSQL::BonjourSQL(QObject *parent) :
@@ -216,6 +218,56 @@ QSslKey BonjourSQL::getMyKey() {
 
 QString BonjourSQL::getLocalUid() {
     return uid;
+}
+
+QList < BonjourRecord* > BonjourSQL::getRecordsFor(QString friendUid) {
+    QSqlQuery qry(db);
+    qry.prepare("SELECT Record_hostname, " \
+                        "Record_Service_name, " \
+                        "Record_Service_Trans_prot, " \
+                        "Record_name, " \
+                        "Record_port " \
+                        "FROM Authorized_user " \
+                        "WHERE id = ? AND Record_Service_User_uid = ?");
+
+    qry.bindValue(0, friendUid);
+    qry.bindValue(1, uid);
+    qry.exec();
+
+    QList < BonjourRecord * > allActiveRecords = BonjourDiscoverer::getInstance()->getAllActiveRecords();
+    QList < BonjourRecord * > list;
+
+    qDebug() << "allActiveRecordsSize: " << allActiveRecords.length();
+    foreach (BonjourRecord* rec, allActiveRecords) {
+        qDebug() << "List record: "
+                    << rec->serviceName << " "
+                    << rec->registeredType << " "
+                    << rec->replyDomain;
+    }
+
+    while (qry.next()) {
+        qDebug() << "SQL got new record!";
+        /* instead of creating a new record, have a list of current active records and find in those
+         * by doing this you won't send records that are currently inactive
+         */
+        BonjourRecord newRecord(qry.value("Record_name").toString(),
+                                // using the bonjour service name notation
+                                qry.value("Record_Service_name").toString() + "._" + qry.value("Record_Service_Trans_prot").toString() + ".",
+                                "local."); // TODO Do some research here, should store in DB ?
+                                /*qry.value("Record_hostname").toString(),
+                                qry.value("Record_port").toInt());*/
+        qDebug() << "New record: "
+                    << newRecord.serviceName << " "
+                    << newRecord.registeredType << " "
+                    << newRecord.replyDomain;
+        foreach (BonjourRecord* rec, allActiveRecords) {
+            if (*rec == newRecord) {
+                list.append(rec);
+                qDebug() << "yeay appending to list";
+            }
+        }
+    }
+    return list;
 }
 
 

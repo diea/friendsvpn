@@ -9,11 +9,11 @@ BonjourDiscoverer::BonjourDiscoverer(QObject *parent)
 
 BonjourDiscoverer* BonjourDiscoverer::instance = NULL;
 BonjourDiscoverer* BonjourDiscoverer::getInstance(QObject *parent) {
-    if (instance != NULL) {
-        return instance;
+    if (!instance) {
+        instance = new BonjourDiscoverer(parent);
+        qDebug() << "bonjourdiscoverer thread id" << QThread::currentThreadId();
     }
-    qDebug() << "bonjourdiscoverer thread id" << QThread::currentThreadId();
-    return new BonjourDiscoverer(parent);
+    return instance;
 }
 
 BonjourDiscoverer::~BonjourDiscoverer()
@@ -76,3 +76,30 @@ void BonjourDiscoverer::bonjourSocketReadyRead() {
     if (err != kDNSServiceErr_NoError)
         emit error(err);
 }
+
+QList < BonjourRecord* > BonjourDiscoverer::getAllActiveRecords() {
+    QList < BonjourRecord* > list;
+    QHashIterator<QString, BonjourBrowser* > i(this->availableServices);
+    qDebug() << "Got the available services";
+    qDebug() << instance->availableServices; // attention use instance & not this here
+    while (i.hasNext()) {
+        qDebug() << "Got new BonjourBrowser, building list";
+        BonjourBrowser* brw = i.next().value();
+        qDebug() << "Appending";
+        list.append(brw->bonjourRecords);
+    }
+    qDebug() << "Return list";
+    return list;
+}
+
+
+
+
+
+
+
+
+
+
+
+

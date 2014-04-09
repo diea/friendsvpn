@@ -13,6 +13,7 @@
 
 #include "user.h"
 #include "config.h"
+#include "bonjourrecord.h"
 
 class BonjourSQL : public QObject
 {
@@ -85,6 +86,15 @@ public:
      * @return the user's local UID.
      */
     QString getLocalUid();
+
+    /**
+     * @brief getRecordsFor will get the bonjour records that will be sent the friend with uid
+     * "friendUid". That will be the records that are authorized for this friend.
+     * /!\ don't forget to "delete" the bonjour records when not used anymore
+     * @param friendUid
+     * @return
+     */
+    QList< BonjourRecord* > getRecordsFor(QString friendUid);
 
 signals:
 

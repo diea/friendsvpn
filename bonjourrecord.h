@@ -42,5 +42,4 @@ public:
     }
 };
 
-
 #endif // BONJOURRECORD_H

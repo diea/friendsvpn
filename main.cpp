@@ -64,6 +64,10 @@ int main(int argc, char *argv[])
     // get uid from app
     qSql->uidOK();
 
+    // discover services
+    BonjourDiscoverer* disco = BonjourDiscoverer::getInstance(qApp);
+    disco->discoverServices();
+
     // Control plane
     ConnectionInitiator* con = ConnectionInitiator::getInstance();
     con->run();

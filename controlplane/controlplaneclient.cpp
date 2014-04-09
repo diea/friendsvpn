@@ -94,7 +94,8 @@ void ControlPlaneClient::sslClientReadyRead() {
 
 void ControlPlaneClient::sslDisconnected() {
     qDebug() << "Disco";
-    sslClient->getControlPlaneConnection()->removeMode(Client_mode);
+    if (sslClient->isAssociated())
+        sslClient->getControlPlaneConnection()->removeMode(Client_mode);
     sslClient->deleteLater();
 }
 
