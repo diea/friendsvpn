@@ -76,10 +76,10 @@ void ControlPlaneClient::sslClientReadyRead() {
             sslClient->readLine(buf, 300);
             QString uidStr(buf);
             uidStr.chop(2); // drop \r\0
-            qDebug() << uidStr.remove(0, 4);
+            //qDebug() << uidStr.remove(0, 4);
             // drop the Uid: part with the .remove and get the CPConnection* correspoding to this UID
             qDebug() << "Going into init";
-            ControlPlaneConnection* con =  init->getConnection(bufStr.remove(0, 4));
+            ControlPlaneConnection* con =  init->getConnection(uidStr.remove(0, 4));
             con->addMode(Client_mode, sslClient); // add server mode
             sslClient->setControlPlaneConnection(con); // associate the sslSock with it
             qDebug() << "ssl Sock associated";

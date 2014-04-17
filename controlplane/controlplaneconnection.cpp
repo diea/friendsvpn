@@ -92,11 +92,11 @@ void ControlPlaneConnection::readBuffer(const char* buf) {
 }
 
 void ControlPlaneConnection::sendBonjour() {
-    qDebug() << "sendBonjour() !";
+    //qDebug() << "sendBonjour() !";
     static QMutex mutex; // XXX should maybe mutex more than this function (with the mode that can change)
     mutex.lock();
     QSslSocket* toWrite; // the socket on which the bonjour packets are to be sent
-    qDebug() << "passed the lock in sendbonjour";
+    //qDebug() << "passed the lock in sendbonjour";
     if (curMode == Client_mode) {
         toWrite = clientSock;
     } else {
@@ -104,9 +104,9 @@ void ControlPlaneConnection::sendBonjour() {
     }
 
     // get bonjour records from db & send them over the connection
-    qDebug() << "fetching records for " << this->friendUid;
+    //qDebug() << "fetching records for " << this->friendUid;
     QList < BonjourRecord* > records = qSql->getRecordsFor(this->friendUid);
-    qDebug() << "Retrieved " << records.length() << " records!";
+    //qDebug() << "Retrieved " << records.length() << " records!";
     foreach (BonjourRecord* rec, records) {
         QString packet;
         packet = packet
@@ -116,14 +116,14 @@ void ControlPlaneConnection::sendBonjour() {
                  % "Type:" % rec->registeredType % "\r\n"
                  % "Port:" % QString::number(rec->port) % "\r\n"
                 % "\r\n";
-        qDebug() << "Sending Bonjour packet";
-        qDebug() << packet;
+        //qDebug() << "Sending Bonjour packet";
+        //qDebug() << packet;
         toWrite->write(packet.toUtf8().data());
     }
 
-    qDebug() << "Unlocking mutex";
+    //qDebug() << "Unlocking mutex";
     mutex.unlock();
-    qDebug("Leaving sendBonjour()");
+    //qDebug("Leaving sendBonjour()");
     QTimer::singleShot(2000, this, SLOT(sendBonjour()));
 }
 

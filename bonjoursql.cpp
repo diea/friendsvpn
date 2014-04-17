@@ -236,17 +236,11 @@ QString BonjourSQL::getLocalUid() {
 
 QList < BonjourRecord* > BonjourSQL::getRecordsFor(QString friendUid) {
     qryMut.lock();
-    qDebug() << "qry(db)";
+    //qDebug() << "qry(db)";
     QList < BonjourRecord * > list;
     QSqlQuery qry(QSqlDatabase::database());
-    qDebug() << "Preparing query";
-    /*qry.prepare("SELECT Record_hostname, " \
-                        "Record_Service_name, " \
-                        "Record_Service_Trans_prot, " \
-                        "Record_name, " \
-                        "Record_port " \
-                        "FROM Authorized_user " \
-                        "WHERE id = ? AND Record_Service_User_uid = ?");*/
+    //qDebug() << "Preparing query";
+
     if (!qry.prepare("SELECT * FROM Authorized_user WHERE id = ? AND Record_Service_User_uid = ?")) {
         qDebug() << "ERROR SQL " << qry.lastError();
         db.close();
@@ -255,39 +249,39 @@ QList < BonjourRecord* > BonjourSQL::getRecordsFor(QString friendUid) {
         return list;
     }
 
-    qDebug() << "Biding values " << friendUid << " " << uid;
+    //qDebug() << "Biding values " << friendUid << " " << uid;
     qry.bindValue(0, friendUid);
     qry.bindValue(1, uid);
-    qDebug() << "Executing query";
+    //qDebug() << "Executing query";
     qry.exec();
-    qDebug() << "Query executed";
+    //qDebug() << "Query executed";
 
     QList < BonjourRecord * > allActiveRecords = BonjourDiscoverer::getInstance()->getAllActiveRecords();
 
-    qDebug() << "allActiveRecordsSize: " << allActiveRecords.length();
-    foreach (BonjourRecord* rec, allActiveRecords) {
+    //qDebug() << "allActiveRecordsSize: " << allActiveRecords.length();
+    /*foreach (BonjourRecord* rec, allActiveRecords) {
         qDebug() << "List record: "
                     << rec->serviceName << " "
                     << rec->registeredType << " "
                     << rec->replyDomain;
-    }
+    }*/
 
     while (qry.next()) {
-        qDebug() << "SQL got new record!";
+        //qDebug() << "SQL got new record!";
         // used for comparison
         BonjourRecord newRecord(qry.value("Record_name").toString(),
                                 // using the bonjour service name notation
                                 qry.value("Record_Service_name").toString() + "._" + qry.value("Record_Service_Trans_prot").toString() + ".",
                                 "local."); // TODO Do some research here, should store in DB ?
 
-        qDebug() << "New record: "
+        /*qDebug() << "New record: "
                     << newRecord.serviceName << " "
                     << newRecord.registeredType << " "
-                    << newRecord.replyDomain;
+                    << newRecord.replyDomain;*/
         foreach (BonjourRecord* rec, allActiveRecords) { // if record found in active record, save it
             if (*rec == newRecord) {
                 list.append(rec);
-                qDebug() << "yeay appending to list";
+                //qDebug() << "yeay appending to list";
             }
         }
     }
