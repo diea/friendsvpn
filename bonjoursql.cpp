@@ -249,6 +249,7 @@ QList < BonjourRecord* > BonjourSQL::getRecordsFor(QString friendUid) {
                         "WHERE id = ? AND Record_Service_User_uid = ?");*/
     if (!qry.prepare("SELECT * FROM Authorized_user WHERE id = ? AND Record_Service_User_uid = ?")) {
         qDebug() << "ERROR SQL " << qry.lastError();
+        db.close();
         initDB(); // make new connection
         qryMut.unlock();
         return list;
