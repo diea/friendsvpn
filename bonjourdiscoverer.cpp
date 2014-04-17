@@ -80,15 +80,15 @@ void BonjourDiscoverer::bonjourSocketReadyRead() {
 QList < BonjourRecord* > BonjourDiscoverer::getAllActiveRecords() {
     QList < BonjourRecord* > list;
     QHashIterator<QString, BonjourBrowser* > i(this->availableServices);
-    qDebug() << "Got the available services";
+    //qDebug() << "Got the available services";
     //qDebug() << instance->availableServices; // attention use instance & not this here
     while (i.hasNext()) {
-        qDebug() << "Got new BonjourBrowser, building list";
+        //qDebug() << "Got new BonjourBrowser, building list";
         BonjourBrowser* brw = i.next().value();
-        qDebug() << "Appending";
+        //qDebug() << "Appending";
         list.append(brw->bonjourRecords);
     }
-    qDebug() << "Return list";
+    //qDebug() << "Return list";
     return list;
 }
 
