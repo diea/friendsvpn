@@ -87,15 +87,15 @@ void ControlPlaneClient::sslClientReadyRead() {
         }
     } else { // socket is associated with controlplaneconnection
         qDebug() << "Client received data";
-        qDebug() << sslClient->readAll();
-        //sslSock->getControlPlaneConnection()->readBuffer(sslSock->readAll().data());
+        //qDebug() << sslClient->readAll();
+        sslSock->getControlPlaneConnection()->readBuffer(sslSock->readAll().data());
     }
 }
 
 void ControlPlaneClient::sslDisconnected() {
     qDebug() << "Disco";
-    /*if (sslClient->isAssociated())
+    if (sslClient->isAssociated())
         sslClient->getControlPlaneConnection()->removeMode(Client_mode);
-    sslClient->deleteLater();*/
+    sslClient->deleteLater();
 }
 
