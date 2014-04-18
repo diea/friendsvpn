@@ -13,7 +13,7 @@
 
 #include "user.h"
 #include "config.h"
-#include "bonjourrecord.h"
+#include "bonjour/bonjourrecord.h"
 
 class BonjourSQL : public QObject
 {

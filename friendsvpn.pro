@@ -14,9 +14,9 @@ TEMPLATE = app
 
 SOURCES += main.cpp \
     graphic/systray.cpp \
-    bonjourbrowser.cpp \
-    bonjourdiscoverer.cpp \
-    bonjourresolver.cpp \
+    bonjour/bonjourbrowser.cpp \
+    bonjour/bonjourdiscoverer.cpp \
+    bonjour/bonjourresolver.cpp \
     bonjoursql.cpp \
     poller.cpp \
     datareceiver.cpp \
@@ -28,14 +28,16 @@ SOURCES += main.cpp \
     controlplane/threadedcpserver.cpp \
     controlplane/sslserverthread.cpp \
     controlplane/controlplaneconnection.cpp \
-    controlplane/sslsocket.cpp
+    controlplane/sslsocket.cpp \
+    proxy.cpp \
+    bonjour/bonjourregistrar.cpp
 
 HEADERS  += \
     graphic/systray.h \
-    bonjourbrowser.h \
-    bonjourrecord.h \
-    bonjourdiscoverer.h \
-    bonjourresolver.h \
+    bonjour/bonjourbrowser.h \
+    bonjour/bonjourrecord.h \
+    bonjour/bonjourdiscoverer.h \
+    bonjour/bonjourresolver.h \
     bonjoursql.h \
     config.h \
     poller.h \
@@ -48,7 +50,9 @@ HEADERS  += \
     controlplane/threadedcpserver.h \
     controlplane/sslserverthread.h \
     controlplane/controlplaneconnection.h \
-    controlplane/sslsocket.h
+    controlplane/sslsocket.h \
+    proxy.h \
+    bonjour/bonjourregistrar.h
 
 FORMS    +=
 

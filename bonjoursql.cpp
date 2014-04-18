@@ -1,5 +1,5 @@
 #include "bonjoursql.h"
-#include "bonjourdiscoverer.h"
+#include "bonjour/bonjourdiscoverer.h"
 
 BonjourSQL* BonjourSQL::instance = NULL;
 
