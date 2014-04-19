@@ -51,8 +51,12 @@ int main(int argc, char *argv[])
     a.setQuitOnLastWindowClosed(false);
     qDebug() << "new Registrar";
     BonjourRegistrar test;
-    BonjourRecord newRec("monpremiertest", "_http._tcp", "local.");
-    test.registerService(newRec, 80);
+
+    QList<QString> ip;
+    ip.append("fd3b:e180:cbaa:1:5e96:9dff:fe8a:8448");
+    BonjourRecord newRec("monpremiertest", "_http._tcp", "local.", "spark",
+                         ip, 80);
+    test.registerService(newRec);
     qDebug() << "registered!";
 
     return a.exec();

@@ -11,10 +11,11 @@ class BonjourRegistrar : public QObject
     Q_OBJECT
 private:
     DNSServiceRef dnssref;
-    DNSServiceRef dnsref_pa;
+    DNSServiceRef dnssref_pa;
     QSocketNotifier *bonjourSocket;
+    QSocketNotifier *recordSocket;
     BonjourRecord finalRecord;
-    DNSRecordRef dnsRecord = NULL;
+    DNSRecordRef dnsRecord;
 
     static void DNSSD_API bonjourRegisterService(
             DNSServiceRef, DNSServiceFlags,
@@ -27,14 +28,23 @@ public:
     explicit BonjourRegistrar(QObject *parent = 0);
     ~BonjourRegistrar();
 
-    void registerService(const BonjourRecord &record,
-                         quint16 servicePort);
+    /**
+     * @brief registerService: will register a "proxy service" (miming the dns-sd -P command) for
+     * the hostname-ip & port combination in the record given as argument.
+     *
+     * WILL ONLY USE THE FIRST IP IN THE BONJOURRECORD IP LIST
+     * Will do nothing if the record is not "resolved"
+     * @param record
+     */
+    void registerService(const BonjourRecord &record);
     BonjourRecord registeredRecord() const { return finalRecord; }
 signals:
     void error(DNSServiceErrorType error);
     void serviceRegistered(const BonjourRecord &record);
 private slots:
     void bonjourSocketReadyRead();
+    void recordSocketReadyRead();
+    void handleError(DNSServiceErrorType error);
 };
 
 #endif // BONJOURREGISTRAR_H

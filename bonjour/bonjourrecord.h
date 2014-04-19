@@ -34,6 +34,13 @@ public:
         registeredType = QString::fromUtf8(regType);
         replyDomain = QString::fromUtf8(domain);
     }
+    BonjourRecord(const QString &name, const QString &regType, const QString &domain,
+                  const QString &hostname, const QList<QString> &ips, quint16 port)
+    : serviceName(name), registeredType(regType), replyDomain(domain), hostname(hostname), ips(ips),
+      port(port)
+    {
+        resolved = true;
+    }
 
     bool operator==(const BonjourRecord &other) const {
         return serviceName == other.serviceName

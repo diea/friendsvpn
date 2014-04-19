@@ -4,48 +4,61 @@
 #include <QDebug>
 
 BonjourRegistrar::BonjourRegistrar(QObject *parent)
-  : QObject(parent), dnssref(0), dnsref_pa(0), bonjourSocket(0)
+  : QObject(parent), dnssref(0), dnssref_pa(0), bonjourSocket(0), dnsRecord(0)
 {
+    connect(this, SIGNAL(error(DNSServiceErrorType)), this, SLOT(handleError(DNSServiceErrorType)));
 }
 
 BonjourRegistrar::~BonjourRegistrar()
 {
-    if (dnssref || dnsref_pa) {
+    if (dnssref) {
         DNSServiceRefDeallocate(dnssref);
-        DNSServiceRefDeallocate(dnsref_pa);
         dnssref = 0;
-        dnsref_pa;
+    }
+    if (dnssref_pa) {
+        DNSServiceRefDeallocate(dnssref_pa);
+        dnssref_pa = 0;
     }
 }
 
-void BonjourRegistrar::registerService(
-    const BonjourRecord &record, quint16 servicePort) {
-    if (dnssref || dnsref_pa) {
+void BonjourRegistrar::registerService(const BonjourRecord &record) {
+    if (dnssref || dnssref_pa) {
         qWarning("Already registered a service");
         return;
+    } else if (!record.resolved) {
+        qWarning("Record was not resolved, aborting");
+        return;
     }
-    DNSServiceErrorType err = DNSServiceCreateConnection(&dnsref_pa);
+    DNSServiceErrorType err = DNSServiceCreateConnection(&dnssref_pa);
     if (err != kDNSServiceErr_NoError) { emit error(err); }
-
-    //err = RegisterProxyAddressRecord(dnsref_pa, "testHost", "fd9b:c51b:81ae::5e96:9dff:fe8a:8447", NULL);
 
     struct in6_addr newip6 = { };
-    inet_pton(AF_INET6, "fd9b:c51b:81ae::5e96:9dff:fe8a:8447", &newip6);
-    err = DNSServiceRegisterRecord(dnsref_pa, &dnsRecord, kDNSServiceFlagsUnique, 0, "testHost.local.", kDNSServiceType_AAAA,
-                             kDNSServiceClass_IN, 16, &newip6, 0, registerRecordCallback, this); // XXX - Maybe add callback to check err
+    inet_pton(AF_INET6, record.ips.at(0).toUtf8().data(), &newip6);
+    err = DNSServiceRegisterRecord(dnssref_pa, &dnsRecord, kDNSServiceFlagsUnique, 0,
+                                   QString(record.hostname + "." + record.replyDomain).toUtf8().data(), kDNSServiceType_AAAA,
+                             kDNSServiceClass_IN, 16, &newip6, 240, registerRecordCallback, this);
     if (err != kDNSServiceErr_NoError) { emit error(err); }
+    else {
+        int sockfd = DNSServiceRefSockFD(dnssref_pa);
+        if (sockfd == -1) {
+            emit error(kDNSServiceErr_Invalid);
+        } else {
+            recordSocket = new QSocketNotifier(sockfd, QSocketNotifier::Read, this);
+            connect(recordSocket, SIGNAL(activated(int)), this, SLOT(recordSocketReadyRead()));
+        }
+    }
 
-    quint16 bigEndianPort = servicePort;
+    quint16 bigEndianPort = record.port;
     #if Q_BYTE_ORDER == Q_LITTLE_ENDIAN
-    bigEndianPort = ((servicePort & 0x00ff) << 8)
-                  | ((servicePort & 0xff00) >> 8);
+    bigEndianPort = ((record.port & 0x00ff) << 8)
+                  | ((record.port & 0xff00) >> 8);
     #endif
     err = DNSServiceRegister(&dnssref,
           0, 0, record.serviceName.toUtf8().constData(),
           record.registeredType.toUtf8().constData(),
           record.replyDomain.isEmpty() ? 0
                     : record.replyDomain.toUtf8().constData(),
-          "testHost", bigEndianPort, 0, 0, bonjourRegisterService,
+          QString(record.hostname + "." + record.replyDomain).toUtf8().data(), bigEndianPort, 0, 0, bonjourRegisterService,
           this);
     if (err != kDNSServiceErr_NoError) {
         emit error(err);
@@ -65,10 +78,30 @@ void BonjourRegistrar::registerService(
 void BonjourRegistrar::registerRecordCallback(DNSServiceRef service, DNSRecordRef rec, const DNSServiceFlags flags,
                                               DNSServiceErrorType errorCode, void *context) {
     qDebug() << "Callback!";
+    BonjourRegistrar* registrar = static_cast<BonjourRegistrar*>(context);
+    if (errorCode != kDNSServiceErr_NoError) {
+        emit registrar->error(errorCode);
+    }
+    if (!(flags & kDNSServiceFlagsMoreComing)) fflush(stdout);
+}
+
+void BonjourRegistrar::handleError(DNSServiceErrorType error) {
+    qDebug() << "there was an error";
+
+    // could very for duplicate name error and not destruct (would allow to advertise using machine's hostname
+    // miming the dns-sd -R command (the DNSRegisterRecord would fail)
+
+    this->~BonjourRegistrar(); // call destructor to deallocate the dnssrefs
 }
 
 void BonjourRegistrar::bonjourSocketReadyRead() {
     DNSServiceErrorType err = DNSServiceProcessResult(dnssref);
+    if (err != kDNSServiceErr_NoError)
+        emit error(err);
+}
+
+void BonjourRegistrar::recordSocketReadyRead() {
+    DNSServiceErrorType err = DNSServiceProcessResult(dnssref_pa);
     if (err != kDNSServiceErr_NoError)
         emit error(err);
 }
