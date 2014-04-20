@@ -30,7 +30,8 @@ SOURCES += main.cpp \
     controlplane/controlplaneconnection.cpp \
     controlplane/sslsocket.cpp \
     proxy.cpp \
-    bonjour/bonjourregistrar.cpp
+    bonjour/bonjourregistrar.cpp \
+    dataplane/dataplaneconnection.cpp
 
 HEADERS  += \
     graphic/systray.h \
@@ -52,7 +53,8 @@ HEADERS  += \
     controlplane/controlplaneconnection.h \
     controlplane/sslsocket.h \
     proxy.h \
-    bonjour/bonjourregistrar.h
+    bonjour/bonjourregistrar.h \
+    dataplane/dataplaneconnection.h
 
 FORMS    +=
 

@@ -124,7 +124,7 @@ void ControlPlaneConnection::sendBonjour() {
     //qDebug() << "Unlocking mutex";
     mutex.unlock();
     //qDebug("Leaving sendBonjour()");
-    QTimer::singleShot(2000, this, SLOT(sendBonjour()));
+    QTimer::singleShot(10000, this, SLOT(sendBonjour()));
 }
 
 bool ControlPlaneConnection::operator=(const ControlPlaneConnection& other) {

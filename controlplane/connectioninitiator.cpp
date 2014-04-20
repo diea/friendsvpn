@@ -31,9 +31,9 @@ void ConnectionInitiator::run() {
 }
 
 void ConnectionInitiator::startServer() {
-    server = new ControlPlaneServer(cert, key, QHostAddress::AnyIPv6, 61323, this);
+    server = new ControlPlaneServer(cert, key, QHostAddress::AnyIPv6, CONTROLPLANELISTENPORT, this);
     server->start();
-    //threadedServ = new ThreadedCpServer(cert, key, QHostAddress::AnyIPv6, 61323, this);
+    //threadedServ = new ThreadedCpServer(cert, key, QHostAddress::AnyIPv6, CONTROLPLANELISTENPORT, this);
     //threadedServ->start();
 }
 
@@ -42,7 +42,7 @@ void ConnectionInitiator::startClients() {
 
     foreach(User* frien_d, friends) {
         ControlPlaneClient* c = new ControlPlaneClient(*(frien_d->cert), key, QHostAddress(*(frien_d->ipv6)),
-                                                       61323, this);
+                                                       CONTROLPLANELISTENPORT, this);
         // TODO delete user?
         c->run();
         clients.append(c);
