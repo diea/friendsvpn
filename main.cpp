@@ -9,6 +9,7 @@
 #include "controlplane/controlplaneserver.h"
 #include "controlplane/controlplaneclient.h"
 #include "bonjour/bonjourregistrar.h"
+#include "dataplane/dataplaneconnection.h"
 #include <QDebug>
 
 #if 0
@@ -49,7 +50,7 @@ int main(int argc, char *argv[])
 {
     QApplication a(argc, argv);
     a.setQuitOnLastWindowClosed(false);
-    qDebug() << "new Registrar";
+    /*qDebug() << "new Registrar";
     BonjourRegistrar test;
 
     QList<QString> ip;
@@ -57,7 +58,14 @@ int main(int argc, char *argv[])
     BonjourRecord newRec("monpremiertest", "_http._tcp", "local.", "spark",
                          ip, 80);
     test.registerService(newRec);
-    qDebug() << "registered!";
+    qDebug() << "registered!";*/
+
+    BonjourSQL* qSql = BonjourSQL::getInstance();
+    // get uid from app
+    qSql->uidOK();
+
+    DataPlaneConnection* dp = new DataPlaneConnection(qApp);
+    dp->start();
 
     return a.exec();
 }

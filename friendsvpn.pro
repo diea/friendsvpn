@@ -67,5 +67,9 @@ unix:!macx {
     LIBS += /usr/lib/libdns_sd.so
 }
 
+INCLUDEPATH += $$_PRO_FILE_PWD_/openssl-1.0.1g
+LIBS += $$_PRO_FILE_PWD_/openssl-1.0.1g/libssl.a
+LIBS += $$_PRO_FILE_PWD_/openssl-1.0.1g/libcrypto.a
+
 RESOURCES += \
     images.qrc

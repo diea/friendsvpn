@@ -6,6 +6,7 @@ BonjourSQL* BonjourSQL::instance = NULL;
 BonjourSQL::BonjourSQL(QObject *parent) :
     QObject(parent)
 {
+    uid = "1086104828"; // TODO REMOVE
     while (!db.open()) {
         initDB();
         if (!db.open()) {
