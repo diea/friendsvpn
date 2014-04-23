@@ -106,14 +106,19 @@ void DataPlaneConnection::start() {
     SSL_CTX_set_cookie_generate_cb(ctx, generate_cookie);
     SSL_CTX_set_cookie_verify_cb(ctx, verify_cookie);
 
-    int fd = socket(AF_INET6, SOCK_DGRAM, 0);
+    int fd = socket(server_addr.ss.ss_family, SOCK_DGRAM, 0);
     if (fd < 0) {
         perror("socket");
         exit(-1);
     }
 
+#ifdef WIN32
+    setsockopt(fd, SOL_SOCKET, SO_REUSEADDR, (const char*) &on, (socklen_t) sizeof(on));
+#else
+    setsockopt(fd, SOL_SOCKET, SO_REUSEADDR, (const void*) &on, (socklen_t) sizeof(on));
 #ifdef SO_REUSEPORT
     setsockopt(fd, SOL_SOCKET, SO_REUSEPORT, (const void*) &on, (socklen_t) sizeof(on));
+#endif
 #endif
 
     setsockopt(fd, IPPROTO_IPV6, IPV6_V6ONLY, (char *)&off, sizeof(off));
