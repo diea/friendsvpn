@@ -24,7 +24,10 @@ DataPlaneConnection* DataPlaneConnection::getInstance(QObject* parent) {
 
 void DataPlaneConnection::start() {
     server_addr.s6.sin6_family = AF_INET6;
-    server_addr.s6.sin6_addr = in6addr_any;
+    // we listen on public IP, which is the one stored in the DB.
+    struct in6_addr servIp;
+    inet_pton(AF_INET6, qSql->getLocalIP().toUtf8().data(), &servIp) ;
+    server_addr.s6.sin6_addr = servIp; //in6addr_any;
     server_addr.s6.sin6_port = htons(DATAPLANEPORT);
 
     SSL_CTX *ctx;
