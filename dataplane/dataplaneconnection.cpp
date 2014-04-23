@@ -47,6 +47,7 @@ void DataPlaneConnection::start() {
     SSL_CTX_set_session_cache_mode(ctx, SSL_SESS_CACHE_OFF);
 
     // get certificate and key from SQL & use them
+#if 0
     QSslCertificate cert = qSql->getLocalCert();
     QByteArray certBytesPEM = cert.toPem();
     char* x509buffer = certBytesPEM.data();
@@ -80,21 +81,24 @@ void DataPlaneConnection::start() {
     if (pkey != NULL) EVP_PKEY_free(pkey);
     if (bi != NULL) BIO_free(bi);
 
+#elif 1
+    /* The way to go with Files */
+    qDebug() << QString(QCoreApplication::applicationDirPath() + "/testCerts/server-key.pem").toUtf8().data();
+
+    if (!SSL_CTX_use_certificate_file(ctx, QString(QCoreApplication::applicationDirPath() + "/testCerts/server-cert.pem").toUtf8().data(), SSL_FILETYPE_PEM)) {
+        qWarning() << "ERROR: no certificate found!";
+        exit(-1);
+    }
+    if (!SSL_CTX_use_PrivateKey_file(ctx, QString(QCoreApplication::applicationDirPath() + "/testCerts/server-key.pem").toUtf8().data(), SSL_FILETYPE_PEM)) {
+        qWarning() << "ERROR: no private key found!";
+        exit(-1);
+    }
+#endif
+
     if (!SSL_CTX_check_private_key (ctx)) {
         qWarning() << "ERROR: invalid private key!";
         exit(-1);
     }
-
-    /* The way to go with Files
-    if (!SSL_CTX_use_certificate_file(ctx, "../servCert.pem", SSL_FILETYPE_PEM)) {
-        qWarning << "ERROR: no certificate found!";
-        exit(-1);
-    }
-    if (!SSL_CTX_use_PrivateKey_file(ctx, "../servKey.pem", SSL_FILETYPE_PEM)) {
-        qWarning() << "ERROR: no private key found!";
-        exit(-1);
-    }*/
-
     /* Client has to authenticate */
     SSL_CTX_set_verify(ctx, SSL_VERIFY_PEER | SSL_VERIFY_CLIENT_ONCE, dtls_verify_callback);
 

@@ -65,15 +65,15 @@ int main(int argc, char *argv[])
     // get uid from app
     qSql->uidOK();
 
-    /*DataPlaneConnection* dp = DataPlaneConnection::getInstance(qApp);
-    dp->start();*/
-    QList<QString> ip;
+    DataPlaneConnection* dp = DataPlaneConnection::getInstance(qApp);
+    dp->start();
+    /*QList<QString> ip;
     ip.append("fd3b:e180:cbaa:2:69ea:cb7c:21f6:33b6");
     //ip.append("fd3b:e180:cbaa:1:5e96:9dff:fe8a:8447");
     BonjourRecord newRec("monpremiertest", "_http._tcp", "local.", "spark",
                          ip, 80);
     DataPlaneClient* dc = new DataPlaneClient(newRec, qApp);
-    dc->sendBytes("TEST", 4);
+    dc->sendBytes("TEST", 4);*/
     return a.exec();
 }
 #endif
