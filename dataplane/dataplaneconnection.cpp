@@ -171,8 +171,8 @@ void* DataPlaneConnection::connection_handle() {
     BIO_ctrl(SSL_get_rbio(ssl), BIO_CTRL_DGRAM_SET_CONNECTED, 0, &client_addr.ss);
 
     /* Finish handshake */
-    do { ret = SSL_accept(ssl); }
-    while (ret == 0);
+    do { ret = SSL_accept(ssl); } while (ret == 0);
+
     if (ret < 0) {
         perror("SSL_accept");
         printf("%s\n", ERR_error_string(ERR_get_error(), buf));
@@ -184,6 +184,9 @@ void* DataPlaneConnection::connection_handle() {
     BIO_ctrl(SSL_get_rbio(ssl), BIO_CTRL_DGRAM_SET_RECV_TIMEOUT, 0, &timeout);
 
     qDebug() << "Accepted connection";
+    printf ("------------------------------------------------------------\n");
+    X509_NAME_print_ex_fp(stdout, X509_get_subject_name(SSL_get_peer_certificate(ssl)),
+                          1, XN_FLAG_MULTILINE);
     printf("\n\n Cipher: %s", SSL_CIPHER_get_name(SSL_get_current_cipher(ssl)));
     printf ("\n------------------------------------------------------------\n\n");
 
