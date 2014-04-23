@@ -1,0 +1,7 @@
+#ifndef DATAPLANECONFIG_H
+#define DATAPLANECONFIG_H
+
+#define BUFFER_SIZE          (1<<16)
+#define COOKIE_SECRET_LENGTH 16
+
+#endif // DATAPLANECONFIG_H

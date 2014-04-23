@@ -10,6 +10,7 @@
 #include "controlplane/controlplaneclient.h"
 #include "bonjour/bonjourregistrar.h"
 #include "dataplane/dataplaneconnection.h"
+#include "dataplane/dataplaneclient.h"
 #include <QDebug>
 
 #if 0
@@ -64,9 +65,14 @@ int main(int argc, char *argv[])
     // get uid from app
     qSql->uidOK();
 
-    DataPlaneConnection* dp = new DataPlaneConnection(qApp);
-    dp->start();
-
+    /*DataPlaneConnection* dp = DataPlaneConnection::getInstance(qApp);
+    dp->start();*/
+    QList<QString> ip;
+    ip.append("fd3b:e180:cbaa:1:5e96:9dff:fe8a:8447");
+    BonjourRecord newRec("monpremiertest", "_http._tcp", "local.", "spark",
+                         ip, 80);
+    DataPlaneClient* dc = new DataPlaneClient(newRec, qApp);
+    dc->sendBytes("TEST", 4);
     return a.exec();
 }
 #endif

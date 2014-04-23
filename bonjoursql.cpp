@@ -235,6 +235,25 @@ QString BonjourSQL::getLocalUid() {
     return uid;
 }
 
+QString BonjourSQL::getLocalIP() {
+    qryMut.lock();
+    QSqlQuery query = QSqlQuery(QSqlDatabase::database());
+    query.prepare("SELECT ipv6 FROM User WHERE uid = ?");
+    query.bindValue(0, uid);
+    query.exec();
+
+    if (query.next()) {
+        QString ipv6 = query.value(0).toString();
+        qryMut.unlock();
+        return ipv6;
+    } else {
+        // error
+        qDebug() << "No ipv6 for user " << uid;
+        qryMut.unlock();
+        return "::1"; // TODO handle this case
+    }
+}
+
 QList < BonjourRecord* > BonjourSQL::getRecordsFor(QString friendUid) {
     qryMut.lock();
     //qDebug() << "qry(db)";

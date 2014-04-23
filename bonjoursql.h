@@ -90,6 +90,12 @@ public:
     QString getLocalUid();
 
     /**
+     * @brief getLocalIP
+     * @return the user's IP stored in the DB.
+     */
+    QString getLocalIP();
+
+    /**
      * @brief getRecordsFor will get the bonjour records that will be sent the friend with uid
      * "friendUid". That will be the records that are authorized for this friend.
      * /!\ don't forget to "delete" the bonjour records when not used anymore

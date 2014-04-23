@@ -3,13 +3,23 @@
 #include <sys/socket.h>
 
 int DataPlaneConnection::cookie_initialized = 0;
-const int DataPlaneConnection::COOKIE_SECRET_LENGTH = 16;
 unsigned char* DataPlaneConnection::cookie_secret = static_cast<unsigned char*>(malloc(sizeof(unsigned char) * COOKIE_SECRET_LENGTH));
 
+DataPlaneConnection* DataPlaneConnection::instance = NULL;
+
 DataPlaneConnection::DataPlaneConnection(QObject *parent) :
-    QObject(parent), BUFFER_SIZE((1<<16))
+    QObject(parent)
 {
     qSql = BonjourSQL::getInstance();
+}
+
+DataPlaneConnection* DataPlaneConnection::getInstance(QObject* parent) {
+    static QMutex mut;
+    mut.lock();
+    if (!instance)
+        instance = new DataPlaneConnection(parent);
+    mut.unlock();
+    return instance;
 }
 
 void DataPlaneConnection::start() {
@@ -140,7 +150,7 @@ void* DataPlaneConnection::connection_handle() {
     OPENSSL_assert(client_addr.ss.ss_family == server_addr.ss.ss_family);
     fd = socket(client_addr.ss.ss_family, SOCK_DGRAM, 0);
     if (fd < 0) {
-     perror("socket");
+        perror("socket");
     }
 
     setsockopt(fd, SOL_SOCKET, SO_REUSEADDR, (const void*) &on, (socklen_t) sizeof(on));
@@ -161,8 +171,8 @@ void* DataPlaneConnection::connection_handle() {
     do { ret = SSL_accept(ssl); }
     while (ret == 0);
     if (ret < 0) {
-     perror("SSL_accept");
-     printf("%s\n", ERR_error_string(ERR_get_error(), buf));
+        perror("SSL_accept");
+        printf("%s\n", ERR_error_string(ERR_get_error(), buf));
     }
 
     /* Set and activate timeouts */
@@ -175,16 +185,17 @@ void* DataPlaneConnection::connection_handle() {
     printf ("\n------------------------------------------------------------\n\n");
 
     while (!(SSL_get_shutdown(ssl) & SSL_RECEIVED_SHUTDOWN) && num_timeouts < max_timeouts) {
-     reading = 1;
-     while (reading) {
-         len = SSL_read(ssl, buf, sizeof(buf));
+        reading = 1;
+        while (reading) {
+            len = SSL_read(ssl, buf, sizeof(buf));
 
-         switch (SSL_get_error(ssl, len)) {
-             case SSL_ERROR_NONE:
-                     printf("read %d bytes\n", (int) len);
+            switch (SSL_get_error(ssl, len)) {
+                case SSL_ERROR_NONE:
+                 printf("read %d bytes\n", (int) len);
+                 printf("%s \n", buf);
                  reading = 0;
                  break;
-             case SSL_ERROR_WANT_READ:
+                case SSL_ERROR_WANT_READ:
                  /* Handle socket timeouts */
                  if (BIO_ctrl(SSL_get_rbio(ssl), BIO_CTRL_DGRAM_GET_RECV_TIMER_EXP, 0, NULL)) {
                      num_timeouts++;
@@ -192,28 +203,27 @@ void* DataPlaneConnection::connection_handle() {
                  }
                  /* Just try again */
                  break;
-             case SSL_ERROR_ZERO_RETURN:
+                case SSL_ERROR_ZERO_RETURN:
                  reading = 0;
                  break;
-             case SSL_ERROR_SYSCALL:
+                case SSL_ERROR_SYSCALL:
                  printf("Socket read error: ");
                  //if (!handle_socket_error()) goto cleanup;
                  reading = 0;
                  exit(-1);
                  break;
-             case SSL_ERROR_SSL:
+                case SSL_ERROR_SSL:
                  printf("SSL read error: ");
                  printf("%s (%d)\n", ERR_error_string(ERR_get_error(), buf), SSL_get_error(ssl, len));
                  break;
-             default:
+                default:
                  printf("Unexpected error while reading!\n");
                  break;
-         }
-     }
-     if (len > 0) {
-         len = SSL_write(ssl, buf, len);
-
-         switch (SSL_get_error(ssl, len)) {
+            }
+        }
+        if (len > 0) {
+            len = SSL_write(ssl, buf, len);
+            switch (SSL_get_error(ssl, len)) {
              case SSL_ERROR_NONE:
                  printf("wrote %d bytes\n", (int) len);
                  break;
@@ -237,8 +247,8 @@ void* DataPlaneConnection::connection_handle() {
              default:
                  printf("Unexpected error while writing!\n");
                  break;
-         }
-     }
+            }
+        }
     }
 
     SSL_shutdown(ssl);
@@ -248,6 +258,7 @@ void* DataPlaneConnection::connection_handle() {
     SSL_free(ssl);
     ERR_remove_state(0);
     printf("done, connection closed.\n");
+    fflush(stdout);
 }
 
 int DataPlaneConnection::dtls_verify_callback(int ok, X509_STORE_CTX *ctx) {
