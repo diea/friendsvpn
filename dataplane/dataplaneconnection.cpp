@@ -47,7 +47,7 @@ void DataPlaneConnection::start() {
     SSL_CTX_set_session_cache_mode(ctx, SSL_SESS_CACHE_OFF);
 
     // get certificate and key from SQL & use them
-#if 0
+#if 1
     QSslCertificate cert = qSql->getLocalCert();
     QByteArray certBytesPEM = cert.toPem();
     char* x509buffer = certBytesPEM.data();
