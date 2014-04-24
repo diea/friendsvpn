@@ -32,7 +32,9 @@ SOURCES += main.cpp \
     proxy.cpp \
     bonjour/bonjourregistrar.cpp \
     dataplane/dataplaneconnection.cpp \
-    dataplane/dataplaneclient.cpp
+    dataplane/dataplaneclient.cpp \
+    ph2phtp_parser.cpp \
+    privilegeescalator.cpp
 
 HEADERS  += \
     graphic/systray.h \
@@ -57,7 +59,9 @@ HEADERS  += \
     bonjour/bonjourregistrar.h \
     dataplane/dataplaneconnection.h \
     dataplane/dataplaneclient.h \
-    dataplane/dataplaneconfig.h
+    dataplane/dataplaneconfig.h \
+    ph2phtp_parser.h \
+    privilegeescalator.h
 
 FORMS    +=
 

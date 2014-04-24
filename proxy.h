@@ -3,6 +3,7 @@
 
 #include <QObject>
 #include "bonjour/bonjourrecord.h"
+#include "bonjoursql.h"
 
 /**
  * @brief The Proxy class
@@ -15,8 +16,15 @@ class Proxy : public QObject
     Q_OBJECT
 private:
     BonjourRecord rec;
+
+    /**
+     * @brief randomULA generates a random ULA and returns it as a QString
+     * @return
+     */
+    QString randomULA();
 public:
-    explicit Proxy(BonjourRecord& rec, QObject *parent = 0);
+    explicit Proxy(const QString &name, const QString &regType, const QString &domain,
+                   const QString &hostname, quint16 port, QObject *parent = 0);
 
     /**
      * @brief run: runs this proxy

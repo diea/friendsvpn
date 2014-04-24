@@ -36,17 +36,17 @@ private:
 public:
     static DataPlaneConnection* getInstance(QObject *parent = 0);
 
-    void start();
     /**
      * @brief sendBytes will send the bytes to ip:DATAPLANEPORT over DTLS
      * @param bytes
      * @param ip
      */
-    void sendBytes(const char* bytes, QString ip);
+    //void sendBytes(const char* bytes, QString ip);
 
 signals:
 
 public slots:
+    void start();
 
 };
 
