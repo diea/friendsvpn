@@ -44,7 +44,7 @@ private:
      * @brief defaultIface contains the default interface
      */
     static QString defaultIface;
-
+    static char intToHexChar(int i);
 public:
     explicit Proxy(const QString &name, const QString &regType, const QString &domain,
                    const QString &hostname, quint16 port, QObject *parent = 0);
@@ -55,7 +55,7 @@ public:
     void run();
 
     static QString getDefaultInterface();
-
+    static QString randomULA();
 signals:
 
 private slots:

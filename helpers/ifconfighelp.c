@@ -1,14 +1,59 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <unistd.h>
+#include <time.h>
+#include <string.h>
 
-int main() {
-  	printf("Hello world\n");
 
+/**
+ * usage: iface ipv6
+ *
+ * return: 1 wrong arguments
+ * return: 2 unable to run dmesg
+ *
+ */
+int main(int argc, char** argv) {
+	if (argc != 3) {
+		fprintf(stderr, "Need interface & ip as argument\n");
+		return 1;
+	}
   	setuid(0);
-  	printf("uid %d\n", getuid());
-  	printf("eUid %d\n", geteuid());
-	system("ifconfig en1 inet6 add fd3b:e180:cbaa:1:5e96:9dff:fe8a:8448");
+
+  	char command[2000];
+  	strcat(command, "ifconfig \0");
+  	strcat(command, argv[1]);
+  	strcat(command, " inet6 add \0");
+  	strcat(command, argv[2]);
+
+  	printf("%s\n", command);
+
+	//system(command);
+
+	char line[2000];
+  	
+  	/* Read the output a line at a time - output it. */
+  	FILE *fp;
+  	int sec = 30; // check 30seconds for DAD
+  	while (sec > 30) { // TODO - maybe optimize this ? opening dmesg every sec...
+		fp = popen("dmesg", "r");
+		if (fp == NULL) {
+			fprintf(stderr, "Unable to run dmesg\n");
+			return 2;
+		}
+  		while (fgets(line, sizeof(line) - 1, fp) != NULL) {
+  			// TODO CONTINUE HERE
+    		printf("%s", line);
+ 		}
+ 		fflush(stdout);
+ 		pclose(fp);
+ 		sleep(1);
+ 		sec--;
+  	}
+
+
+  	/* close */
+  	pclose(fp);
+
 
 	return 0;
 }

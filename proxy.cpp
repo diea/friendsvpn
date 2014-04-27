@@ -5,6 +5,30 @@ Proxy::Proxy(const QString &name, const QString &regType, const QString &domain,
              const QString &hostname, quint16 port, QObject *parent) :
     QObject(parent)
 {
+    bool newIp = true; // the new IP has not been assigned to iface yet or is not a duplicate
+    QString newip;
+    do {
+        // random ULA
+        newip = this->randomULA();
+        // check it doesn't exist
+        QProcess testIfconfig;
+        testIfconfig.start("/sbin/ifconfig", QStringList(defaultIface));
+        testIfconfig.waitForReadyRead();
+        char buf[3000];
+        int length;
+        while ((length = testIfconfig.readLine(buf, 3000))) {
+            QString curLine(buf);
+            QStringList list = curLine.split(" ", QString::SkipEmptyParts);
+            foreach (QString value, list) {
+                if (value == newip) {
+                    newIp = false;
+                    qDebug() << "local duplicate!";
+                }
+            }
+        }
+        testIfconfig.close();
+    } while (!newIp);
+
     // add it with ifconfig
     QProcess ifconfig;
     // TODO include in the app bundle to launch from there
@@ -23,7 +47,6 @@ Proxy::Proxy(const QString &name, const QString &regType, const QString &domain,
     // TODO
     sockType = SOCK_STREAM;
     ipProto = IPPROTO_TCP;
-
 }
 
 void Proxy::run() {
@@ -176,4 +199,47 @@ QString Proxy::getDefaultInterface() {
     qWarning() << "The host has no IPv6 default route!";
     exit(-1);
 #endif
+}
+
+/**
+ * undefined if i >= 16
+ */
+char Proxy::intToHexChar(int i) {
+    if (i < 10)
+        return (char)(((int)'0')+i);
+    switch (i) {
+        case 10: return 'a';
+        case 11: return 'b';
+        case 12: return 'c';
+        case 13: return 'd';
+        case 14: return 'e';
+        case 15: return 'f';
+        default: return 'a';
+    }
+}
+QString Proxy::randomULA() {
+    // generate random ULA
+    srand(time(NULL));
+
+    char v6buf[40];
+    v6buf[0] = 'f';
+    v6buf[1] = 'd';
+
+    int nbLeft = 30;
+    int index = 2;
+    int column = 2;
+    while (nbLeft > 0) {
+        if (column == 4) {
+            v6buf[index] = ':';
+            index++;
+            column = 0;
+        }
+        v6buf[index] = intToHexChar(rand() % 16);
+        index++;
+        column++;
+        nbLeft--;
+    }
+    v6buf[39] = '\0';
+
+    return QString(v6buf);
 }
