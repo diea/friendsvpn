@@ -78,7 +78,7 @@ void got_packet(u_char* args, const struct pcap_pkthdr *header, const u_char *pa
  */
 int main(int argc, char** argv) {
 	setuid(0); // for linux
-	
+
 	char *dev = NULL;			/* capture device name */
 	char errbuf[PCAP_ERRBUF_SIZE];		/* error buffer */
 	pcap_t *handle;				/* packet capture handle */
@@ -102,7 +102,7 @@ int main(int argc, char** argv) {
 		return -3;
 	}
 	/* make sure we're capturing on an Ethernet device [2] */
-	int datalink = pcap_datalink(handle);
+	datalink = pcap_datalink(handle);
 	if (datalink != DLT_EN10MB && datalink != DLT_NULL) { // only ethernet or loopback
 		fprintf(stderr, "%s is not an Ethernet or loopback\n", dev);
 		return -3;

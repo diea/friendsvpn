@@ -51,6 +51,7 @@ void Proxy::run() {
     args.append("lo0"); // TODO get default iface AND listen also on lo !
     QString transportStr;
     sockType == SOCK_DGRAM ? transportStr = "udp" : transportStr = "tcp";
+    // TODO affiner le filtre (dest port pas juste port)
     args.append("ip6 host " + rec.ips.at(0) + " and " + transportStr + " and port " + QString::number(rec.port));
 
     connect(&pcap, SIGNAL(finished(int)), this, SLOT(pcapFinish(int)));
