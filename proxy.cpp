@@ -161,7 +161,7 @@ QString Proxy::getDefaultInterface() {
     char buf[3000];
     int length;
     while ((length = route.readLine(buf, 3000))) {
-        //buf[length - 1] = '\0'; // remove "\n"
+        buf[length - 1] = '\0'; // remove "\n"
         QString curLine(buf);
         if (curLine.startsWith("::/0")) {
             QStringList list = curLine.split(" ", QString::SkipEmptyParts);
