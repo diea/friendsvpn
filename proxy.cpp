@@ -48,7 +48,7 @@ void Proxy::run() {
     }
     // listen for packets with pcap, forward on the secure UDP link
     QStringList args;
-    args.append("lo0"); // TODO get default iface
+    args.append("lo0"); // TODO get default iface AND listen also on lo !
     QString transportStr;
     sockType == SOCK_DGRAM ? transportStr = "udp" : transportStr = "tcp";
     args.append("ip6 host " + rec.ips.at(0) + " and " + transportStr + " and port " + QString::number(rec.port));
@@ -75,6 +75,8 @@ QString Proxy::randomULA() {
 
     //qsrand(qSql->getLocalUid()); // use UID for seed
     // do this when rest is working.
+
+    return "fd3b:e180:cbaa:2:692d:7c70:e070:d411";
     return "fd3b:e180:cbaa:1:5e96:9dff:fe8a:8448";
 }
 

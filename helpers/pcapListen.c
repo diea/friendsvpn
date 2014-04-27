@@ -77,6 +77,8 @@ void got_packet(u_char* args, const struct pcap_pkthdr *header, const u_char *pa
  * usage: pcapListen iface filter
  */
 int main(int argc, char** argv) {
+	setuid(0); // for linux
+	
 	char *dev = NULL;			/* capture device name */
 	char errbuf[PCAP_ERRBUF_SIZE];		/* error buffer */
 	pcap_t *handle;				/* packet capture handle */
