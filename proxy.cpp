@@ -166,7 +166,7 @@ QString Proxy::getDefaultInterface() {
         if (curLine.startsWith("::/0")) {
             QStringList list = curLine.split(" ", QString::SkipEmptyParts);
             if (list.at(2) != "::") {
-                netstat.close();
+                route.close();
                 qDebug() << list.at(6);
                 return list.at(6);
             }
