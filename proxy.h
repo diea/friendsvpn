@@ -9,6 +9,12 @@
 #include <ctype.h>
 #include <netdb.h>
 
+#ifdef __APPLE__
+#define HELPERPATH "/Users/diea/Dropbox/CiscoVPN/app/friendsvpn/helpers/"
+#elif __GNUC__
+#define HELPERPATH "./helpers/"
+#endif
+
 #include "bonjour/bonjourrecord.h"
 #include "bonjoursql.h"
 

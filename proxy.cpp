@@ -9,7 +9,7 @@ Proxy::Proxy(const QString &name, const QString &regType, const QString &domain,
     // add it with ifconfig
     QProcess ifconfig;
     // TODO include in the app bundle to launch from there
-    ifconfig.start("/Users/diea/Dropbox/CiscoVPN/app/friendsvpn/helper/ifconfighelp");
+    ifconfig.start(QString(HELPERPATH) + "ifconfighelp");
     ifconfig.waitForReadyRead();
     qDebug() << ifconfig.readAllStandardOutput();
     qDebug() << ifconfig.readAllStandardError();
@@ -56,7 +56,7 @@ void Proxy::run() {
     connect(&pcap, SIGNAL(finished(int)), this, SLOT(pcapFinish(int)));
     connect(&pcap, SIGNAL(readyReadStandardOutput()), this, SLOT(readyRead()));
     qDebug() << args;
-    pcap.start("/Users/diea/Dropbox/CiscoVPN/app/friendsvpn/helper/pcapListen", args);
+    pcap.start(QString(HELPERPATH) + "pcapListen", args);
 
     QStringList sendRawArgs;
     sendRawArgs.append(QString::number(sockType));
@@ -64,9 +64,10 @@ void Proxy::run() {
     sendRawArgs.append("fd3b:e180:cbaa:1:156e:72ed:97d0:a60");
 
     connect(&sendRaw, SIGNAL(finished(int)), this, SLOT(sendRawFinish(int)));
-    sendRaw.start("/Users/diea/Dropbox/CiscoVPN/app/friendsvpn/helper/sendRaw", sendRawArgs);
-    // advertise by registering the record with a bonjour registrar
+    sendRaw.start(QString(HELPERPATH) + "sendRaw", sendRawArgs);
 
+    // advertise by registering the record with a bonjour registrar
+    // TODO
 }
 
 QString Proxy::randomULA() {
@@ -123,16 +124,19 @@ void Proxy::readyRead() {
         qDebug() << "waiting for more bytes";
         return; // wait for more bytes
     }
+
     // get packet and send it to dtls connection
     char packet[2000];
     pcap.read(packet, left);
 
+    // TEST: send over raw socket
     QString size("[");
     qDebug() << "size" << left;
     size.append(QString::number(left));
     size.append("]");
     sendRaw.write(size.toUtf8().data());
     sendRaw.write(packet, left);
+    // end test
 
     left = 0;
 }
