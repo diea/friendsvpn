@@ -39,11 +39,12 @@ private:
      */
     unsigned int left;
     QByteArray buffer;
+
     /**
-     * @brief randomULA generates a random ULA and returns it as a QString
-     * @return
+     * @brief defaultIface contains the default interface
      */
-    QString randomULA();
+    static QString defaultIface;
+
 public:
     explicit Proxy(const QString &name, const QString &regType, const QString &domain,
                    const QString &hostname, quint16 port, QObject *parent = 0);
@@ -52,6 +53,9 @@ public:
      * @brief run: runs this proxy
      */
     void run();
+
+    static QString getDefaultInterface();
+
 signals:
 
 private slots:

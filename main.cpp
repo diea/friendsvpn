@@ -87,7 +87,7 @@ int main(int argc, char *argv[])
     //raw.close();
 
     Proxy p("lala", "lala", ".", "fref", 2001);
-    p.run();
+    //p.run();
 
     return a.exec();
 }

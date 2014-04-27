@@ -1,11 +1,10 @@
 #include "proxy.h"
+QString Proxy::defaultIface = Proxy::getDefaultInterface();
 
 Proxy::Proxy(const QString &name, const QString &regType, const QString &domain,
              const QString &hostname, quint16 port, QObject *parent) :
     QObject(parent)
 {
-    // generate random ULA
-    QString newIp = randomULA();
     // add it with ifconfig
     QProcess ifconfig;
     // TODO include in the app bundle to launch from there
@@ -17,7 +16,7 @@ Proxy::Proxy(const QString &name, const QString &regType, const QString &domain,
 
     // create bonjour rec with new IP
     QList<QString> ip;
-    ip.append(newIp);
+    //ip.append(newIp); TODO
     rec = BonjourRecord(name, regType, domain, hostname, ip, port);
     left = 0;
 
@@ -51,8 +50,7 @@ void Proxy::run() {
     args.append("lo0"); // TODO get default iface AND listen also on lo !
     QString transportStr;
     sockType == SOCK_DGRAM ? transportStr = "udp" : transportStr = "tcp";
-    // TODO affiner le filtre (dest port pas juste port)
-    args.append("ip6 host " + rec.ips.at(0) + " and " + transportStr + " and port " + QString::number(rec.port));
+    args.append("ip6 dst host " + rec.ips.at(0) + " and " + transportStr + " and dst port " + QString::number(rec.port));
 
     connect(&pcap, SIGNAL(finished(int)), this, SLOT(pcapFinish(int)));
     connect(&pcap, SIGNAL(readyReadStandardOutput()), this, SLOT(readyRead()));
@@ -69,16 +67,6 @@ void Proxy::run() {
 
     // advertise by registering the record with a bonjour registrar
     // TODO
-}
-
-QString Proxy::randomULA() {
-    //BonjourSQL* qSql = BonjourSQL::getInstance();
-
-    //qsrand(qSql->getLocalUid()); // use UID for seed
-    // do this when rest is working.
-
-    return "fd3b:e180:cbaa:2:692d:7c70:e070:d411";
-    return "fd3b:e180:cbaa:1:5e96:9dff:fe8a:8448";
 }
 
 void Proxy::pcapFinish(int exitCode) {
@@ -142,4 +130,50 @@ void Proxy::readyRead() {
     // end test
 
     left = 0;
+}
+
+QString Proxy::getDefaultInterface() {
+#ifdef __APPLE__
+    QProcess netstat;
+    netstat.start("netstat -nr");
+    netstat.waitForReadyRead();
+    char buf[3000];
+    int length;
+    while ((length = netstat.readLine(buf, 3000))) {
+        buf[length - 1] = '\0'; // remove "\n"
+        QString curLine(buf);
+        if (curLine.startsWith("default")) {
+            QStringList list = curLine.split(" ", QString::SkipEmptyParts);
+            if (list.at(1).contains(":")) {
+                netstat.close();
+                qDebug() << list.at(3);
+                return list.at(3);
+            }
+        }
+    }
+    netstat.close();
+    qWarning() << "The host has no IPv6 default route!";
+    exit(-1);
+#elif __GNUC__
+    QProcess route;
+    route.start("route -n6");
+    route.waitForReadyRead();
+    char buf[3000];
+    int length;
+    while ((length = route.readLine(buf, 3000))) {
+        //buf[length - 1] = '\0'; // remove "\n"
+        QString curLine(buf);
+        if (curLine.startsWith("::/0")) {
+            QStringList list = curLine.split(" ", QString::SkipEmptyParts);
+            if (list.at(2) != "::") {
+                netstat.close();
+                qDebug() << list.at(6);
+                return list.at(6);
+            }
+        }
+    }
+    route.close();
+    qWarning() << "The host has no IPv6 default route!";
+    exit(-1);
+#endif
 }
