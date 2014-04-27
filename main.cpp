@@ -4,7 +4,6 @@
 #include "bonjour/bonjourdiscoverer.h"
 #include "bonjoursql.h"
 #include "poller.h"
-#include "rawsocket.h"
 #include "controlplane/connectioninitiator.h"
 #include "controlplane/controlplaneserver.h"
 #include "controlplane/controlplaneclient.h"
@@ -62,9 +61,9 @@ int main(int argc, char *argv[])
     test.registerService(newRec);
     qDebug() << "registered!";*/
 
-    BonjourSQL* qSql = BonjourSQL::getInstance();
+    //BonjourSQL* qSql = BonjourSQL::getInstance();
     // get uid from app
-    qSql->uidOK();
+    //qSql->uidOK();
 
     /*DataPlaneConnection* dp = DataPlaneConnection::getInstance(qApp);
     dp->start();*/
@@ -76,7 +75,19 @@ int main(int argc, char *argv[])
     DataPlaneClient* dc = new DataPlaneClient(newRec, qApp);
     dc->sendBytes("TEST", 4);*/
 
-    Proxy p("tff", "fref", ".", "fref", 0);
+    //Proxy p("tff", "fref", ".", "fref", 0);
+
+    //QProcess raw;
+    // TODO include in the app bundle to launch from there
+    //raw.start("/Users/diea/Dropbox/CiscoVPN/app/friendsvpn/helper/rawSocket");
+
+    //raw.waitForReadyRead();
+    //qDebug() << raw.readAllStandardOutput();
+    //qDebug() << raw.readAllStandardError();
+    //raw.close();
+
+    Proxy p("lala", "lala", ".", "fref", 2001);
+    p.run();
 
     return a.exec();
 }

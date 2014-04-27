@@ -20,7 +20,6 @@ SOURCES += main.cpp \
     bonjoursql.cpp \
     poller.cpp \
     datareceiver.cpp \
-    rawsocket.cpp \
     controlplane/connectioninitiator.cpp \
     controlplane/controlplaneclient.cpp \
     controlplane/controlplaneserver.cpp \
@@ -33,8 +32,7 @@ SOURCES += main.cpp \
     bonjour/bonjourregistrar.cpp \
     dataplane/dataplaneconnection.cpp \
     dataplane/dataplaneclient.cpp \
-    ph2phtp_parser.cpp \
-    privilegeescalator.cpp
+    ph2phtp_parser.cpp
 
 HEADERS  += \
     graphic/systray.h \
@@ -46,7 +44,6 @@ HEADERS  += \
     config.h \
     poller.h \
     datareceiver.h \
-    rawsocket.h \
     controlplane/connectioninitiator.h \
     controlplane/controlplaneserver.h \
     controlplane/controlplaneclient.h \
@@ -60,8 +57,7 @@ HEADERS  += \
     dataplane/dataplaneconnection.h \
     dataplane/dataplaneclient.h \
     dataplane/dataplaneconfig.h \
-    ph2phtp_parser.h \
-    privilegeescalator.h
+    ph2phtp_parser.h
 
 FORMS    +=
 

@@ -2,6 +2,13 @@
 #define PROXY_H
 
 #include <QObject>
+#include <sys/socket.h>
+#include <sys/types.h>
+#include <netinet/in.h>
+#include <arpa/inet.h>
+#include <ctype.h>
+#include <netdb.h>
+
 #include "bonjour/bonjourrecord.h"
 #include "bonjoursql.h"
 
@@ -16,7 +23,16 @@ class Proxy : public QObject
     Q_OBJECT
 private:
     BonjourRecord rec;
+    int sockType; // to know if SOCK_STREAM or SOCK_DATAGRAM
+    int ipProto; // again, TCP or UDP
 
+    QProcess pcap;
+    QProcess sendRaw;
+    /**
+     * @brief buffer used to buffer "left" bytes until packet has been read
+     */
+    unsigned int left;
+    QByteArray buffer;
     /**
      * @brief randomULA generates a random ULA and returns it as a QString
      * @return
@@ -32,6 +48,10 @@ public:
     void run();
 signals:
 
+private slots:
+    void pcapFinish(int exitCode);
+    void sendRawFinish(int exitCode);
+    void readyRead();
 public slots:
 
 };
