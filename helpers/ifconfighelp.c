@@ -33,8 +33,8 @@ int main(int argc, char** argv) {
   	
   	/* Read the output a line at a time - output it. */
   	FILE *fp;
-  	int sec = 30; // check 30seconds for DAD
-  	while (sec > 30) { // TODO - maybe optimize this ? opening dmesg every sec...
+  	int sec = 2; // check 2seconds for DAD
+  	while (sec > 2) {
 		fp = popen("dmesg", "r");
 		if (fp == NULL) {
 			fprintf(stderr, "Unable to run dmesg\n");
