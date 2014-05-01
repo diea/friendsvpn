@@ -16,7 +16,6 @@ private:
     XmlRPCTextServer* server;
     BonjourSQL* qSql;
 
-
 public:
     explicit Poller(QObject *parent = 0);
 
