@@ -34,9 +34,6 @@ public:
      * @param buf
      */
     void readBuffer(const char* buf);
-
-    void wasDisconnected();
-
 signals:
     /**
      * @brief connected emitted when the connection leaves the Closed plane_mode
@@ -50,6 +47,8 @@ signals:
      * @brief uid_received emitted when the connection leaves the Wait_uid plane_state
      */
     void uid_received();
+private slots:
+    void wasDisconnected();
 public slots:
     void sendBonjour();
 };
