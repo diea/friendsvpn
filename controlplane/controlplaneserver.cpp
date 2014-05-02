@@ -86,7 +86,7 @@ void ControlPlaneServer::sslSockReadyRead() {
             // drop the Uid: part with the .remove and get the CPConnection* correspoding to this UID
             qDebug() << "Going into init";
             ControlPlaneConnection* con = init->getConnection(uidStr.remove(0, 4));
-            con->addMode(Server_mode, sslSock); // add server mode
+            con->addMode(Receiving, sslSock); // add server mode
             sslSock->setControlPlaneConnection(con); // associate the sslSock with it
             qDebug() << "ssl Sock associated";
             mutexx.unlock();
@@ -102,7 +102,7 @@ void ControlPlaneServer::sslDisconnected() {
     SslSocket* sslSock = qobject_cast<SslSocket*>(sender());
     sslSockList.removeAll(sslSock);
     if (sslSock->isAssociated())
-        sslSock->getControlPlaneConnection()->removeMode(Server_mode);
+        sslSock->getControlPlaneConnection()->removeMode(Receiving);
     sslSock->deleteLater();
 }
 

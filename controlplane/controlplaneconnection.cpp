@@ -2,12 +2,11 @@
 #include "connectioninitiator.h"
 
 #include <QDebug>
-ControlPlaneConnection::ControlPlaneConnection(QString uid, QObject *parent) :
-    QObject(parent), friendUid(uid)
+ControlPlaneConnection::ControlPlaneConnection(QString uid, AbstractPlaneConnection *parent) :
+    AbstractPlaneConnection(uid, parent)
 {
-    curMode = Closed;
     qSql = BonjourSQL::getInstance();
-    //this->connect(this, SIGNAL(disconnected()), SLOT(deleteLater()));
+    this->connect(this, SIGNAL(disconnected()), SLOT(wasDisconnected()));
     this->connect(this, SIGNAL(connected()), SLOT(sendBonjour()));
 }
 
@@ -15,69 +14,36 @@ ControlPlaneConnection::~ControlPlaneConnection() {
     qDebug() << "Destroyed control plane connection !";
 }
 
-void ControlPlaneConnection::setMode(plane_mode m) {
-    this->curMode = m;
-    if (this->curMode != Closed)
-        emit connected();
-    else
-        emit disconnected();
-}
-
-plane_mode ControlPlaneConnection::getMode() {
-    return curMode;
-}
-
 void ControlPlaneConnection::removeConnection() {
     if (friendUid < qSql->getLocalUid()) { // friend is smaller, I am server
         clientSock->disconnect();
         clientSock = NULL;
-        curMode = Server_mode;
+        curMode = Receiving;
     } else {
         serverSock->disconnect();
         serverSock = NULL;
-        curMode = Client_mode;
+        curMode = Emitting;
     }
 }
 
-bool ControlPlaneConnection::addMode(plane_mode mode, QSslSocket *socket) {
-    if ((curMode == Both_mode) || (curMode == mode)) return false;
-    if (mode == Server_mode)
-        serverSock = socket;
-    else clientSock = socket;
+bool ControlPlaneConnection::addMode(plane_mode mode, QObject *socket) {
+    QSslSocket* sslSocket = dynamic_cast<QSslSocket*>(socket);
+    if (!sslSocket) return false; // needs to be of type QSslSocket!
+
+    if ((curMode == Both) || (curMode == mode)) return false;
+    if (mode == Receiving)
+        serverSock = sslSocket;
+    else clientSock = sslSocket;
 
     if (curMode == Closed)  {
         curMode = mode;
         emit connected();
     }
-    else curMode = Both_mode;
+    else curMode = Both;
 
-    if (curMode == Both_mode)
+    if (curMode == Both)
         this->removeConnection();
 
-    return true;
-}
-
-bool ControlPlaneConnection::removeMode(plane_mode mode) {
-    if (curMode == Closed) return false;
-    if ((curMode != Both_mode) && (curMode != mode)) return false;
-
-    if (curMode == Both_mode) {
-        if (mode == Server_mode) {
-            curMode = Client_mode;
-            serverSock = NULL;
-        } else {
-            curMode = Server_mode;
-            clientSock = NULL;
-        }
-    } else {
-        curMode = Closed;
-        qDebug() << "Geting init instance";
-        ConnectionInitiator* init = ConnectionInitiator::getInstance();
-        qDebug() << "Removing myself from the list";
-        init->removeConnection(this);
-        qDebug () << "emitting disconnected";
-        emit disconnected();
-    }
     return true;
 }
 
@@ -97,7 +63,7 @@ void ControlPlaneConnection::sendBonjour() {
     mutex.lock();
     QSslSocket* toWrite; // the socket on which the bonjour packets are to be sent
     //qDebug() << "passed the lock in sendbonjour";
-    if (curMode == Client_mode) {
+    if (curMode == Emitting) {
         toWrite = clientSock;
     } else {
         toWrite = serverSock;
@@ -127,6 +93,10 @@ void ControlPlaneConnection::sendBonjour() {
     QTimer::singleShot(10000, this, SLOT(sendBonjour()));
 }
 
-bool ControlPlaneConnection::operator=(const ControlPlaneConnection& other) {
-    return this->friendUid == other.friendUid;
+void ControlPlaneConnection::wasDisconnected() {
+    qDebug() << "Geting init instance";
+    ConnectionInitiator* init = ConnectionInitiator::getInstance();
+    qDebug() << "Removing myself from the list";
+    init->removeConnection(this);
+    qDebug () << "emitting disconnected";
 }

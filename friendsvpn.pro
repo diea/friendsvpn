@@ -19,19 +19,19 @@ SOURCES += main.cpp \
     bonjour/bonjourresolver.cpp \
     bonjoursql.cpp \
     poller.cpp \
-    controlplane/connectioninitiator.cpp \
+    connectioninitiator.cpp \
     controlplane/controlplaneclient.cpp \
     controlplane/controlplaneserver.cpp \
     user.cpp \
-    controlplane/threadedcpserver.cpp \
-    controlplane/sslserverthread.cpp \
     controlplane/controlplaneconnection.cpp \
     controlplane/sslsocket.cpp \
     proxy.cpp \
     bonjour/bonjourregistrar.cpp \
-    dataplane/dataplaneconnection.cpp \
     dataplane/dataplaneclient.cpp \
-    ph2phtp_parser.cpp
+    ph2phtp_parser.cpp \
+    dataplane/dataplaneserver.cpp \
+    dataplane/dataplaneconnection.cpp \
+    abstractplaneconnection.cpp
 
 HEADERS  += \
     graphic/systray.h \
@@ -42,20 +42,20 @@ HEADERS  += \
     bonjoursql.h \
     config.h \
     poller.h \
-    controlplane/connectioninitiator.h \
+    connectioninitiator.h \
     controlplane/controlplaneserver.h \
     controlplane/controlplaneclient.h \
     user.h \
-    controlplane/threadedcpserver.h \
-    controlplane/sslserverthread.h \
     controlplane/controlplaneconnection.h \
     controlplane/sslsocket.h \
     proxy.h \
     bonjour/bonjourregistrar.h \
-    dataplane/dataplaneconnection.h \
     dataplane/dataplaneclient.h \
     dataplane/dataplaneconfig.h \
-    ph2phtp_parser.h
+    ph2phtp_parser.h \
+    dataplane/dataplaneserver.h \
+    dataplane/dataplaneconnection.h \
+    abstractplaneconnection.h
 
 FORMS    +=
 

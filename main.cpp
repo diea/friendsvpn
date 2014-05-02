@@ -4,16 +4,16 @@
 #include "bonjour/bonjourdiscoverer.h"
 #include "bonjoursql.h"
 #include "poller.h"
-#include "controlplane/connectioninitiator.h"
+#include "connectioninitiator.h"
 #include "controlplane/controlplaneserver.h"
 #include "controlplane/controlplaneclient.h"
 #include "bonjour/bonjourregistrar.h"
-#include "dataplane/dataplaneconnection.h"
+#include "dataplane/dataplaneserver.h"
 #include "dataplane/dataplaneclient.h"
 #include "proxy.h"
 #include <QDebug>
 
-#if 0
+#if 1
 int main(int argc, char *argv[])
 {
     QApplication a(argc, argv);
