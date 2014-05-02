@@ -5,7 +5,7 @@ PH2PHTP_Parser::PH2PHTP_Parser(QObject *parent) :
 {
 }
 
-bool PH2PHTP_Parser::parseControlPlane(const char *buf) {
+bool PH2PHTP_Parser::parseControlPlane(const char *buf, QString friendUid) {
     QString packet(buf);
 
     QStringList list = packet.split("\r\n");
@@ -38,7 +38,7 @@ bool PH2PHTP_Parser::parseControlPlane(const char *buf) {
         }
 
         // TODO run proxy in new thread
-        Proxy newProxy(name, type, ".friendsvpn.", hostname, port);
+        Proxy newProxy(friendUid, name, type, ".friendsvpn.", hostname, port);
         newProxy.run();
     }
 }

@@ -33,7 +33,7 @@ private:
 
     int fd;
 
-    BonjourRecord rec;
+    QHostAddress ip;
 public:
     /**
      * @brief DataPlaneClient
@@ -41,7 +41,7 @@ public:
      *             ONLY First IP in Qlist will be used!
      * @param parent
      */
-    explicit DataPlaneClient(BonjourRecord& rec, QObject *parent = 0);
+    explicit DataPlaneClient(QHostAddress ip, QObject *parent = 0);
 
     void sendBytes(const char* bytes, socklen_t len);
 signals:

@@ -52,6 +52,13 @@ public:
     virtual void readBuffer(const char* buf) = 0;
 
     /**
+     * @brief getUid get the friendUid associated with this connection
+     * @return
+     */
+    QString getUid();
+
+
+    /**
      * @brief operator = Two ControlPlaneConnections are identical if they represent the same UID.
      * /!\ They could be in different states and still return equality with this function. But if you
      * have two ControlPlaneConnections for the same UID and in different states, you're doing it wrong.

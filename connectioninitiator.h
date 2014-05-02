@@ -7,6 +7,9 @@
 #include "bonjoursql.h"
 #include "controlplane/controlplaneconnection.h"
 
+class DataPlaneConnection;
+class DataPlaneServer;
+class DataPlaneClient;
 class ControlPlaneClient;
 class ControlPlaneServer;
 /**
@@ -22,8 +25,13 @@ private:
     QSslCertificate cert;
     QSslKey key;
     ControlPlaneServer* server;
+    QThread dpServerThread;
+    DataPlaneServer* dpServer;
     QList<ControlPlaneClient*> clients;
     QList<ControlPlaneConnection*> connections;
+
+    QList<DataPlaneClient*> dpclients;
+    QList<DataPlaneConnection*> dpConnections;
 
     static ConnectionInitiator* instance;
     /**
@@ -48,6 +56,13 @@ public:
      * @return the connection that has uid "uid"
      */
     ControlPlaneConnection* getConnection(QString uid);
+
+    /**
+     * @brief getDpConnection same as @see getConnection but for the dataplane
+     * @param uid
+     * @return
+     */
+    DataPlaneConnection* getDpConnection(QString uid);
 
     void removeConnection(ControlPlaneConnection* con);
     /**

@@ -19,7 +19,7 @@ public:
      * @param buf
      * @return true, false on failure.
      */
-    bool parseControlPlane(const char* buf);
+    bool parseControlPlane(const char* buf, QString friendUid);
 signals:
 
 public slots:

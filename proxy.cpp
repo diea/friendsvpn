@@ -1,9 +1,9 @@
 #include "proxy.h"
 QString Proxy::defaultIface = Proxy::getDefaultInterface();
 
-Proxy::Proxy(const QString &name, const QString &regType, const QString &domain,
+Proxy::Proxy(const QString &friendUid, const QString &name, const QString &regType, const QString &domain,
              const QString &hostname, quint16 port, QObject *parent) :
-    QObject(parent)
+    friendUid(friendUid), QObject(parent)
 {
     bool newIp = true; // the new IP has not been assigned to iface yet or is not a duplicate
     QString newip;
@@ -47,6 +47,9 @@ Proxy::Proxy(const QString &name, const QString &regType, const QString &domain,
     // TODO
     sockType = SOCK_STREAM;
     ipProto = IPPROTO_TCP;
+
+    // get DataPlaneConnection associated with friendUid
+
 }
 
 void Proxy::run() {

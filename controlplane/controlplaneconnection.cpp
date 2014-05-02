@@ -47,10 +47,6 @@ bool ControlPlaneConnection::addMode(plane_mode mode, QObject *socket) {
     return true;
 }
 
-QString ControlPlaneConnection::getUid() {
-    return this->friendUid;
-}
-
 void ControlPlaneConnection::readBuffer(const char* buf) {
     qDebug() << "Reading buffer";
     qDebug() << buf;
@@ -63,6 +59,13 @@ void ControlPlaneConnection::sendBonjour() {
     mutex.lock();
     QSslSocket* toWrite; // the socket on which the bonjour packets are to be sent
     //qDebug() << "passed the lock in sendbonjour";
+
+    if (curMode == Closed) {
+        qDebug() << "trying to write bonjour but mode is Closed";
+        mutex.unlock();
+        return;
+    }
+
     if (curMode == Emitting) {
         toWrite = clientSock;
     } else {

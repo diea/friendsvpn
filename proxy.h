@@ -17,6 +17,7 @@
 
 #include "bonjour/bonjourrecord.h"
 #include "bonjoursql.h"
+#include "dataplane/dataplaneconnection.h"
 
 /**
  * @brief The Proxy class
@@ -32,6 +33,8 @@ private:
     int sockType; // to know if SOCK_STREAM or SOCK_DATAGRAM
     int ipProto; // again, TCP or UDP
 
+    QString friendUid;
+
     QProcess pcap;
     QProcess sendRaw;
     /**
@@ -41,12 +44,32 @@ private:
     QByteArray buffer;
 
     /**
+     * @brief con the associated connection
+     */
+    DataPlaneConnection* con;
+
+    /**
      * @brief defaultIface contains the default interface
      */
     static QString defaultIface;
     static char intToHexChar(int i);
 public:
-    explicit Proxy(const QString &name, const QString &regType, const QString &domain,
+    /**
+     * @brief Proxy
+     * @param friendUid: the friend for which this proxy is made, so we know where to send the captured data
+     *
+     * These would be the parameters corresponding to a Bonjour Record, a new one will be made
+     * along with a new IP for this proxy:
+     * @param name
+     * @param regType
+     * @param domain
+     * @param hostname
+     * @param port
+     *
+     *
+     * @param parent
+     */
+    explicit Proxy(const QString &friendUid, const QString &name, const QString &regType, const QString &domain,
                    const QString &hostname, quint16 port, QObject *parent = 0);
 
     /**

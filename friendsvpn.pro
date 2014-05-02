@@ -4,7 +4,7 @@
 #
 #-------------------------------------------------
 
-QT       += core gui network sql xml
+QT       += core gui network sql xml concurrent
 
 greaterThan(QT_MAJOR_VERSION, 4): QT += widgets
 
@@ -31,7 +31,8 @@ SOURCES += main.cpp \
     ph2phtp_parser.cpp \
     dataplane/dataplaneserver.cpp \
     dataplane/dataplaneconnection.cpp \
-    abstractplaneconnection.cpp
+    abstractplaneconnection.cpp \
+    dataplane/serverworker.cpp
 
 HEADERS  += \
     graphic/systray.h \
@@ -55,7 +56,8 @@ HEADERS  += \
     ph2phtp_parser.h \
     dataplane/dataplaneserver.h \
     dataplane/dataplaneconnection.h \
-    abstractplaneconnection.h
+    abstractplaneconnection.h \
+    dataplane/serverworker.h
 
 FORMS    +=
 

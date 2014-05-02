@@ -1,16 +1,12 @@
 #include "dataplaneclient.h"
 
-DataPlaneClient::DataPlaneClient(BonjourRecord& rec, QObject *parent) :
-    QObject(parent), reading(0)
+DataPlaneClient::DataPlaneClient(QHostAddress ip, QObject *parent) :
+    ip(ip), QObject(parent), reading(0)
 {
-    if (!rec.resolved)
-        throw "Record must be resolved to create a DataPlaneClient";
-    this->rec = rec;
-
     memset((void *) &remote_addr, 0, sizeof(struct sockaddr_storage));
     memset((void *) &local_addr, 0, sizeof(struct sockaddr_storage));
 
-    inet_pton(AF_INET6, rec.ips.at(0).toUtf8().data(), &remote_addr.s6.sin6_addr);
+    inet_pton(AF_INET6, ip.toString().toUtf8().data(), &remote_addr.s6.sin6_addr);
     remote_addr.s6.sin6_family = AF_INET6;
 #ifdef HAVE_SIN6_LEN
     remote_addr.s6.sin6_len = sizeof(struct sockaddr_in6);

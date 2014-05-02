@@ -35,3 +35,7 @@ bool AbstractPlaneConnection::removeMode(plane_mode mode) {
     }
     return true;
 }
+
+QString AbstractPlaneConnection::getUid() {
+    return friendUid;
+}

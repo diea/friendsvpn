@@ -19,7 +19,6 @@ private:
 public:
     explicit ControlPlaneConnection(QString uid, AbstractPlaneConnection *parent = 0);
     ~ControlPlaneConnection();
-    QString getUid();
 
     /**
      * @brief addMode will add the mode to the connection client

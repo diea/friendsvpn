@@ -1,6 +1,9 @@
 #include "connectioninitiator.h"
 #include "controlplane/controlplaneclient.h"
 #include "controlplane/controlplaneserver.h"
+#include "dataplane/dataplaneserver.h"
+#include "dataplane/dataplaneclient.h"
+#include "dataplane/dataplaneconnection.h"
 
 ConnectionInitiator* ConnectionInitiator::instance = NULL;
 
@@ -33,8 +36,11 @@ void ConnectionInitiator::run() {
 void ConnectionInitiator::startServer() {
     server = new ControlPlaneServer(cert, key, QHostAddress::AnyIPv6, CONTROLPLANELISTENPORT, this);
     server->start();
-    //threadedServ = new ThreadedCpServer(cert, key, QHostAddress::AnyIPv6, CONTROLPLANELISTENPORT, this);
-    //threadedServ->start();
+
+    dpServer = DataPlaneServer::getInstance();
+    dpServer->moveToThread(&dpServerThread);
+    connect(&dpServerThread, SIGNAL(started()), dpServer, SLOT(start()));
+    dpServerThread.start();
 }
 
 void ConnectionInitiator::startClients() {
@@ -43,6 +49,17 @@ void ConnectionInitiator::startClients() {
     foreach(User* frien_d, friends) {
         ControlPlaneClient* c = new ControlPlaneClient(*(frien_d->cert), key, QHostAddress(*(frien_d->ipv6)),
                                                        CONTROLPLANELISTENPORT, this);
+
+        QThread* dcThread = new QThread(); // dataplane is threaded
+        DataPlaneClient* dc = new DataPlaneClient(QHostAddress(*(frien_d->ipv6)));
+        //connect(dcThread, SIGNAL(started()), dc, SLOT
+        connect(dcThread, SIGNAL(finished()), dcThread, SLOT(deleteLater()));
+        dc->moveToThread(dcThread);
+        dcThread->start();
+
+        DataPlaneConnection* con = this->getDpConnection(*(frien_d->uid));
+        con->addMode(Emitting, dc);
+
         // TODO delete user?
         c->run();
         clients.append(c);
@@ -63,6 +80,24 @@ ControlPlaneConnection* ConnectionInitiator::getConnection(QString uid) {
     // doesn't exist, create a new one
     ControlPlaneConnection* newCon = new ControlPlaneConnection(uid);
     instance->connections.append(newCon);
+    mutex.unlock();
+    return newCon;
+}
+
+DataPlaneConnection* ConnectionInitiator::getDpConnection(QString uid) {
+    static QMutex mutex;
+    mutex.lock();
+    QListIterator< DataPlaneConnection * > i(instance->dpConnections);
+    while (i.hasNext()) {
+        DataPlaneConnection* nxt = i.next();
+        if (nxt->getUid() == uid) {
+            mutex.unlock();
+            return nxt;
+        }
+    }
+    // doesn't exist, create a new one
+    DataPlaneConnection* newCon = new DataPlaneConnection(uid);
+    instance->dpConnections.append(newCon);
     mutex.unlock();
     return newCon;
 }
