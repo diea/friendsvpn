@@ -230,8 +230,7 @@ QString Proxy::getPrefix() {
     while ((length = ifconfig.readLine(buf, 3000))) {
         QString curLine(buf);
         QStringList list = curLine.split(" ", QString::SkipEmptyParts);
-        //bool inet6 = false;
-        //qDebug() << list;
+
         if (list.at(0).contains("inet6")) {
 #ifdef __APPLE__
             if (!list.at(1).startsWith("fe80")) {
@@ -244,9 +243,7 @@ QString Proxy::getPrefix() {
                 QString ip = list.at(2);
                 int slashIndex = ip.indexOf("/");
                 QString prefixLength = ip.right(ip.length() - slashIndex - 1);
-                qDebug() << prefixLength;
                 ip.truncate(slashIndex);
-                qDebug() << ip;
                 ifconfig.close();
                 return stripIp(ip, prefixLength.toInt());
             }
@@ -254,6 +251,7 @@ QString Proxy::getPrefix() {
         }
     }
     ifconfig.close();
+    return QString("NULL");
 }
 
 QString Proxy::stripIp(QString ip, int prefix) {
@@ -282,9 +280,15 @@ QString Proxy::stripIp(QString ip, int prefix) {
         left--;
     }
 
+
     char newIp[INET6_ADDRSTRLEN];
     inet_ntop(AF_INET6, &ipv6network, newIp, sizeof(newIp));
-    return QString(newIp);
+    QString toReturn(newIp);
+
+    // remove the last ":" since we just want the prefix and not the whole IP
+    if (toReturn.count(":") > 4) toReturn.truncate(toReturn.length() - 2);
+
+    return toReturn;
 }
 
 QString Proxy::randomIP() {
