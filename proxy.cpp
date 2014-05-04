@@ -241,7 +241,7 @@ QString Proxy::getPrefix() {
             }
 #elif __GNUC__
             if (!list.at(1).startsWith("fe80")) {
-                QString ip = list.at(1);
+                QString ip = list.at(2);
                 int slashIndex = ip.indexOf("/");
                 QString prefixLength = ip.right(ip.length() - slashIndex);
                 qDebug() << prefixLength;
