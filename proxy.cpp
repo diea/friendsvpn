@@ -248,7 +248,7 @@ QString Proxy::getPrefix() {
                 ip.truncate(slashIndex);
                 qDebug() << ip;
                 ifconfig.close();
-                return stripIp(ip, list.at(3).toInt());
+                return stripIp(ip, prefixLength);
             }
 #endif
         }
