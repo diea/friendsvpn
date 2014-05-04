@@ -52,8 +52,20 @@ private:
      * @brief defaultIface contains the default interface
      */
     static QString defaultIface;
+
     static char intToHexChar(int i);
+
+    /**
+     * @brief stripIp
+     * @param ip
+     * @param prefix
+     * @return the ip "stripped", meaning the prefix's IP.
+     */
+
+    static QString randomIP();
+    static QString stripIp(QString ip, int prefix);
 public:
+    static QString getPrefix();
     /**
      * @brief Proxy
      * @param friendUid: the friend for which this proxy is made, so we know where to send the captured data
@@ -72,13 +84,8 @@ public:
     explicit Proxy(const QString &friendUid, const QString &name, const QString &regType, const QString &domain,
                    const QString &hostname, quint16 port, QObject *parent = 0);
 
-    /**
-     * @brief run: runs this proxy
-     */
-    void run();
-
     static QString getDefaultInterface();
-    static QString randomULA();
+
 signals:
 
 private slots:
@@ -86,7 +93,10 @@ private slots:
     void sendRawFinish(int exitCode);
     void readyRead();
 public slots:
-
+    /**
+     * @brief run: runs this proxy
+     */
+    void run();
 };
 
 #endif // PROXY_H

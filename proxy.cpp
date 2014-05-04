@@ -9,7 +9,7 @@ Proxy::Proxy(const QString &friendUid, const QString &name, const QString &regTy
     QString newip;
     do {
         // random ULA
-        newip = this->randomULA();
+        newip = this->randomIP();
         // check it doesn't exist
         QProcess testIfconfig;
         testIfconfig.start("/sbin/ifconfig", QStringList(defaultIface));
@@ -220,8 +220,77 @@ char Proxy::intToHexChar(int i) {
         default: return 'a';
     }
 }
-QString Proxy::randomULA() {
-    // generate random ULA
+
+QString Proxy::getPrefix() {
+    QProcess ifconfig;
+    ifconfig.start("/sbin/ifconfig", QStringList(defaultIface));
+    ifconfig.waitForReadyRead();
+    char buf[3000];
+    int length;
+    while ((length = ifconfig.readLine(buf, 3000))) {
+        QString curLine(buf);
+        QStringList list = curLine.split(" ", QString::SkipEmptyParts);
+        //bool inet6 = false;
+        //qDebug() << list;
+        if (list.at(0).contains("inet6")) {
+#ifdef __APPLE__
+            if (!list.at(1).startsWith("fe80")) {
+                QString ip = list.at(1);
+                ifconfig.close();
+                return stripIp(ip, list.at(3).toInt());
+            }
+#elif __GNUC__
+            if (!list.at(1).startsWith("fe80")) {
+                QString ip = list.at(1);
+                int slashIndex = ip.indexOf("/");
+                QString prefixLength = ip.right(ip.length() - slashIndex);
+                qDebug() << prefixLength;
+                ip.truncate(slashIndex);
+                qDebug() << ip;
+                ifconfig.close();
+                return stripIp(ip, list.at(3).toInt());
+            }
+#endif
+        }
+    }
+    ifconfig.close();
+}
+
+QString Proxy::stripIp(QString ip, int prefix) {
+    /* convert to network format to clear bytes out of prefix */
+    struct in6_addr ipv6network;
+    inet_pton(AF_INET6, ip.toUtf8().data(), &ipv6network);
+
+    int left = 128 - prefix;
+    for (int i = 127; i >= 0 && left > 0; i--) { // 16 bytes in ipv6network
+        unsigned char mask = (~(1 << i % 8));
+
+        // go to host order
+        unsigned char hostByte = 0;
+        for (int k = 0; k < 8; k++) {
+            hostByte |= ((ipv6network.s6_addr[i / 8] >> k) & 1) << (7-k);
+        }
+        hostByte &= mask;
+
+        // go back to network byte order
+        unsigned char newVal = 0;
+        for (int k = 0; k < 8; k++) {
+            newVal |= ((hostByte >> k) & 1) << (7-k);
+        }
+
+        ipv6network.s6_addr[i / 8] = newVal;
+        left--;
+    }
+
+    char newIp[INET6_ADDRSTRLEN];
+    inet_ntop(AF_INET6, &ipv6network, newIp, sizeof(newIp));
+    return QString(newIp);
+}
+
+QString Proxy::randomIP() {
+    // get prefix
+    //QString prefix =
+    // generate random IP
     srand(time(NULL));
 
     char v6buf[40];
