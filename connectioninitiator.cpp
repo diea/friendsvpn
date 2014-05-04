@@ -105,6 +105,9 @@ DataPlaneConnection* ConnectionInitiator::getDpConnection(QString uid) {
 void ConnectionInitiator::removeConnection(ControlPlaneConnection *con) {
     instance->connections.removeAll(con);
 }
+void ConnectionInitiator::removeConnection(ControlPlaneConnection *con) {
+    instance->dpConnections.removeAll(con);
+}
 
 QString ConnectionInitiator::getMyUid() {
     return instance->qSql->getLocalUid();

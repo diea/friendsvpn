@@ -65,6 +65,8 @@ public:
     DataPlaneConnection* getDpConnection(QString uid);
 
     void removeConnection(ControlPlaneConnection* con);
+    void removeConnection(DataPlaneConnection* con);
+
     /**
      * @brief getMyUid
      * @return the user's local uid
