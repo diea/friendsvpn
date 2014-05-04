@@ -286,7 +286,7 @@ QString Proxy::stripIp(QString ip, int prefix) {
     QString toReturn(newIp);
 
     // remove the last ":" since we just want the prefix and not the whole IP
-    if (toReturn.count(":") > 4) toReturn.truncate(toReturn.length() - 2);
+    if (toReturn.count(":") > 4) toReturn.truncate(toReturn.length() - 1);
 
     return toReturn;
 }
