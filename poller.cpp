@@ -9,8 +9,7 @@ Poller::Poller(QObject *parent) :
 }
 
 void Poller::run() {
-    //QTimer::singleShot(2000, this, SLOT(fetchXmlRPC()));
-    //qSql->uid = "1086104828"; // TODO change this
+    QTimer::singleShot(2000, this, SLOT(fetchXmlRPC()));
 }
 
 void Poller::fetchXmlRPC() {

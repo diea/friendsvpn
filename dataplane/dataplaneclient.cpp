@@ -5,7 +5,9 @@ DataPlaneClient::DataPlaneClient(QHostAddress ip, QObject *parent) :
 {
     memset((void *) &remote_addr, 0, sizeof(struct sockaddr_storage));
     memset((void *) &local_addr, 0, sizeof(struct sockaddr_storage));
+}
 
+void DataPlaneClient::run() {
     inet_pton(AF_INET6, ip.toString().toUtf8().data(), &remote_addr.s6.sin6_addr);
     remote_addr.s6.sin6_family = AF_INET6;
 #ifdef HAVE_SIN6_LEN

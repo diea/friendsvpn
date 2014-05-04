@@ -47,7 +47,7 @@ public:
 signals:
 
 public slots:
-
+    void run();
 };
 
 #endif // DATAPLANECLIENT_H
