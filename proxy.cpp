@@ -243,7 +243,7 @@ QString Proxy::getPrefix() {
             if (!list.at(1).startsWith("fe80")) {
                 QString ip = list.at(2);
                 int slashIndex = ip.indexOf("/");
-                QString prefixLength = ip.right(ip.length() - slashIndex);
+                QString prefixLength = ip.right(ip.length() - slashIndex - 1);
                 qDebug() << prefixLength;
                 ip.truncate(slashIndex);
                 qDebug() << ip;
