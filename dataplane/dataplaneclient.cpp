@@ -31,12 +31,12 @@ void DataPlaneClient::run() {
     bind(fd, (const struct sockaddr *) &local_addr, sizeof(struct sockaddr_in6));
 
     OpenSSL_add_ssl_algorithms();
-    SSL_load_error_strings();
+    //SSL_load_error_strings();
     ctx = SSL_CTX_new(DTLSv1_client_method());
 
     if(!SSL_CTX_set_cipher_list(ctx, "DEFAULT")) {
         fprintf(stderr, "ssl_ctx fail\n");
-        exit(-1);
+        return;
     }
 
     // get certificate and key from SQL & use them
@@ -51,7 +51,7 @@ void DataPlaneClient::run() {
 
     if (!SSL_CTX_use_certificate(ctx,x)) {
         qWarning() << "ERROR: no certificate found!";
-        exit(-1);
+        return;
     }
 
     if (x != NULL) X509_free(x);
@@ -67,7 +67,7 @@ void DataPlaneClient::run() {
 
     if (!SSL_CTX_use_PrivateKey(ctx, pkey)) {
         qWarning() << "ERROR: no private key found!";
-        exit(-1);
+        return;
     }
 
     if (pkey != NULL) EVP_PKEY_free(pkey);
@@ -75,7 +75,7 @@ void DataPlaneClient::run() {
 
     if (!SSL_CTX_check_private_key (ctx)) {
         qWarning() << "ERROR: invalid private key!";
-        exit(-1);
+        return;
     }
 
     SSL_CTX_set_verify_depth (ctx, 2);
@@ -92,8 +92,8 @@ void DataPlaneClient::run() {
 
     if (SSL_connect(ssl) < 0) {
         perror("SSL_connect");
-        printf("%s\n", ERR_error_string(ERR_get_error(), buf));
-        exit(-1);
+        //printf("%s\n", ERR_error_string(ERR_get_error(), buf));
+        return;
     }
 
     /* Set and activate timeouts */
@@ -134,12 +134,12 @@ void DataPlaneClient::sendBytes(const char *bytes, socklen_t len) {
                 break;
             case SSL_ERROR_SSL:
                 printf("SSL write error: ");
-                printf("%s (%d)\n", ERR_error_string(ERR_get_error(), buf), SSL_get_error(ssl, len));
-                exit(1);
+                //printf("%s (%d)\n", ERR_error_string(ERR_get_error(), buf), SSL_get_error(ssl, len));
+                return;
                 break;
             default:
                 printf("Unexpected error while writing!\n");
-                exit(1);
+                return;
                 break;
         }
     }

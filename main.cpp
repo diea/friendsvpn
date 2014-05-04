@@ -56,11 +56,27 @@ int main(int argc, char *argv[])
 
     ConnectionInitiator* con = ConnectionInitiator::getInstance();
     con->run();
+#if 0
+    QThread* dcThread = new QThread(); // dataplane is threaded
 
-    /*DataPlaneConnection* dp = con->getDpConnection("100008078109463");
-    dp->sendBytes("Testitest!\n");*/
+    DataPlaneClient* dc = new DataPlaneClient(QHostAddress("::1"));
+    QObject::connect(dcThread, SIGNAL(started()), dc, SLOT(run()));
+    //QObject::connect(dcThread, SIGNAL(finished()), dcThread, SLOT(deleteLater()));
+    dc->moveToThread(dcThread);
+    dcThread->start();
 
+    QThread* dcThread1 = new QThread(); // dataplane is threaded
+    DataPlaneClient* dc1 = new DataPlaneClient(QHostAddress("fd3b:e180:cbaa:2:7058:3388:c3aa:8355"));
+    QObject::connect(dcThread1, SIGNAL(started()), dc1, SLOT(run()));
+    //QObject::connect(dcThread1, SIGNAL(finished()), dcThread1, SLOT(deleteLater()));
+    dc1->moveToThread(dcThread1);
+    dcThread1->start();
 
+    /**/
+#endif
+    sleep(5);
+    DataPlaneConnection* dp = con->getDpConnection("100008078109463");
+    dp->sendBytes("Fack!\n", 6);
     return a.exec();
 }
 #endif
