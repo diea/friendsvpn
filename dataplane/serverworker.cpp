@@ -1,5 +1,5 @@
 #include "serverworker.h"
-#include <Qdebug>
+#include <QDebug>
 #include <QThread>
 ServerWorker::ServerWorker(addrUnion server_addr, addrUnion client_addr, SSL* ssl,QObject *parent) :
     server_addr(server_addr), client_addr(client_addr), ssl(ssl), QObject(parent)
