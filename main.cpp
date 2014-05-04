@@ -13,7 +13,7 @@
 #include "proxy.h"
 #include <QDebug>
 
-#if
+#if 0
 int main(int argc, char *argv[])
 {
     QApplication a(argc, argv);

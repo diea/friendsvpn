@@ -105,7 +105,7 @@ DataPlaneConnection* ConnectionInitiator::getDpConnection(QString uid) {
 void ConnectionInitiator::removeConnection(ControlPlaneConnection *con) {
     instance->connections.removeAll(con);
 }
-void ConnectionInitiator::removeConnection(ControlPlaneConnection *con) {
+void ConnectionInitiator::removeConnection(DataPlaneConnection *con) {
     instance->dpConnections.removeAll(con);
 }
 
