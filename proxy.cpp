@@ -5,6 +5,7 @@ Proxy::Proxy(const QString &friendUid, const QString &name, const QString &regTy
              const QString &hostname, quint16 port, QObject *parent) :
     friendUid(friendUid), QObject(parent)
 {
+    qDebug() << "Proxy constructor!";
     bool newIp = true; // the new IP has not been assigned to iface yet or is not a duplicate
     QString newip;
     do {

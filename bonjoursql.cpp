@@ -74,6 +74,7 @@ void BonjourSQL::initDB() {
 }
 
 bool BonjourSQL::insertService(QString name, QString trans_prot) {
+    qryMut.lock();
     QSqlQuery query = QSqlQuery(QSqlDatabase::database());
     query.prepare("INSERT INTO Service VALUES(?, ?, ?)");
     query.bindValue(0, name);
@@ -83,11 +84,13 @@ bool BonjourSQL::insertService(QString name, QString trans_prot) {
     // test query
     qDebug() << "SQL SERVICE: " << "INSERT INTO Service VALUES(" + name +", "+uid+", "+trans_prot+")";
     qDebug() << "Insert Service error" << query.lastError();
+    qryMut.unlock();
     return true;
 }
 
 // TODO test this
 bool BonjourSQL::removeService(QString name, QString trans_prot) {
+    qryMut.lock();
     QSqlQuery query = QSqlQuery(QSqlDatabase::database());
     query.prepare("DELETE FROM Authorized_user WHERE Device_Service_name = ? AND Device_Service_User_uid = ? AND Device_Service_Trans_prot = ?");
     query.bindValue(0, name);
@@ -106,11 +109,13 @@ bool BonjourSQL::removeService(QString name, QString trans_prot) {
     query.bindValue(1, uid);
     query.bindValue(2, trans_prot);
     query.exec();
+    qryMut.unlock();
     // test query
     return true;
 }
 
 bool BonjourSQL::insertDevice(QString hostname, int port, QString service_name, QString service_trans_prot, QString record_name) {
+    qryMut.lock();
     QSqlQuery query = QSqlQuery(QSqlDatabase::database());
     query.prepare("INSERT INTO Record VALUES(?, ?, ?, ?, ?, ?)");
     query.bindValue(0, hostname);
@@ -123,6 +128,7 @@ bool BonjourSQL::insertDevice(QString hostname, int port, QString service_name, 
     // test qry
     qDebug() << hostname << " " << port << " " << service_name << " " << service_trans_prot << " " << record_name;
     qDebug() << "Insert device error : " << db.lastError().text();
+    qryMut.unlock();
     return true;
 }
 

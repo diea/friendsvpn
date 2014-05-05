@@ -38,6 +38,7 @@ bool PH2PHTP_Parser::parseControlPlane(const char *buf, QString friendUid) {
         }
 
         // TODO run proxy in new thread
+        qDebug() << "Running new proxy!!";
         QThread* newProxyThread = new QThread();
         Proxy* newProxy = new Proxy(friendUid, name, type, ".friendsvpn.", hostname, port);
         connect(newProxyThread, SIGNAL(started()), newProxy, SLOT(run));
