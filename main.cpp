@@ -54,10 +54,12 @@ int main(int argc, char *argv[])
 
     BonjourSQL* qSql = BonjourSQL::getInstance();
 
+    // discover services
+    BonjourDiscoverer* disco = BonjourDiscoverer::getInstance(qApp);
+    disco->discoverServices();
+
     ConnectionInitiator* con = ConnectionInitiator::getInstance();
     con->run();
-
-
 
     return a.exec();
 }
