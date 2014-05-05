@@ -32,6 +32,7 @@ Proxy::Proxy(const QString &friendUid, const QString &name, const QString &regTy
     // add it with ifconfig
     QProcess ifconfig;
     // TODO include in the app bundle to launch from there
+    // TODO check DAD
     ifconfig.start(QString(HELPERPATH) + "ifconfighelp");
     ifconfig.waitForReadyRead();
     qDebug() << ifconfig.readAllStandardOutput();
@@ -146,14 +147,17 @@ void Proxy::readyRead() {
     char packet[2000];
     pcap.read(packet, left);
 
+
     // TEST: send over raw socket
-    QString size("[");
+    qDebug() << "Read" << left << "bytes";
+
+    /*QString size("[");
     qDebug() << "size" << left;
     size.append(QString::number(left));
     size.append("]");
     sendRaw.write(size.toUtf8().data());
     sendRaw.write(packet, left);
-    // end test
+    // end test*/
 
     left = 0;
 }
@@ -221,7 +225,7 @@ char Proxy::intToHexChar(int i) {
     }
 }
 
-QString Proxy::getPrefix() {
+struct prefix Proxy::getPrefix() {
     QProcess ifconfig;
     ifconfig.start("/sbin/ifconfig", QStringList(defaultIface));
     ifconfig.waitForReadyRead();
@@ -233,25 +237,35 @@ QString Proxy::getPrefix() {
 
         if (list.at(0).contains("inet6")) {
 #ifdef __APPLE__
-            if (!list.at(1).startsWith("fe80")) {
+            if (!list.at(1).startsWith("fe80") && list.at(1).startsWith("fd3b")) { // remove fd3b & maybe remove ULA.
                 QString ip = list.at(1);
                 ifconfig.close();
-                return stripIp(ip, list.at(3).toInt());
+
+                struct prefix p;
+                p.str = stripIp(ip, list.at(3).toInt());
+                p.len = list.at(3).toInt();
+                return p;
             }
 #elif __GNUC__
-            if (!list.at(1).startsWith("fe80")) {
+            if (!list.at(2).startsWith("fe80") && list.at(2).startsWith("fd3b")) {
                 QString ip = list.at(2);
                 int slashIndex = ip.indexOf("/");
                 QString prefixLength = ip.right(ip.length() - slashIndex - 1);
                 ip.truncate(slashIndex);
                 ifconfig.close();
-                return stripIp(ip, prefixLength.toInt());
+
+                struct prefix p;
+                p.str = stripIp(ip, prefixLength.toInt());
+                p.len = prefixLength.toInt();
+                return p;
             }
 #endif
         }
     }
     ifconfig.close();
-    return QString("NULL");
+    struct prefix p; // prefix of len 0 => invalid.
+    p.len = 0;
+    return p;
 }
 
 QString Proxy::stripIp(QString ip, int prefix) {
@@ -293,22 +307,26 @@ QString Proxy::stripIp(QString ip, int prefix) {
 
 QString Proxy::randomIP() {
     // get prefix
-    //QString prefix =
+    struct prefix p = getPrefix();
+    qDebug() << "prefix " <<  p.str;
+
     // generate random IP
     srand(time(NULL));
-
+    char* prefixBuff = p.str.toUtf8().data();
     char v6buf[40];
-    v6buf[0] = 'f';
-    v6buf[1] = 'd';
+    strcpy(v6buf, prefixBuff);
 
-    int nbLeft = 30;
-    int index = 2;
-    int column = 2;
+    // we don't bother with bits but just use blocks of bytes after the "prefix"
+    int nbLeft = (128 - p.len) / 4; // divide by 4 since each char represents 4 bits in hex
+    int index = p.str.length();
+
+    int column = 0;
     while (nbLeft > 0) {
         if (column == 4) {
             v6buf[index] = ':';
             index++;
             column = 0;
+            continue;
         }
         v6buf[index] = intToHexChar(rand() % 16);
         index++;

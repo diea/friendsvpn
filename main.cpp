@@ -52,12 +52,13 @@ int main(int argc, char *argv[])
     QApplication a(argc, argv);
     a.setQuitOnLastWindowClosed(false);
 
-    //BonjourSQL* qSql = BonjourSQL::getInstance();
+    BonjourSQL* qSql = BonjourSQL::getInstance();
 
-/*    ConnectionInitiator* con = ConnectionInitiator::getInstance();
-    con->run();*/
+    ConnectionInitiator* con = ConnectionInitiator::getInstance();
+    con->run();
 
-    qDebug() << Proxy::getPrefix();
+
+
     return a.exec();
 }
 #endif

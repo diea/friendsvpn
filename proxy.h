@@ -19,6 +19,11 @@
 #include "bonjoursql.h"
 #include "dataplane/dataplaneconnection.h"
 
+struct prefix {
+    QString str;
+    int len;
+};
+
 /**
  * @brief The Proxy class
  * Generates a new IPv6 for this host, then registers an associated bonjour service
@@ -62,10 +67,11 @@ private:
      * @return the ip "stripped", meaning the prefix's IP.
      */
 
-    static QString randomIP();
     static QString stripIp(QString ip, int prefix);
+    static struct prefix getPrefix();
+    static QString randomIP();
+
 public:
-    static QString getPrefix();
     /**
      * @brief Proxy
      * @param friendUid: the friend for which this proxy is made, so we know where to send the captured data
