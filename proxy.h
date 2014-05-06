@@ -34,6 +34,12 @@ class Proxy : public QObject
 {
     Q_OBJECT
 private:
+    /**
+     * @brief proxyHashes each proxy will be identified by a hash of its constructor parameters
+     * so that we don't create twice the same proxy
+     */
+    static QList<QString> proxyHashes;
+
     BonjourRecord rec;
     int sockType; // to know if SOCK_STREAM or SOCK_DATAGRAM
     int ipProto; // again, TCP or UDP
@@ -86,6 +92,8 @@ public:
      *
      *
      * @param parent
+     *
+     * throws integer "1" if the proxy already exists
      */
     explicit Proxy(const QString &friendUid, const QString &name, const QString &regType, const QString &domain,
                    const QString &hostname, quint16 port, QObject *parent = 0);

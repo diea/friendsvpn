@@ -41,7 +41,7 @@ BonjourSQL* BonjourSQL::getInstance() {
 }
 
 BonjourSQL::~BonjourSQL() {
-    qDebug() << "BONJOUR SQL DESTRUCTOR HAS BEEN CALLED";
+    qDebug() << "BonjourSQL destructor called!";
 }
 
 void BonjourSQL::uidOK() {
@@ -330,7 +330,8 @@ QList < BonjourRecord* > BonjourSQL::getRecordsFor(QString friendUid) {
                     << newRecord.replyDomain;*/
         foreach (BonjourRecord* rec, allActiveRecords) { // if record found in active record, save it
             if (*rec == newRecord) {
-                list.append(rec);
+                if (rec->resolved)
+                    list.append(rec);
                 //qDebug() << "yeay appending to list";
             }
         }

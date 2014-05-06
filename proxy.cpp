@@ -1,12 +1,21 @@
 #include "proxy.h"
 #include "unixsignalhandler.h"
+#include <QCryptographicHash>
 
 QString Proxy::defaultIface = Proxy::getDefaultInterface();
-
+QList<QString> Proxy::proxyHashes;
 Proxy::Proxy(const QString &friendUid, const QString &name, const QString &regType, const QString &domain,
              const QString &hostname, quint16 port, QObject *parent) :
     friendUid(friendUid), QObject(parent)
 {
+    QString allParams = friendUid + name + regType + domain + hostname + QString::number(port);
+    QByteArray hash = QCryptographicHash::hash(allParams.toUtf8().data(), QCryptographicHash::Md5);
+    QString newHash(hash);
+    if (proxyHashes.contains(newHash)) {
+        throw 1; // already exists, we throw int "1"
+    }
+    proxyHashes.append(newHash);
+
     qDebug() << "Proxy constructor!";
     bool newIp = true; // the new IP has not been assigned to iface yet or is not a duplicate
     QString newip;
@@ -62,17 +71,33 @@ Proxy::Proxy(const QString &friendUid, const QString &name, const QString &regTy
 }
 
 void Proxy::run() {
-    // create socket and bind for the kernel
-    QProcess bindSocket;
-    QStringList bindSocketArgs;
-    bindSocketArgs.append(QString::number(sockType));
-    bindSocketArgs.append(QString::number(ipProto));
-    bindSocketArgs.append(QString::number(rec.port));
-    bindSocketArgs.append(rec.ips.at(0));
-    bindSocket.start(QString(HELPERPATH) + "newSocket", bindSocketArgs);
-    bindSocket.waitForFinished();
-    bindSocket.close();
-    qDebug() << "bindSocket exit code" << bindSocket.exitCode();
+    bool bound = false;
+    int port = rec.port;
+    while (!bound) {
+        // create socket and bind for the kernel
+        QProcess bindSocket;
+        QStringList bindSocketArgs;
+        bindSocketArgs.append(QString::number(sockType));
+        bindSocketArgs.append(QString::number(ipProto));
+        bindSocketArgs.append(QString::number(port));
+        bindSocketArgs.append(rec.ips.at(0));
+        qDebug() << "bind socket args" << bindSocketArgs;
+        bindSocket.start(QString(HELPERPATH) + "newSocket", bindSocketArgs);
+        if (bindSocket.waitForFinished(200)) { // 200ms should be plenty enough for the process to fail on bind
+            if (bindSocket.exitCode() == 3) {
+                if (port < 60000) {
+                    port = 60000 + port;
+                } else {
+                    port++;
+                }
+                if (port >= 65535)
+                    qFatal("Port escalation higher than 65535");
+                qDebug() << "Could not bind on port " << rec.port << "gonna use " << QString::number(port);
+            }
+        } else {
+            bound = true;
+        }
+    }
 #if 0 // this is now done inside the bindSocket process => need root to bind to local ports
     struct sockaddr_in6 serv_addr;
     int fd = socket(AF_INET6, sockType, ipProto);

@@ -3,11 +3,21 @@
 
 #include <QObject>
 #include <QProcess>
-
+/**
+ * @brief The UnixSignalHandler class will handle the SIGTERM and SIGINT signals to clearup things
+ * that the app must clean before exiting.
+ *
+ * Inspired by http://qt-project.org/doc/qt-4.8/unix-signals.html and the man 2 sigaction
+ */
 class UnixSignalHandler : public QObject
 {
     Q_OBJECT
 private:
+    /**
+     * @brief setup_unix_signal_handlers init by using the sigaction system call to designate
+     * termSignalHandler as the handler for both those signals
+     * @return 0 on success and > 0 on failure
+     */
     static int setup_unix_signal_handlers();
 
     QList<QProcess*> listOfProcessToKill;
@@ -20,11 +30,6 @@ public:
     void addQProcess(QProcess* p);
 
     static void termSignalHandler(int unused);
-
-signals:
-
-public slots:
-
 };
 
 #endif // UNIXSIGNALHANDLER_H

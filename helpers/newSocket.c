@@ -32,8 +32,12 @@ int main(int argc, char** argv) {
     serv_addr.sin6_family = AF_INET6;
     serv_addr.sin6_port = htons(portno);
     if (bind(fd, (struct sockaddr *) &serv_addr, sizeof(serv_addr)) < 0) {
+        fprintf(stderr, "error on bind\n");
         return 3;
     }
+    fprintf(stderr, "all is well!\n");
 
+    getchar(); // press any key to quit
+    
     return 0;
 }
