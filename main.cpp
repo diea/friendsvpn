@@ -11,6 +11,7 @@
 #include "dataplane/dataplaneserver.h"
 #include "dataplane/dataplaneclient.h"
 #include "proxy.h"
+#include "unixsignalhandler.h"
 #include <QDebug>
 
 #if 0
@@ -52,6 +53,9 @@ int main(int argc, char *argv[])
     QApplication a(argc, argv);
     a.setQuitOnLastWindowClosed(false);
 
+    // init signal handler
+    UnixSignalHandler* u = UnixSignalHandler::getInstance();
+
     BonjourSQL* qSql = BonjourSQL::getInstance();
 
     // discover services
@@ -60,6 +64,12 @@ int main(int argc, char *argv[])
 
     ConnectionInitiator* con = ConnectionInitiator::getInstance();
     con->run();
+
+    /*QThread* newProxyThread = new QThread();
+    Proxy* newProxy = new Proxy("100008078109463", "diea-VirtualBox-3", "_udisks-ssh._tcp.", ".friendsvpn.", "diea-VirtualBox-3.local", 2224);
+    QObject::connect(newProxyThread, SIGNAL(started()), newProxy, SLOT(run()));
+    QObject::connect(newProxyThread, SIGNAL(finished()), newProxyThread, SLOT(deleteLater()));
+    newProxyThread->start();*/
 
     return a.exec();
 }

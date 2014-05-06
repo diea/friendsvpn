@@ -1,5 +1,6 @@
 #include "controlplaneconnection.h"
 #include "connectioninitiator.h"
+#include "ph2phtp_parser.h"
 
 #include <QDebug>
 ControlPlaneConnection::ControlPlaneConnection(QString uid, AbstractPlaneConnection *parent) :
@@ -50,6 +51,8 @@ bool ControlPlaneConnection::addMode(plane_mode mode, QObject *socket) {
 void ControlPlaneConnection::readBuffer(const char* buf) {
     qDebug() << "Reading buffer";
     qDebug() << buf;
+    PH2PHTP_Parser parser;
+    parser.parseControlPlane(buf, friendUid);
     qDebug() << "end of reading buffer";
 }
 

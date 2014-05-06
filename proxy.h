@@ -40,7 +40,7 @@ private:
 
     QString friendUid;
 
-    QProcess pcap;
+    QProcess* pcap;
     QProcess sendRaw;
     /**
      * @brief buffer used to buffer "left" bytes until packet has been read

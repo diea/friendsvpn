@@ -27,9 +27,9 @@ int main(int argc, char** argv) {
 
   	printf("%s\n", command);
 
-	//system(command);
-
-	char line[2000];
+	  system(command);
+#if 0
+	  char line[2000];
   	
   	/* Read the output a line at a time - output it. */
   	FILE *fp;
@@ -53,7 +53,7 @@ int main(int argc, char** argv) {
 
   	/* close */
   	pclose(fp);
-
+#endif
 
 	return 0;
 }

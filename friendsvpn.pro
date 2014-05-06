@@ -32,7 +32,8 @@ SOURCES += main.cpp \
     dataplane/dataplaneserver.cpp \
     dataplane/dataplaneconnection.cpp \
     abstractplaneconnection.cpp \
-    dataplane/serverworker.cpp
+    dataplane/serverworker.cpp \
+    unixsignalhandler.cpp
 
 HEADERS  += \
     graphic/systray.h \
@@ -57,7 +58,8 @@ HEADERS  += \
     dataplane/dataplaneserver.h \
     dataplane/dataplaneconnection.h \
     abstractplaneconnection.h \
-    dataplane/serverworker.h
+    dataplane/serverworker.h \
+    unixsignalhandler.h
 
 FORMS    +=
 

@@ -10,6 +10,9 @@ bool PH2PHTP_Parser::parseControlPlane(const char *buf, QString friendUid) {
 
     QStringList list = packet.split("\r\n");
 
+    qDebug() << "parser list!";
+    qDebug() << list;
+
     if (!list.at(list.length() - 1).isEmpty())
         return false;
 
@@ -29,11 +32,11 @@ bool PH2PHTP_Parser::parseControlPlane(const char *buf, QString friendUid) {
                 type = keyValuePair.at(1);
             } else if (keyValuePair.at(0) == "Port") {
                 port = keyValuePair.at(1).toInt();
-            } else
-                return false; // wrong format of packet
+            }
         }
 
         if (hostname.isEmpty() || name.isEmpty() || type.isEmpty() || !port) {
+            qDebug() << "ERROR: Bonjour packet wrong format";
             return false;
         }
 
@@ -41,7 +44,7 @@ bool PH2PHTP_Parser::parseControlPlane(const char *buf, QString friendUid) {
         qDebug() << "Running new proxy!!";
         QThread* newProxyThread = new QThread();
         Proxy* newProxy = new Proxy(friendUid, name, type, ".friendsvpn.", hostname, port);
-        connect(newProxyThread, SIGNAL(started()), newProxy, SLOT(run));
+        connect(newProxyThread, SIGNAL(started()), newProxy, SLOT(run()));
         connect(newProxyThread, SIGNAL(finished()), newProxyThread, SLOT(deleteLater()));
         newProxyThread->start();
     }
