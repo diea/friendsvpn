@@ -63,8 +63,6 @@ int main(int argc, char *argv[])
     BonjourDiscoverer* disco = BonjourDiscoverer::getInstance(qApp);
     disco->discoverServices();
 
-    sleep(3); // leave time to discoverers to do their job
-
     ConnectionInitiator* con = ConnectionInitiator::getInstance();
     con->run();
 

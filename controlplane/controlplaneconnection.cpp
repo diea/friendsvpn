@@ -58,6 +58,7 @@ void ControlPlaneConnection::readBuffer(const char* buf) {
 void ControlPlaneConnection::sendBonjour() {
     //qDebug() << "sendBonjour() !";
     static QMutex mutex; // XXX should maybe mutex more than this function (with the mode that can change)
+    sleep(2);
     mutex.lock();
     QSslSocket* toWrite; // the socket on which the bonjour packets are to be sent
     //qDebug() << "passed the lock in sendbonjour";
