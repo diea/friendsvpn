@@ -330,7 +330,7 @@ QList < BonjourRecord* > BonjourSQL::getRecordsFor(QString friendUid) {
                     << newRecord.replyDomain;*/
         foreach (BonjourRecord* rec, allActiveRecords) { // if record found in active record, save it
             if (*rec == newRecord) {
-                if (rec->resolved)
+                //if (rec->resolved) TODO
                     list.append(rec);
                 //qDebug() << "yeay appending to list";
             }
