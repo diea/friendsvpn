@@ -134,7 +134,8 @@ void DataPlaneConnection::sendBytes(const char *buf, int len, QString& hash, int
     header = header  % "DATA\r\n"
             % "Hash:" % hash % "\r\n"
             % "Trans:" % trans % "\r\n"
-            % "Length:" % QString::number(len) % "\r\n";
+            % "Length:" % QString::number(len) % "\r\n"
+            % "\r\n";
     QByteArray headerBytes = header.toUtf8();
     int headerLen = headerBytes.length();
 
