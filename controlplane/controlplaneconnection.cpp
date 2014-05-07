@@ -94,7 +94,12 @@ void ControlPlaneConnection::sendBonjour() {
     //qDebug() << "Unlocking mutex";
     mutex.unlock();
     //qDebug("Leaving sendBonjour()");
-    QTimer::singleShot(10000, this, SLOT(sendBonjour())); // every 5 minutes | TODO make button to force!
+    static bool first = true;
+    if (first) {
+        QTimer::singleShot(10000, this, SLOT(sendBonjour()));
+        first = false;
+    }
+    QTimer::singleShot(300000, this, SLOT(sendBonjour())); // every 5 minutes | TODO make button to force!
 }
 
 void ControlPlaneConnection::wasDisconnected() {
