@@ -1,5 +1,6 @@
 #include "unixsignalhandler.h"
 #include <signal.h>
+#include <QMutex>
 
 UnixSignalHandler* UnixSignalHandler::instance = NULL;
 
