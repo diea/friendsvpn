@@ -107,7 +107,7 @@ void DataPlaneConnection::readBuffer(const char* buf) {
             qDebug() << "ntohs";
             *srcPort = ntohs(*srcPort);
             //qint16 srcPort = static_cast<qint16>(static_cast<void*>(buf));
-            qDebug() << "srcPort is :" << srcPort;
+            qDebug() << "srcPort is :" << *srcPort;
 
             //prox = new ProxyClient(hash, )
         //}
