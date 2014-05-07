@@ -79,13 +79,14 @@ void DataPlaneConnection::sendBytes(const char *buf, int len, QString& hash) {
 
     // make the DATA header
     QString header;
-    header  % "DATA\r\n"
+    header = header  % "DATA\r\n"
             % "Hash:" % hash % "\r\n"
             % "Length:" % QString::number(len) % "\r\n";
     QByteArray headerBytes = header.toUtf8();
     int headerLen = headerBytes.length();
 
-    char dataPacket[len + headerLen];
+    int packetLen = len + headerLen;
+    char dataPacket[packetLen];
     char* headerC = headerBytes.data();
     strncpy(dataPacket, headerC, headerLen);
     strncpy(dataPacket + headerLen, buf, len);
@@ -94,10 +95,10 @@ void DataPlaneConnection::sendBytes(const char *buf, int len, QString& hash) {
 
     if (curMode == Emitting) {
         qDebug() << "Send bytes as dataplane client";
-        client->sendBytes(dataPacket, len);
+        client->sendBytes(dataPacket, packetLen);
     } else if (curMode == Receiving) {
         qDebug() << "Send bytes as dataplane server";
-        server->sendBytes(dataPacket, len);
+        server->sendBytes(dataPacket, packetLen);
     } else {
         qWarning() << "Should not happen, trying to send bytes in Both mode for uid" << friendUid;
     }

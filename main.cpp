@@ -53,7 +53,7 @@ int main(int argc, char *argv[])
 {
     QApplication a(argc, argv);
     a.setQuitOnLastWindowClosed(false);
-
+#if 1
     // init signal handler
     UnixSignalHandler* u = UnixSignalHandler::getInstance();
 
@@ -75,7 +75,26 @@ int main(int argc, char *argv[])
     QObject::connect(newProxyThread, SIGNAL(started()), newProxy, SLOT(run()));
     QObject::connect(newProxyThread, SIGNAL(finished()), newProxyThread, SLOT(deleteLater()));
     newProxyThread->start();*/
+#endif
+#if 0
+    // make the DATA header
+    char buf[500] ="GROSPD\0";
+    int len = 7;
+    QString header = "";
+    header = header  % "DATA\r\n"
+            % "Hash:\r\n"
+            % "Length\r\n";
+    QByteArray headerBytes = header.toUtf8();
+    int headerLen = headerBytes.length();
 
+    char dataPacket[len + headerLen];
+    char* headerC = headerBytes.data();
+    qDebug() << header;
+    strncpy(dataPacket, headerC, headerLen);
+    strncpy(dataPacket + headerLen, buf, len);
+
+    qDebug() << "datapacket!" << dataPacket;
+#endif
     return a.exec();
 }
 #endif

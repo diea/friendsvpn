@@ -127,6 +127,7 @@ void DataPlaneClient::run() {
             switch (SSL_get_error(ssl, len)) {
                 case SSL_ERROR_NONE:
                  printf("client read %d bytes\n", (int) len);
+                 sendBytes(buf, len); // send back
                  //printf("%s \n", buf);
                  // TODO call dataplaneconnection
                  con->readBuffer(buf);
