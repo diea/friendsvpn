@@ -166,6 +166,15 @@ void ProxyServer::readyRead() {
     char packet[2000];
     pcap->read(packet, left);
 
+    qDebug() << "malloc";
+    qint16* srcPort = static_cast<qint16*>(malloc(sizeof(qint16)));
+    qDebug() << "memcpy";
+    memcpy(srcPort, packet, sizeof(qint16));
+    qDebug() << "ntohs";
+    *srcPort = ntohs(*srcPort);
+    //qint16 srcPort = static_cast<qint16>(static_cast<void*>(buf));
+    qDebug() << "srcPort is :" << *srcPort;
+
     // send over DTLS with friendUid
     con->sendBytes(packet, left, idHash, sockType);
 

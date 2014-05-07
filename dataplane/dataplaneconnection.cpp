@@ -69,18 +69,19 @@ void DataPlaneConnection::readBuffer(const char* buf) {
     QString packet(buf);
 
     QStringList list = packet.split("\r\n");
-
+    QString header;
     if (list.at(0) == "DATA") {
         QString hash;
         QString trans;
         int length;
-        char* buf; // packet
-
+        const char* packetBuf; // packet
+        header = header % "DATA\r\n";
         for (int i = 1; i < list.length() - 1 ; i++) {
-
+            header = header % list.at(i) % "\r\n";
             if (list.at(i).isEmpty()) {
                 if (!list.at(i + 1).isEmpty()) {
-                    buf = list.at(i + 1).toUtf8().data();
+                    QByteArray headerBytes = header.toUtf8();
+                    packetBuf = buf + headerBytes.length();
                 }
             } else {
                 QStringList keyValuePair = list.at(i).split(":");
@@ -103,7 +104,8 @@ void DataPlaneConnection::readBuffer(const char* buf) {
             qDebug() << "malloc";
             qint16* srcPort = static_cast<qint16*>(malloc(sizeof(qint16)));
             qDebug() << "memcpy";
-            memcpy(srcPort, buf, sizeof(qint16));
+            memcpy(srcPort, packetBuf, sizeof(qint16));
+            qDebug() << "srcPort before ntohs" << *srcPort;
             qDebug() << "ntohs";
             *srcPort = ntohs(*srcPort);
             //qint16 srcPort = static_cast<qint16>(static_cast<void*>(buf));

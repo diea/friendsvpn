@@ -11,6 +11,7 @@
 #include "dataplane/dataplaneserver.h"
 #include "dataplane/dataplaneclient.h"
 #include "proxy.h"
+#include "proxyserver.h"
 #include "unixsignalhandler.h"
 //#include "testextend.h"
 #include <QDebug>
@@ -53,7 +54,6 @@ int main(int argc, char *argv[])
 {
     QApplication a(argc, argv);
     a.setQuitOnLastWindowClosed(false);
-#if 1
     // init signal handler
     UnixSignalHandler* u = UnixSignalHandler::getInstance();
 
@@ -71,30 +71,11 @@ int main(int argc, char *argv[])
     con->run();
 
     /*QThread* newProxyThread = new QThread();
-    Proxy* newProxy = new Proxy("100008078109463", "diea-VirtualBox-3", "_udisks-ssh._tcp.", ".friendsvpn.", "diea-VirtualBox-3.local", 2224);
+    ProxyServer* newProxy = new ProxyServer("100008078109463", "diea-VirtualBox-3", "_udisks-ssh._tcp.", ".friendsvpn.", "diea-VirtualBox-3.local", 2224);
     QObject::connect(newProxyThread, SIGNAL(started()), newProxy, SLOT(run()));
     QObject::connect(newProxyThread, SIGNAL(finished()), newProxyThread, SLOT(deleteLater()));
     newProxyThread->start();*/
-#endif
-#if 0
-    // make the DATA header
-    char buf[500] ="GROSPD\0";
-    int len = 7;
-    QString header = "";
-    header = header  % "DATA\r\n"
-            % "Hash:\r\n"
-            % "Length\r\n";
-    QByteArray headerBytes = header.toUtf8();
-    int headerLen = headerBytes.length();
 
-    char dataPacket[len + headerLen];
-    char* headerC = headerBytes.data();
-    qDebug() << header;
-    strncpy(dataPacket, headerC, headerLen);
-    strncpy(dataPacket + headerLen, buf, len);
-
-    qDebug() << "datapacket!" << dataPacket;
-#endif
     return a.exec();
 }
 #endif
