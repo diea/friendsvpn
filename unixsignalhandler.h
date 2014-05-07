@@ -27,7 +27,18 @@ private:
 public:
     static UnixSignalHandler* getInstance();
 
+    /**
+     * @brief addQProcess adds a QProcess to close before shutting down
+     * @param p
+     */
     void addQProcess(QProcess* p);
+
+    /**
+     * @brief addIp will add an IP to clean-up when program shuts down
+     * @param ip
+     * @param interface
+     */
+    void addIp(QString ip, QString interface);
 
     static void termSignalHandler(int unused);
 };

@@ -1,8 +1,10 @@
 #include "serverworker.h"
+#include "dataplaneconnection.h"
+
 #include <QDebug>
 #include <QThread>
-ServerWorker::ServerWorker(addrUnion server_addr, addrUnion client_addr, SSL* ssl,QObject *parent) :
-    server_addr(server_addr), client_addr(client_addr), ssl(ssl), QObject(parent)
+ServerWorker::ServerWorker(addrUnion server_addr, addrUnion client_addr, SSL* ssl, DataPlaneConnection* con, QObject *parent) :
+    server_addr(server_addr), client_addr(client_addr), ssl(ssl), con(con), QObject(parent)
 {
 }
 
@@ -64,8 +66,10 @@ void ServerWorker::connection_handle() {
 
             switch (SSL_get_error(ssl, len)) {
                 case SSL_ERROR_NONE:
-                 printf("read %d bytes\n", (int) len);
-                 printf("%s \n", buf);
+                 //printf("read %d bytes\n", (int) len);
+                 //printf("%s \n", buf);
+                 // TODO call dataplaneconnection
+                 con->readBuffer(buf);
                  reading = 0;
                  break;
                 case SSL_ERROR_WANT_READ:

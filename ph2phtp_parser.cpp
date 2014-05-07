@@ -1,4 +1,8 @@
 #include "ph2phtp_parser.h"
+#include "proxyserver.h"
+#include <QStringList>
+#include <QDebug>
+#include <QThread>
 
 PH2PHTP_Parser::PH2PHTP_Parser(QObject *parent) :
     QObject(parent)
@@ -43,9 +47,9 @@ bool PH2PHTP_Parser::parseControlPlane(const char *buf, QString friendUid) {
         // TODO run proxy in new thread
         qDebug() << "Running new proxy!!";
         QThread* newProxyThread = new QThread();
-        Proxy* newProxy = NULL;
+        ProxyServer* newProxy = NULL;
         try {
-            newProxy = new Proxy(friendUid, name, type, ".friendsvpn.", hostname, port);
+            newProxy = new ProxyServer(friendUid, name, type, ".friendsvpn.", hostname, port);
         } catch (int i) {
             if (i == 1) {
                 newProxyThread->deleteLater();
@@ -59,3 +63,11 @@ bool PH2PHTP_Parser::parseControlPlane(const char *buf, QString friendUid) {
         return true;
     }
 }
+
+/*bool PH2PHTP_Parser::sendData(const char *buf, int len, QString friendUid) {
+    DataPlaneConnection* c = ConnectionInitiator::getDpConnection(friendUid);
+    // make "DATA" packet
+
+    // TODO
+    c->sendBytes(buf, len);
+}*/

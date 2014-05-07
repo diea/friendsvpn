@@ -46,6 +46,9 @@ bool DataPlaneConnection::addMode(plane_mode mode, QObject* socket) {
 
 void DataPlaneConnection::readBuffer(const char* buf) {
     qDebug() << "DataPlane buffer" << buf;
+
+    // get client proxy and send data through it
+    // TODO
 }
 
 void DataPlaneConnection::sendBytes(const char *buf, int len) {

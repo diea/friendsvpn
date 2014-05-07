@@ -51,8 +51,7 @@ bool ControlPlaneConnection::addMode(plane_mode mode, QObject *socket) {
 void ControlPlaneConnection::readBuffer(const char* buf) {
     qDebug() << "Reading buffer";
     qDebug() << buf;
-    PH2PHTP_Parser parser;
-    parser.parseControlPlane(buf, friendUid);
+    PH2PHTP_Parser::parseControlPlane(buf, friendUid);
     qDebug() << "end of reading buffer";
 }
 
@@ -88,8 +87,7 @@ void ControlPlaneConnection::sendBonjour() {
                  % "Type:" % rec->registeredType % "\r\n"
                  % "Port:" % QString::number(rec->port) % "\r\n"
                 % "\r\n";
-        //qDebug() << "Sending Bonjour packet";
-        //qDebug() << packet;
+
         toWrite->write(packet.toUtf8().data());
     }
 

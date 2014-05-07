@@ -191,15 +191,16 @@ void DataPlaneServer::start() {
             return;
         }
         qDebug() << friendUid;
-        ServerWorker* worker = new ServerWorker(infServer_addr, infClient_addr, ssl);
+        // associate with dataplaneconnection
+        ConnectionInitiator* init = ConnectionInitiator::getInstance();
+        DataPlaneConnection* dpc = init->getDpConnection(friendUid);
+
+        ServerWorker* worker = new ServerWorker(infServer_addr, infClient_addr, ssl, dpc);
         worker->moveToThread(workerThread);
         connect(workerThread, SIGNAL(started()), worker, SLOT(connection_handle()));
         connect(workerThread, SIGNAL(finished()), worker, SLOT(deleteLater()));
         workerThread->start();
 
-        // associate with dataplaneconnection
-        ConnectionInitiator* init = ConnectionInitiator::getInstance();
-        DataPlaneConnection* dpc = init->getDpConnection(friendUid);
         dpc->addMode(Receiving, worker);
 
         qDebug() << "Worked thread done";
@@ -287,78 +288,78 @@ int DataPlaneServer::verify_cookie(SSL *ssl, unsigned char *cookie, unsigned int
 
 int DataPlaneServer::generate_cookie(SSL *ssl, unsigned char *cookie, unsigned int *cookie_len) {
     unsigned char *buffer, result[EVP_MAX_MD_SIZE];
-        unsigned int length = 0, resultlength;
-        union {
-            struct sockaddr_storage ss;
-            struct sockaddr_in6 s6;
-            struct sockaddr_in s4;
-        } peer;
+    unsigned int length = 0, resultlength;
+    union {
+        struct sockaddr_storage ss;
+        struct sockaddr_in6 s6;
+        struct sockaddr_in s4;
+    } peer;
 
-        /* Initialize a random secret */
-        if (!cookie_initialized)
+    /* Initialize a random secret */
+    if (!cookie_initialized)
+        {
+        if (!RAND_bytes(cookie_secret, COOKIE_SECRET_LENGTH))
             {
-            if (!RAND_bytes(cookie_secret, COOKIE_SECRET_LENGTH))
-                {
-                printf("error setting random cookie secret\n");
-                return 0;
-                }
-            cookie_initialized = 1;
-            }
-
-        /* Read peer information */
-        (void) BIO_dgram_get_peer(SSL_get_rbio(ssl), &peer);
-
-        /* Create buffer with peer's address and port */
-        length = 0;
-        switch (peer.ss.ss_family) {
-            case AF_INET:
-                length += sizeof(struct in_addr);
-                break;
-            case AF_INET6:
-                length += sizeof(struct in6_addr);
-                break;
-            default:
-                OPENSSL_assert(0);
-                break;
-        }
-        length += sizeof(in_port_t);
-        buffer = (unsigned char*) OPENSSL_malloc(length);
-
-        if (buffer == NULL)
-            {
-            printf("out of memory\n");
+            printf("error setting random cookie secret\n");
             return 0;
             }
-
-        switch (peer.ss.ss_family) {
-            case AF_INET:
-                memcpy(buffer,
-                       &peer.s4.sin_port,
-                       sizeof(in_port_t));
-                memcpy(buffer + sizeof(peer.s4.sin_port),
-                       &peer.s4.sin_addr,
-                       sizeof(struct in_addr));
-                break;
-            case AF_INET6:
-                memcpy(buffer,
-                       &peer.s6.sin6_port,
-                       sizeof(in_port_t));
-                memcpy(buffer + sizeof(in_port_t),
-                       &peer.s6.sin6_addr,
-                       sizeof(struct in6_addr));
-                break;
-            default:
-                OPENSSL_assert(0);
-                break;
+        cookie_initialized = 1;
         }
 
-        /* Calculate HMAC of buffer using the secret */
-        HMAC(EVP_sha1(), (const void*) cookie_secret, COOKIE_SECRET_LENGTH,
-             (const unsigned char*) buffer, length, result, &resultlength);
-        OPENSSL_free(buffer);
+    /* Read peer information */
+    (void) BIO_dgram_get_peer(SSL_get_rbio(ssl), &peer);
 
-        memcpy(cookie, result, resultlength);
-        *cookie_len = resultlength;
+    /* Create buffer with peer's address and port */
+    length = 0;
+    switch (peer.ss.ss_family) {
+        case AF_INET:
+            length += sizeof(struct in_addr);
+            break;
+        case AF_INET6:
+            length += sizeof(struct in6_addr);
+            break;
+        default:
+            OPENSSL_assert(0);
+            break;
+    }
+    length += sizeof(in_port_t);
+    buffer = (unsigned char*) OPENSSL_malloc(length);
 
-        return 1;
+    if (buffer == NULL)
+        {
+        printf("out of memory\n");
+        return 0;
+        }
+
+    switch (peer.ss.ss_family) {
+        case AF_INET:
+            memcpy(buffer,
+                   &peer.s4.sin_port,
+                   sizeof(in_port_t));
+            memcpy(buffer + sizeof(peer.s4.sin_port),
+                   &peer.s4.sin_addr,
+                   sizeof(struct in_addr));
+            break;
+        case AF_INET6:
+            memcpy(buffer,
+                   &peer.s6.sin6_port,
+                   sizeof(in_port_t));
+            memcpy(buffer + sizeof(in_port_t),
+                   &peer.s6.sin6_addr,
+                   sizeof(struct in6_addr));
+            break;
+        default:
+            OPENSSL_assert(0);
+            break;
+    }
+
+    /* Calculate HMAC of buffer using the secret */
+    HMAC(EVP_sha1(), (const void*) cookie_secret, COOKIE_SECRET_LENGTH,
+         (const unsigned char*) buffer, length, result, &resultlength);
+    OPENSSL_free(buffer);
+
+    memcpy(cookie, result, resultlength);
+    *cookie_len = resultlength;
+
+    return 1;
 }

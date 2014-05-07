@@ -12,6 +12,7 @@
 #include "dataplane/dataplaneclient.h"
 #include "proxy.h"
 #include "unixsignalhandler.h"
+//#include "testextend.h"
 #include <QDebug>
 
 #if 0
