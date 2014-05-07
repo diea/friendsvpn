@@ -11,6 +11,7 @@ ProxyClient::ProxyClient(QString md5, int sockType, int srcPort, DataPlaneConnec
     if (proxyHashes.contains(md5)) {
         throw 1; // already exists, we throw int "1"
     }
+    idHash = md5;
     proxyHashes.insert(md5, this);
 
     listenIp = Proxy::newIP();
@@ -105,7 +106,7 @@ void ProxyClient::readyRead() {
     qDebug() << "Read" << left << "bytes";
 
     // send over DTLS with friendUid
-    con->sendBytes(packet, left);
+    con->sendBytes(packet, left, idHash);
 
     left = 0;
 }

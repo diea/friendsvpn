@@ -39,13 +39,7 @@ public:
 
     static BonjourDiscoverer* getInstance(QObject* parent = NULL);
     ~BonjourDiscoverer();
-    /**
-     * @brief discoverServices utilises a DNS PTR record query for the name
-     * "_services._dns-sd._udp.local" which will return a list of service types being advertised
-     * on the local network.
-     * It will then create BonjourBrowsers for each of those services.
-     */
-    void discoverServices();
+
 
     /**
      * @brief getAllActiveRecords returns a list of all records that are currently active
@@ -62,6 +56,14 @@ private slots:
      * in this case that is the "reply" function.
      */
     void bonjourSocketReadyRead();
+public slots:
+    /**
+     * @brief discoverServices utilises a DNS PTR record query for the name
+     * "_services._dns-sd._udp.local" which will return a list of service types being advertised
+     * on the local network.
+     * It will then create BonjourBrowsers for each of those services.
+     */
+    void discoverServices();
 };
 
 #endif // BONJOURDISCOVERER_H

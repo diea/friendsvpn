@@ -13,6 +13,9 @@ private:
      */
     unsigned int left;
     QByteArray buffer;
+
+    QString idHash;
+
     /**
      * @brief proxyHashes each proxy will be identified by a hash of its constructor parameters
      * so that we don't create twice the same proxy

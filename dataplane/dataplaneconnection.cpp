@@ -71,16 +71,33 @@ void DataPlaneConnection::readBuffer(const char* buf) {
     mutex.unlock();
 }
 
-void DataPlaneConnection::sendBytes(const char *buf, int len) {
+void DataPlaneConnection::sendBytes(const char *buf, int len, QString& hash) {
     mutex.lock();
     if (curMode == Closed) {
         qWarning() << "Trying to sendBytes on Closed state for uid" << friendUid;
-    } else if (curMode == Emitting) {
+    }
+
+    // make the DATA header
+    QString header;
+    header  % "DATA\r\n"
+            % "Hash:" % hash % "\r\n"
+            % "Length:" % QString::number(len) % "\r\n";
+    QByteArray headerBytes = header.toUtf8();
+    int headerLen = headerBytes.length();
+
+    char dataPacket[len + headerLen];
+    char* headerC = headerBytes.data();
+    strncpy(dataPacket, headerC, headerLen);
+    strncpy(dataPacket + headerLen, buf, len);
+
+    qDebug() << "datapacket!" << dataPacket;
+
+    if (curMode == Emitting) {
         qDebug() << "Send bytes as dataplane client";
-        client->sendBytes(buf, len);
+        client->sendBytes(dataPacket, len);
     } else if (curMode == Receiving) {
         qDebug() << "Send bytes as dataplane server";
-        server->sendBytes(buf, len);
+        server->sendBytes(dataPacket, len);
     } else {
         qWarning() << "Should not happen, trying to send bytes in Both mode for uid" << friendUid;
     }

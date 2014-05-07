@@ -174,7 +174,7 @@ void ProxyServer::readyRead() {
     pcap->read(packet, left);
 
     // send over DTLS with friendUid
-    con->sendBytes(packet, left);
+    con->sendBytes(packet, left, idHash);
 
     left = 0;
 }

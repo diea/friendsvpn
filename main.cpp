@@ -60,8 +60,12 @@ int main(int argc, char *argv[])
     BonjourSQL* qSql = BonjourSQL::getInstance();
 
     // discover services
-    BonjourDiscoverer* disco = BonjourDiscoverer::getInstance(qApp);
-    disco->discoverServices();
+    QThread discovererThread;
+    BonjourDiscoverer* disco = BonjourDiscoverer::getInstance();
+    disco->moveToThread(&discovererThread);
+    QObject::connect(&discovererThread, SIGNAL(started()), disco, SLOT(discoverServices()));
+    discovererThread.start();
+    //disco->discoverServices();
 
     ConnectionInitiator* con = ConnectionInitiator::getInstance();
     con->run();

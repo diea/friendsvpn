@@ -25,7 +25,7 @@ public:
 
     void readBuffer(const char* buf);
 
-    void sendBytes(const char* buf, int len);
+    void sendBytes(const char* buf, int len, QString& hash);
 signals:
 
 public slots:
