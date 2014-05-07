@@ -281,3 +281,14 @@ Proxy* Proxy::getProxy(QString md5) {
     }
     return NULL;
 }
+
+void Proxy::sendRawFinish(int exitCode) {
+    // TODO
+    // TODO check correspondance of exit code (seems like 255 -3 = 252 ?)
+    qWarning() << "sendRaw helper had an error " << exitCode;
+
+    if (exitCode == 3) {
+        //qDebug() << sendRaw.readAllStandardError();
+    }
+}
+

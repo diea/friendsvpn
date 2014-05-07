@@ -91,8 +91,9 @@ protected:
 public:
     static QString getDefaultInterface();
 
-    Proxy* getProxy(QString md5);
-
+    static Proxy* getProxy(QString md5);
+private slots:
+    void sendRawFinish(int);
 public slots:
     /**
      * @brief run: runs this proxy

@@ -72,7 +72,7 @@ void DataPlaneConnection::readBuffer(const char* buf) {
     QString header;
     if (list.at(0) == "DATA") {
         QString hash;
-        QString trans;
+        int sockType;
         int length;
         const char* packetBuf; // packet
         header = header % "DATA\r\n";
@@ -81,7 +81,6 @@ void DataPlaneConnection::readBuffer(const char* buf) {
             if (list.at(i).isEmpty()) {
                 if (!list.at(i + 1).isEmpty()) {
                     QByteArray headerBytes = header.toUtf8();
-                    qDebug() << "headerBytes length" << headerBytes.length();
                     packetBuf = buf + headerBytes.length();
                 }
             } else {
@@ -92,29 +91,34 @@ void DataPlaneConnection::readBuffer(const char* buf) {
                 } else if (key == "Length") {
                     length = keyValuePair.at(1).toInt();
                 } else if (key == "Trans") {
-                    trans = keyValuePair.at(1);
+                    if (keyValuePair.at(1) == "tcp") {
+                        sockType = SOCK_STREAM;
+                    } else {
+                        sockType = SOCK_DGRAM;
+                    }
                 }
             }
         }
 
         // get Proxy and send through it!
-        //Proxy* prox = Proxy::getProxy(hash);
-        //if (!prox) {
+        Proxy* prox = Proxy::getProxy(hash);
+        if (!prox) {
             // read tcp or udp header to get src port
             // the first 16 bits of UDP or TCP header are the src_port
-            qDebug() << "malloc";
             qint16* srcPort = static_cast<qint16*>(malloc(sizeof(qint16)));
-            qDebug() << "memcpy";
             memcpy(srcPort, packetBuf, sizeof(qint16));
-            qDebug() << "srcPort before ntohs" << *srcPort;
-            qDebug() << "ntohs";
             *srcPort = ntohs(*srcPort);
-            //qint16 srcPort = static_cast<qint16>(static_cast<void*>(buf));
-            qDebug() << "srcPort is :" << *srcPort;
 
-            //prox = new ProxyClient(hash, )
-        //}
-        //prox->sendBytes(buf, length);
+            QThread* proxyThread = new QThread();
+            prox = new ProxyClient(hash, sockType, *srcPort, this);
+            connect(proxyThread, SIGNAL(started()), prox, SLOT(run()));
+            connect(proxyThread, SIGNAL(finished()), proxyThread, SLOT(deleteLater()));
+            // TODO delete proxy client also on finished() ?
+            proxyThread->start();
+
+            free(srcPort);
+        }
+        prox->sendBytes(buf, length);
     }
 
     // get client proxy and send data through it
