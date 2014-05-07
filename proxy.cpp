@@ -2,10 +2,46 @@
 #include "unixsignalhandler.h"
 #include <QCryptographicHash>
 
+QHash<QString, Proxy*> Proxy::proxyHashes;
+
 QString Proxy::defaultIface = Proxy::getDefaultInterface();
 
-Proxy::Proxy()
+Proxy::Proxy(int srcPort, int sockType)
+    : listenPort(srcPort), sockType(sockType)
 {
+    listenIp = newIP();
+
+    if (sockType == SOCK_STREAM) ipProto = IPPROTO_TCP;
+    else ipProto = IPPROTO_UDP;
+    initRaw();
+}
+
+Proxy::Proxy(int srcPort, const QString& regType) : listenPort(srcPort)
+{
+    if (regType.contains("tcp")) {
+        sockType = SOCK_STREAM;
+        ipProto = IPPROTO_TCP;
+    } else {
+        sockType = SOCK_DGRAM;
+        ipProto = IPPROTO_UDP;
+    }
+    initRaw();
+}
+
+void Proxy::initRaw() {
+    // init raw socket to send packets
+    sendRaw = new QProcess(this);
+    QStringList sendRawArgs;
+    sendRawArgs.append(QString::number(sockType));
+    sendRawArgs.append(QString::number(ipProto));
+    sendRawArgs.append(listenIp);
+
+    connect(sendRaw, SIGNAL(finished(int)), this, SLOT(sendRawFinish(int)));
+
+    UnixSignalHandler* u = UnixSignalHandler::getInstance();
+    u->addQProcess(sendRaw);
+
+    sendRaw->start(QString(HELPERPATH) + "sendRaw", sendRawArgs);
 }
 
 QString Proxy::newIP() {
@@ -227,4 +263,20 @@ QString Proxy::randomIP() {
     QString toRet(v6buf);
     toRet.truncate(toRet.length() - 2); // XXX investigate why "-2"
     return toRet;
+}
+
+void Proxy::sendBytes(const char *buf, int len) {
+    // use raw sock to send the bytes
+    QString size("[");
+    size.append(QString::number(len));
+    size.append("]");
+    sendRaw->write(size.toUtf8().data());
+    sendRaw->write(buf, len);
+}
+
+Proxy* Proxy::getProxy(QString md5) {
+    if (proxyHashes.contains(md5)) {
+        return proxyHashes.value(md5);
+    }
+    return NULL;
 }

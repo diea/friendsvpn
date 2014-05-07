@@ -1,30 +1,24 @@
 #include "proxyclient.h"
 #include "unixsignalhandler.h"
 
-QHash<QString, ProxyClient*> ProxyClient::proxyHashes;
-
-
-ProxyClient::ProxyClient(QString md5, int sockType, int srcPort, DataPlaneConnection* con)
-    : Proxy(), listenPort(srcPort)
+ProxyClient::ProxyClient(QString md5, int sockType, int srcPort, DataPlaneConnection* con) :
+    Proxy(srcPort, sockType)
 {
-    this->sockType = sockType;
     this->con = con;
     if (proxyHashes.contains(md5)) {
         throw 1; // already exists, we throw int "1"
     }
     idHash = md5;
     proxyHashes.insert(md5, this);
-
-    listenIp = Proxy::newIP();
 }
 
-ProxyClient* ProxyClient::getProxyClient(QString md5, int sockType, int srcPort, DataPlaneConnection* con) {
+/*ProxyClient* ProxyClient::getProxyClient(QString md5, int sockType, int srcPort, DataPlaneConnection* con) {
     if (proxyHashes.contains(md5)) {
         return proxyHashes.value(md5);
     } else {
         return new ProxyClient(md5, sockType, srcPort, con);
     }
-}
+}*/
 
 void ProxyClient::run() {
     UnixSignalHandler* u = UnixSignalHandler::getInstance();
@@ -115,6 +109,6 @@ void ProxyClient::pcapFinish(int exitCode) {
     qWarning() << "pcap exited with exit code " << exitCode << "for client" << listenIp << listenPort;
 }
 
-void ProxyClient::sendBytes(const char *buf, int len) {
+/*void ProxyClient::sendBytes(const char *buf, int len) {
     // use raw helper to send buffer
-}
+}*/

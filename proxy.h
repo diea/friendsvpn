@@ -34,9 +34,20 @@ struct prefix {
 class Proxy : public QObject
 {
     Q_OBJECT
+private:
+    QProcess* sendRaw;
+    /**
+     * @brief initRaw initializes the raw socket to inject packets
+     */
+    void initRaw();
 protected:
+    QString listenIp;
+    int listenPort;
+
     int sockType; // to know if SOCK_STREAM or SOCK_DATAGRAM
     int ipProto; // again, TCP or UDP
+
+    QString idHash;
 
     /**
      * @brief con the associated connection
@@ -46,8 +57,14 @@ protected:
     /**
      * @brief Proxy is an abstract class
      */
-    Proxy();
+    Proxy(int port, int sockType);
+    Proxy(int port, const QString& regType);
 
+    /**
+     * @brief proxyHashes each proxy will be identified by a hash of its constructor parameters
+     * so that we don't create twice the same proxy
+     */
+    static QHash<QString, Proxy*> proxyHashes;
     /**
      * @brief defaultIface contains the default interface
      */
@@ -74,11 +91,15 @@ protected:
 public:
     static QString getDefaultInterface();
 
+    Proxy* getProxy(QString md5);
+
 public slots:
     /**
      * @brief run: runs this proxy
      */
     virtual void run() = 0;
+
+    void sendBytes(const char* buf, int len);
 };
 
 #endif // PROXY_H

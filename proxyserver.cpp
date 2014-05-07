@@ -3,11 +3,8 @@
 #include "bonjour/bonjourrecord.h"
 #include "unixsignalhandler.h"
 
-QHash<QString, ProxyServer*> ProxyServer::proxyHashes;
-
 ProxyServer::ProxyServer(const QString &friendUid, const QString &name, const QString &regType, const QString &domain,
-                       const QString &hostname, quint16 port) :
-    Proxy()
+                       const QString &hostname, quint16 port) : Proxy(port, regType)
 {
     QString allParams = friendUid + name + regType + domain + hostname + QString::number(port);
 
@@ -19,17 +16,13 @@ ProxyServer::ProxyServer(const QString &friendUid, const QString &name, const QS
     proxyHashes.insert(idHash, this);
 
     qDebug() << "Proxy constructor!";
-    QString newip = Proxy::newIP();
+    QString newip = listenIp;
 
     // create bonjour rec with new IP
     QList<QString> ip;
     ip.append(newip);
     rec = BonjourRecord(name, regType, domain, hostname, ip, port);
     left = 0;
-
-    // TODO
-    sockType = SOCK_STREAM;
-    ipProto = IPPROTO_TCP;
 
     // get DataPlaneConnection associated with friendUid
     ConnectionInitiator* initiator = ConnectionInitiator::getInstance();

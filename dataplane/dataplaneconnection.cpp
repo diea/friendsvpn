@@ -1,5 +1,6 @@
 #include "dataplaneconnection.h"
 #include "bonjoursql.h"
+#include "proxyclient.h"
 
 DataPlaneConnection::DataPlaneConnection(QString uid, AbstractPlaneConnection *parent) :
     AbstractPlaneConnection(uid, parent), friendUid(uid)
@@ -92,7 +93,7 @@ void DataPlaneConnection::readBuffer(const char* buf) {
         }
 
         // get Proxy and send through it!
-
+        //ProxyClient* proxCli = ProxyClient::
 
     }
 
