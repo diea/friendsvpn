@@ -63,16 +63,46 @@ bool DataPlaneConnection::addMode(plane_mode mode, QObject* socket) {
 }
 
 void DataPlaneConnection::readBuffer(const char* buf) {
-    mutex.lock();
+    //mutex.lock();
     qDebug() << "DataPlane buffer" << buf;
+    QString packet(buf);
+
+    QStringList list = packet.split("\r\n");
+
+    if (list.at(0) == "DATA") {
+        QString hash;
+        int length;
+        char* buf; // packet
+
+        for (int i = 1; i < list.length() - 1 ; i++) {
+
+            if (list.at(i).isEmpty()) {
+                if (!list.at(i + 1).isEmpty()) {
+                    buf = list.at(i + 1).toUtf8().data();
+                }
+            } else {
+                QStringList keyValuePair = list.at(i).split(":");
+
+                if (keyValuePair.at(0) == "Hash") {
+                    hash = keyValuePair.at(1);
+                } else if (keyValuePair.at(0) == "Length") {
+                    length = keyValuePair.at(1).toInt();
+                }
+            }
+        }
+
+        // get Proxy and send through it!
+
+
+    }
 
     // get client proxy and send data through it
     // TODO
-    mutex.unlock();
+    //mutex.unlock();
 }
 
 void DataPlaneConnection::sendBytes(const char *buf, int len, QString& hash) {
-    mutex.lock();
+    //mutex.lock();
     if (curMode == Closed) {
         qWarning() << "Trying to sendBytes on Closed state for uid" << friendUid;
     }
@@ -102,5 +132,5 @@ void DataPlaneConnection::sendBytes(const char *buf, int len, QString& hash) {
     } else {
         qWarning() << "Should not happen, trying to send bytes in Both mode for uid" << friendUid;
     }
-    mutex.unlock();
+    //mutex.unlock();
 }

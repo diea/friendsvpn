@@ -4,7 +4,7 @@
 
 class ProxyClient : public Proxy
 {
-    //Q_OBJECT
+    Q_OBJECT
 private:
     QString listenIp;
     int listenPort;
@@ -22,12 +22,12 @@ private:
      */
     static QHash<QString, ProxyClient*> proxyHashes;
 
-
     ProxyClient(QString md5, int sockType, int srcPort, DataPlaneConnection* con);
 public:
     ProxyClient* getProxyClient(QString md5, int sockType, int srcPort, DataPlaneConnection* con);
-
     void sendBytes(const char* buf, int len);
+
+signals:
 
 public slots:
     void run();
@@ -35,7 +35,6 @@ private slots:
     void pcapFinish(int exitCode);
     //void sendRawFinish(int exitCode);
     void readyRead();
-
 };
 
 #endif // PROXYCLIENT_H

@@ -44,7 +44,6 @@ bool PH2PHTP_Parser::parseControlPlane(const char *buf, QString friendUid) {
             return false;
         }
 
-        // TODO run proxy in new thread
         qDebug() << "Running new proxy!!";
         QThread* newProxyThread = new QThread();
         ProxyServer* newProxy = NULL;
@@ -62,12 +61,6 @@ bool PH2PHTP_Parser::parseControlPlane(const char *buf, QString friendUid) {
         newProxyThread->start();
         return true;
     }
+
+    return false;
 }
-
-/*bool PH2PHTP_Parser::sendData(const char *buf, int len, QString friendUid) {
-    DataPlaneConnection* c = ConnectionInitiator::getDpConnection(friendUid);
-    // make "DATA" packet
-
-    // TODO
-    c->sendBytes(buf, len);
-}*/

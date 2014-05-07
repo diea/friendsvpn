@@ -1,10 +1,11 @@
 #include "proxyclient.h"
 #include "unixsignalhandler.h"
+
 QHash<QString, ProxyClient*> ProxyClient::proxyHashes;
 
 
 ProxyClient::ProxyClient(QString md5, int sockType, int srcPort, DataPlaneConnection* con)
-    : listenPort(srcPort)
+    : Proxy(), listenPort(srcPort)
 {
     this->sockType = sockType;
     this->con = con;
@@ -67,7 +68,6 @@ void ProxyClient::run() {
     pcap->start(QString(HELPERPATH) + "pcapListen", args);
 
 }
-
 void ProxyClient::readyRead() {
     QProcess* pcap = dynamic_cast<QProcess*>(QObject::sender());
     if (left == 0) {
@@ -113,4 +113,8 @@ void ProxyClient::readyRead() {
 
 void ProxyClient::pcapFinish(int exitCode) {
     qWarning() << "pcap exited with exit code " << exitCode << "for client" << listenIp << listenPort;
+}
+
+void ProxyClient::sendBytes(const char *buf, int len) {
+    // use raw helper to send buffer
 }

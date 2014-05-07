@@ -34,8 +34,8 @@ SOURCES += main.cpp \
     abstractplaneconnection.cpp \
     dataplane/serverworker.cpp \
     unixsignalhandler.cpp \
-    proxyclient.cpp \
     proxyserver.cpp \
+    proxyclient.cpp
 
 HEADERS  += \
     graphic/systray.h \
@@ -62,8 +62,8 @@ HEADERS  += \
     abstractplaneconnection.h \
     dataplane/serverworker.h \
     unixsignalhandler.h \
-    proxyclient.h \
     proxyserver.h \
+    proxyclient.h
 
 FORMS    +=
 
