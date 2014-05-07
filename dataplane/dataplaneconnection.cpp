@@ -72,6 +72,7 @@ void DataPlaneConnection::readBuffer(const char* buf) {
 
     if (list.at(0) == "DATA") {
         QString hash;
+        QString trans;
         int length;
         char* buf; // packet
 
@@ -83,18 +84,31 @@ void DataPlaneConnection::readBuffer(const char* buf) {
                 }
             } else {
                 QStringList keyValuePair = list.at(i).split(":");
-
-                if (keyValuePair.at(0) == "Hash") {
+                QString key = keyValuePair.at(0);
+                if (key == "Hash") {
                     hash = keyValuePair.at(1);
-                } else if (keyValuePair.at(0) == "Length") {
+                } else if (key == "Length") {
                     length = keyValuePair.at(1).toInt();
+                } else if (key == "Trans") {
+                    trans = keyValuePair.at(1);
                 }
             }
         }
 
         // get Proxy and send through it!
-        //ProxyClient* proxCli = ProxyClient::
+        //Proxy* prox = Proxy::getProxy(hash);
+        //if (!prox) {
+            // read tcp or udp header to get src port
+            // the first 16 bits of UDP or TCP header are the src_port
+            qint16* srcPort = static_cast<qint16*>(malloc(sizeof(qint16)));
+            memcpy(srcPort, buf, 16);
+            *srcPort = ntohs(*srcPort);
+            //qint16 srcPort = static_cast<qint16>(static_cast<void*>(buf));
+            qDebug() << "srcPort is :" << srcPort;
 
+            //prox = new ProxyClient(hash, )
+        //}
+        //prox->sendBytes(buf, length);
     }
 
     // get client proxy and send data through it
@@ -102,7 +116,7 @@ void DataPlaneConnection::readBuffer(const char* buf) {
     //mutex.unlock();
 }
 
-void DataPlaneConnection::sendBytes(const char *buf, int len, QString& hash) {
+void DataPlaneConnection::sendBytes(const char *buf, int len, QString& hash, int sockType) {
     //mutex.lock();
     if (curMode == Closed) {
         qWarning() << "Trying to sendBytes on Closed state for uid" << friendUid;
@@ -110,8 +124,10 @@ void DataPlaneConnection::sendBytes(const char *buf, int len, QString& hash) {
 
     // make the DATA header
     QString header;
+    QString trans = (sockType == SOCK_DGRAM) ? "udp" : "tcp";
     header = header  % "DATA\r\n"
             % "Hash:" % hash % "\r\n"
+            % "Trans:" % trans % "\r\n"
             % "Length:" % QString::number(len) % "\r\n";
     QByteArray headerBytes = header.toUtf8();
     int headerLen = headerBytes.length();

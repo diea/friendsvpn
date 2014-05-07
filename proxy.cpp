@@ -18,6 +18,7 @@ Proxy::Proxy(int srcPort, int sockType)
 
 Proxy::Proxy(int srcPort, const QString& regType) : listenPort(srcPort)
 {
+    listenIp = newIP();
     if (regType.contains("tcp")) {
         sockType = SOCK_STREAM;
         ipProto = IPPROTO_TCP;
@@ -38,8 +39,8 @@ void Proxy::initRaw() {
 
     connect(sendRaw, SIGNAL(finished(int)), this, SLOT(sendRawFinish(int)));
 
-    UnixSignalHandler* u = UnixSignalHandler::getInstance();
-    u->addQProcess(sendRaw);
+    /*UnixSignalHandler* u = UnixSignalHandler::getInstance();
+    u->addQProcess(sendRaw);*/ // TODO
 
     sendRaw->start(QString(HELPERPATH) + "sendRaw", sendRawArgs);
 }

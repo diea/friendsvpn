@@ -100,7 +100,7 @@ void ProxyClient::readyRead() {
     qDebug() << "Read" << left << "bytes";
 
     // send over DTLS with friendUid
-    con->sendBytes(packet, left, idHash);
+    con->sendBytes(packet, left, idHash, sockType);
 
     left = 0;
 }

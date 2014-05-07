@@ -16,8 +16,8 @@ ProxyServer::ProxyServer(const QString &friendUid, const QString &name, const QS
     proxyHashes.insert(idHash, this);
 
     qDebug() << "Proxy constructor!";
-    QString newip = listenIp;
 
+    QString newip = listenIp;
     // create bonjour rec with new IP
     QList<QString> ip;
     ip.append(newip);
@@ -41,7 +41,7 @@ void ProxyServer::run() {
             bindSocketArgs.append(QString::number(sockType));
             bindSocketArgs.append(QString::number(ipProto));
             bindSocketArgs.append(QString::number(port));
-            bindSocketArgs.append(rec.ips.at(0));
+            bindSocketArgs.append(listenIp);
             qDebug() << "bind socket args" << bindSocketArgs;
             bindSocket->start(QString(HELPERPATH) + "newSocket", bindSocketArgs);
             if (bindSocket->waitForFinished(200)) { // 200ms should be plenty enough for the process to fail on bind
@@ -167,7 +167,7 @@ void ProxyServer::readyRead() {
     pcap->read(packet, left);
 
     // send over DTLS with friendUid
-    con->sendBytes(packet, left, idHash);
+    con->sendBytes(packet, left, idHash, sockType);
 
     left = 0;
 }
