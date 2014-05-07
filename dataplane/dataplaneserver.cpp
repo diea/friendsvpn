@@ -53,7 +53,7 @@ void DataPlaneServer::start() {
      * Not recommended beyond testing and debugging
      */
     //SSL_CTX_set_cipher_list(ctx, "ALL:NULL:eNULL:aNULL");
-    SSL_CTX_set_cipher_list(ctx, "DEFAULT");
+    SSL_CTX_set_cipher_list(ctx, "eNULL, NULL");
     SSL_CTX_set_session_cache_mode(ctx, SSL_SESS_CACHE_OFF);
 
     // get certificate and key from SQL & use them

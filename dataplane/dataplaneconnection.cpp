@@ -81,6 +81,7 @@ void DataPlaneConnection::readBuffer(const char* buf) {
             if (list.at(i).isEmpty()) {
                 if (!list.at(i + 1).isEmpty()) {
                     QByteArray headerBytes = header.toUtf8();
+                    qDebug() << "headerBytes length" << headerBytes.length();
                     packetBuf = buf + headerBytes.length();
                 }
             } else {
