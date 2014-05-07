@@ -13,6 +13,8 @@
 #include <openssl/bio.h>
 #include <openssl/err.h>
 
+class DataPlaneConnection;
+
 class DataPlaneClient : public QObject
 {
     Q_OBJECT
@@ -34,6 +36,8 @@ private:
     int fd;
 
     QHostAddress ip;
+
+    DataPlaneConnection* con;
 public:
     /**
      * @brief DataPlaneClient
@@ -41,7 +45,7 @@ public:
      *             ONLY First IP in Qlist will be used!
      * @param parent
      */
-    explicit DataPlaneClient(QHostAddress ip, QObject *parent = 0);
+    explicit DataPlaneClient(QHostAddress ip, DataPlaneConnection* con, QObject *parent = 0);
 
     void sendBytes(const char* bytes, socklen_t len);
 signals:

@@ -1,7 +1,8 @@
 #include "dataplaneclient.h"
+#include "dataplaneconnection.h"
 
-DataPlaneClient::DataPlaneClient(QHostAddress ip, QObject *parent) :
-    ip(ip), QObject(parent), reading(0)
+DataPlaneClient::DataPlaneClient(QHostAddress ip, DataPlaneConnection* con, QObject *parent) :
+    ip(ip), con(con), QObject(parent), reading(0)
 {
     memset((void *) &remote_addr, 0, sizeof(struct sockaddr_storage));
     memset((void *) &local_addr, 0, sizeof(struct sockaddr_storage));
@@ -104,12 +105,57 @@ void DataPlaneClient::run() {
     printf ("\nConnected to %s\n",
              inet_ntop(AF_INET6, &remote_addr.s6.sin6_addr, addrbuf, INET6_ADDRSTRLEN));
 
+    con->addMode(Emitting, this);
+
     if (SSL_get_peer_certificate(ssl)) {
         printf ("------------------------------------------------------------\n");
         X509_NAME_print_ex_fp(stdout, X509_get_subject_name(SSL_get_peer_certificate(ssl)),
                               1, XN_FLAG_MULTILINE);
         printf("\n\n Cipher: %s", SSL_CIPHER_get_name(SSL_get_current_cipher(ssl)));
         printf ("\n------------------------------------------------------------\n\n");
+    }
+
+    int num_timeouts = 0, max_timeouts = 5;
+    size_t len;
+    while (!(SSL_get_shutdown(ssl) & SSL_RECEIVED_SHUTDOWN) && num_timeouts < max_timeouts) {
+        reading = 1;
+        while (reading) {
+            len = SSL_read(ssl, buf, sizeof(buf));
+
+            switch (SSL_get_error(ssl, len)) {
+                case SSL_ERROR_NONE:
+                 //printf("read %d bytes\n", (int) len);
+                 //printf("%s \n", buf);
+                 // TODO call dataplaneconnection
+                 con->readBuffer(buf);
+                 reading = 0;
+                 break;
+                case SSL_ERROR_WANT_READ:
+                 /* Handle socket timeouts */
+                 if (BIO_ctrl(SSL_get_rbio(ssl), BIO_CTRL_DGRAM_GET_RECV_TIMER_EXP, 0, NULL)) {
+                     num_timeouts++;
+                     reading = 0;
+                 }
+                 /* Just try again */
+                 break;
+                case SSL_ERROR_ZERO_RETURN:
+                 reading = 0;
+                 break;
+                case SSL_ERROR_SYSCALL:
+                 printf("Socket read error: ");
+                 //if (!handle_socket_error()) goto cleanup;
+                 reading = 0;
+                 //exit(-1);
+                 break;
+                case SSL_ERROR_SSL:
+                 printf("SSL read error: ");
+                 printf("%s (%d)\n", ERR_error_string(ERR_get_error(), buf), SSL_get_error(ssl, len));
+                 break;
+                default:
+                 printf("Unexpected error while reading!\n");
+                 break;
+            }
+        }
     }
 }
 

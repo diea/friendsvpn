@@ -15,6 +15,8 @@ private:
     DataPlaneClient* client;
     ServerWorker* server;
 
+    QMutex mutex;
+
     void removeConnection();
 public:
     explicit DataPlaneConnection(QString uid, AbstractPlaneConnection *parent = 0);

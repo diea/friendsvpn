@@ -8,6 +8,9 @@ DataPlaneConnection::DataPlaneConnection(QString uid, AbstractPlaneConnection *p
 
 void DataPlaneConnection::removeConnection() {
     BonjourSQL* qSql = BonjourSQL::getInstance();
+
+    qDebug() << "Removing conncetion!";
+    mutex.lock();
     if (friendUid < qSql->getLocalUid()) { // friend is smaller, I am server
         client->disconnect();
         client = NULL;
@@ -17,18 +20,32 @@ void DataPlaneConnection::removeConnection() {
         server = NULL;
         curMode = Emitting;
     }
+    mutex.unlock();
 }
 
 bool DataPlaneConnection::addMode(plane_mode mode, QObject* socket) {
-    if ((curMode == Both) || (curMode == mode)) return false;
+    mutex.lock();
+    if ((curMode == Both) || (curMode == mode)) {
+        mutex.unlock();
+        return false;
+    }
     if (mode == Receiving) {
+        qDebug() << "Adding receiving mode for dataplane for uid" << friendUid;
         ServerWorker* sslSocket = dynamic_cast<ServerWorker*>(socket);
-        if (!sslSocket) return false;
+        if (!sslSocket) {
+            qDebug() << "NOT a server worker! returing false";
+            mutex.unlock();
+            return false;
+        }
         server = sslSocket;
     }
     else {
+        qDebug() << "Adding emitting mode for dataplane!";
         DataPlaneClient* sslSocket = dynamic_cast<DataPlaneClient*>(socket);
-        if (!sslSocket) return false;
+        if (!sslSocket) {
+            mutex.unlock();
+            return false;
+        }
         client = sslSocket;
     }
 
@@ -41,24 +58,28 @@ bool DataPlaneConnection::addMode(plane_mode mode, QObject* socket) {
     if (curMode == Both)
         this->removeConnection();
 
+    mutex.unlock();
     return true;
 }
 
 void DataPlaneConnection::readBuffer(const char* buf) {
+    mutex.lock();
     qDebug() << "DataPlane buffer" << buf;
 
     // get client proxy and send data through it
     // TODO
+    mutex.unlock();
 }
 
 void DataPlaneConnection::sendBytes(const char *buf, int len) {
-    static QMutex mutex;
     mutex.lock();
     if (curMode == Closed) {
         qWarning() << "Trying to sendBytes on Closed state for uid" << friendUid;
     } else if (curMode == Emitting) {
+        qDebug() << "Send bytes as dataplane client";
         client->sendBytes(buf, len);
     } else if (curMode == Receiving) {
+        qDebug() << "Send bytes as dataplane server";
         server->sendBytes(buf, len);
     } else {
         qWarning() << "Should not happen, trying to send bytes in Both mode for uid" << friendUid;

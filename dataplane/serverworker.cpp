@@ -87,7 +87,7 @@ void ServerWorker::connection_handle() {
                  printf("Socket read error: ");
                  //if (!handle_socket_error()) goto cleanup;
                  reading = 0;
-                 exit(-1);
+                 //exit(-1);
                  break;
                 case SSL_ERROR_SSL:
                  printf("SSL read error: ");
@@ -111,8 +111,11 @@ void ServerWorker::disconnect() {
 }
 
 void ServerWorker::sendBytes(const char* buf, int len) {
+    qDebug() << "Sending bytes in server worker!";
     if (len > 0) {
+        qDebug() << "SSL_write!";
         len = SSL_write(ssl, buf, len);
+        qDebug() << "SSL_write out!";
         switch (SSL_get_error(ssl, len)) {
          case SSL_ERROR_NONE:
              printf("wrote %d bytes\n", (int) len);
@@ -138,4 +141,5 @@ void ServerWorker::sendBytes(const char* buf, int len) {
              break;
         }
     }
+    qDebug() << "Got out !";
 }

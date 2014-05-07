@@ -176,6 +176,5 @@ void ProxyServer::readyRead() {
     // send over DTLS with friendUid
     con->sendBytes(packet, left);
 
-
     left = 0;
 }

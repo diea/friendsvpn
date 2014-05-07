@@ -55,15 +55,15 @@ void ConnectionInitiator::startClients() {
         QThread* dcThread = new QThread(); // dataplane is threaded
         qDebug() << QHostAddress(*(frien_d->ipv6));
 
-        DataPlaneClient* dc = new DataPlaneClient(QHostAddress(*(frien_d->ipv6)));
+        DataPlaneConnection* con = this->getDpConnection(QString(*(frien_d->uid)));
+        DataPlaneClient* dc = new DataPlaneClient(QHostAddress(*(frien_d->ipv6)), con);
         //DataPlaneClient* dc = new DataPlaneClient(QHostAddress("::1"));
         connect(dcThread, SIGNAL(started()), dc, SLOT(run()));
         connect(dcThread, SIGNAL(finished()), dcThread, SLOT(deleteLater()));
         dc->moveToThread(dcThread);
         dcThread->start();
 
-        DataPlaneConnection* con = this->getDpConnection(QString(*(frien_d->uid)));
-        con->addMode(Emitting, dc);
+        //con->addMode(Emitting, dc);
 
         // TODO delete user?
     }

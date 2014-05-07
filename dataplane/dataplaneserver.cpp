@@ -175,7 +175,7 @@ void DataPlaneServer::start() {
         // if IP is not in DB we close the connection
         // TODO
         char friendIp[INET6_ADDRSTRLEN];
-        inet_ntop(AF_INET6, &infServer_addr.s6.sin6_addr, friendIp, INET6_ADDRSTRLEN);
+        inet_ntop(AF_INET6, &infClient_addr.s6.sin6_addr, friendIp, INET6_ADDRSTRLEN);
 
         QString friendUid = qSql->getUidFromIP(friendIp);
         if (friendUid == "NULL") {
