@@ -118,7 +118,7 @@ void DataPlaneClient::run() {
     int num_timeouts = 0, max_timeouts = 5;
     size_t len;
     qDebug() << "CLIENT BEGINS LISTEN UDP";
-    while (!(SSL_get_shutdown(ssl) & SSL_RECEIVED_SHUTDOWN) && num_timeouts < max_timeouts) {
+    while (!(SSL_get_shutdown(ssl) & SSL_RECEIVED_SHUTDOWN)) { // && num_timeouts < max_timeouts) {
         qDebug() << "reading!";
         reading = 1;
         while (reading) {
