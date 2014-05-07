@@ -75,9 +75,9 @@ void ControlPlaneConnection::sendBonjour() {
     }
 
     // get bonjour records from db & send them over the connection
-    //qDebug() << "fetching records for " << this->friendUid;
+    qDebug() << "fetching records for " << this->friendUid;
     QList < BonjourRecord* > records = qSql->getRecordsFor(this->friendUid);
-    //qDebug() << "Retrieved " << records.length() << " records!";
+    qDebug() << "Retrieved " << records.length() << " records!";
     foreach (BonjourRecord* rec, records) {
         QString packet;
         packet = packet
