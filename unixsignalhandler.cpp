@@ -47,9 +47,11 @@ void UnixSignalHandler::termSignalHandler(int) {
     UnixSignalHandler* u = UnixSignalHandler::getInstance();
     qDebug() << "got instance";
     foreach (QProcess* p, u->listOfProcessToKill) {
-        qDebug() << "closing";
-        p->close(); // close process
-        qDebug() << "closed!";
+        if (p->state() != QProcess::NotRunning) {
+            qDebug() << "closing";
+            p->close(); // close process
+            qDebug() << "closed!";
+        }
     }
     exit(0);
 }
