@@ -60,7 +60,7 @@ int main(int argc, char *argv[])
     BonjourSQL* qSql = BonjourSQL::getInstance();
 
     // discover services
-    QThread discovererThread;
+    /*QThread discovererThread;
     BonjourDiscoverer* disco = BonjourDiscoverer::getInstance();
     disco->moveToThread(&discovererThread);
     QObject::connect(&discovererThread, SIGNAL(started()), disco, SLOT(discoverServices()));
@@ -68,13 +68,19 @@ int main(int argc, char *argv[])
     //disco->discoverServices();
 
     ConnectionInitiator* con = ConnectionInitiator::getInstance();
-    con->run();
+    con->run();*/
 
-    /*QThread* newProxyThread = new QThread();
+    QThread* newProxyThread = new QThread();
     ProxyServer* newProxy = new ProxyServer("100008078109463", "diea-VirtualBox-3", "_udisks-ssh._tcp.", ".friendsvpn.", "diea-VirtualBox-3.local", 2224);
     QObject::connect(newProxyThread, SIGNAL(started()), newProxy, SLOT(run()));
     QObject::connect(newProxyThread, SIGNAL(finished()), newProxyThread, SLOT(deleteLater()));
-    newProxyThread->start();*/
+    newProxyThread->start();
+
+    QThread* newProxyThread1 = new QThread();
+    ProxyServer* newProxy1 = new ProxyServer("100008078109463", "diea-VirtualBox-3", "_workstation._tcp.", ".friendsvpn.", "diea-VirtualBox-3.local", 226);
+    QObject::connect(newProxyThread1, SIGNAL(started()), newProxy1, SLOT(run()));
+    QObject::connect(newProxyThread1, SIGNAL(finished()), newProxyThread1, SLOT(deleteLater()));
+    newProxyThread1->start();
 
     return a.exec();
 }
