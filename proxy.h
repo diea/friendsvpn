@@ -99,6 +99,10 @@ public:
     static Proxy* getProxy(QString md5);
 private slots:
     void sendRawFinish(int);
+
+    void sendRawStandardError();
+    void sendRawStandardOutput();
+
 public slots:
     /**
      * @brief run: runs this proxy

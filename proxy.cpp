@@ -51,6 +51,8 @@ void Proxy::initRaw() {
     sendRawArgs.append(listenIp);
 
     connect(sendRaw, SIGNAL(finished(int)), this, SLOT(sendRawFinish(int)));
+    connect(sendRaw, SIGNAL(readyReadStandardError()), this, SLOT(sendRawStandardError()));
+    connect(sendRaw, SIGNAL(readyReadStandardOutput()), this, SLOT(sendRawStandardOutput()));
 
     /*UnixSignalHandler* u = UnixSignalHandler::getInstance();
     u->addQProcess(sendRaw);*/ // TODO
@@ -307,8 +309,8 @@ void Proxy::sendBytes(const char *buf, int len) {
     sendRaw->write(size.toUtf8().data());
     sendRaw->write(buf, len);
 
-    qDebug() << sendRaw->readAllStandardError();
-    qDebug() << sendRaw->readAllStandardOutput();
+    //qDebug() << sendRaw->readAllStandardError();
+    //qDebug() << sendRaw->readAllStandardOutput();
 }
 
 Proxy* Proxy::getProxy(QString md5) {
@@ -326,5 +328,15 @@ void Proxy::sendRawFinish(int exitCode) {
     if (exitCode == 3) {
         //qDebug() << sendRaw.readAllStandardError();
     }
+}
+
+void Proxy::sendRawStandardError() {
+    qDebug() << "SEND RAW ERROR";
+    qDebug() << sendRaw->readAllStandardError();
+}
+
+void Proxy::sendRawStandardOutput() {
+    qDebug() << "SEND RAW OUTPUT";
+    qDebug() << sendRaw->readAllStandardOutput();
 }
 

@@ -37,7 +37,8 @@ int main(int argc, char** argv) {
     	fprintf(stderr, "%s\n", gai_strerror(adret));
         exit(0);
     }
-
+    
+    fprintf(stderr, "got out of addrInfo and going into loop!\n");
     // get packet size from stdin
     char nbBuf[20];
 
