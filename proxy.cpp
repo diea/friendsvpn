@@ -240,7 +240,13 @@ QString Proxy::randomIP() {
     qDebug() << "prefix " <<  p.str;
 
     // generate random IP
-    srand(time(NULL) + rand());
+    static bool first = true;
+    if (first) {
+        srand(time(NULL));
+        first = false;
+    } else {
+        srand(rand());
+    }
     char* prefixBuff = p.str.toUtf8().data();
     char v6buf[40];
     strcpy(v6buf, prefixBuff);
