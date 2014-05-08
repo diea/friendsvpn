@@ -109,14 +109,26 @@ void DataPlaneConnection::readBuffer(const char* buf) {
             memcpy(srcPort, packetBuf, sizeof(qint16));
             *srcPort = ntohs(*srcPort);
 
-            qDebug() << "new client proxy thread!";
+
+            // just send the bloody packet
+            QProcess* raw = new QProcess();
+            QStringList sendRawArgs;
+            sendRawArgs.append(QString::number(sockType));
+            sendRawArgs.append(QString::number(IPPROTO_TCP));
+            sendRawArgs.append("::1");
+            raw->start(QString(HELPERPATH) + "sendRaw", sendRawArgs);
+
+            raw->write(packetBuf, length);
+            qDebug() << raw->readAll();
+
+            /*qDebug() << "new client proxy thread!";
             QThread* proxyThread = new QThread();
             prox = new ProxyClient(hash, sockType, *srcPort, this);
             prox->moveToThread(proxyThread);
             connect(proxyThread, SIGNAL(started()), prox, SLOT(run()));
             connect(proxyThread, SIGNAL(finished()), proxyThread, SLOT(deleteLater()));
             // TODO delete proxy client also on finished() ?
-            proxyThread->start();
+            proxyThread->start();*/
 
             free(srcPort);
         }
