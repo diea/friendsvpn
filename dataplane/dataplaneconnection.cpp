@@ -12,12 +12,12 @@ void DataPlaneConnection::removeConnection() {
 
     qDebug() << "Removing connection!";
     if (friendUid.toInt() < qSql->getLocalUid().toInt()) { // friend is smaller, I am server
-        client->disconnect();
+        //client->disconnect();
         client->stop();
         client = NULL;
         curMode = Receiving;
     } else {
-        server->disconnect();
+        //server->disconnect();
         server = NULL;
         curMode = Emitting;
     }
