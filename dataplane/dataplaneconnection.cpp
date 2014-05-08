@@ -125,6 +125,7 @@ void DataPlaneConnection::readBuffer(const char* buf) {
 
             raw->write(packetBuf, length);
             qDebug() << "raw has written";
+            raw->waitForReadyRead(2000);
             qDebug() << raw->readAll();
 
             /*qDebug() << "new client proxy thread!";
@@ -152,6 +153,9 @@ void DataPlaneConnection::sendBytes(const char *buf, int len, QString& hash, int
         qWarning() << "Trying to sendBytes on Closed state for uid" << friendUid;
     }
 
+    qDebug() << (char*) (buf + 21);
+    printf("using printf %s \n", buf + 21);
+
     // make the DATA header
     QString header;
     QString trans = (sockType == SOCK_DGRAM) ? "udp" : "tcp";
@@ -167,10 +171,13 @@ void DataPlaneConnection::sendBytes(const char *buf, int len, QString& hash, int
     char dataPacket[packetLen];
     char* headerC = headerBytes.data();
     strncpy(dataPacket, headerC, headerLen);
-    strncpy(dataPacket + headerLen, buf, len);
+    memcpy(dataPacket + headerLen, buf, len);
+
+    qDebug() << (char*) (dataPacket + 21);
+    printf("using printf %s \n", dataPacket + 21);
 
     qDebug() << "datapacket!" << dataPacket;
-
+    fflush(stdout);
     if (curMode == Emitting) {
         qDebug() << "Send bytes as dataplane client";
         client->sendBytes(dataPacket, packetLen);
