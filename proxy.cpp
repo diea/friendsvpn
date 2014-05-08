@@ -299,8 +299,15 @@ void Proxy::sendBytes(const char *buf, int len) {
     QString size("[");
     size.append(QString::number(len));
     size.append("]");
+
+    qDebug() << "sending " << size << "raw bytes";
+    qDebug() << buf;
+
     sendRaw->write(size.toUtf8().data());
     sendRaw->write(buf, len);
+
+    qDebug() << sendRaw->readAllStandardError();
+    qDebug() << sendRaw->readAllStandardOutput();
 }
 
 Proxy* Proxy::getProxy(QString md5) {

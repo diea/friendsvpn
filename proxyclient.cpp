@@ -7,14 +7,6 @@ ProxyClient::ProxyClient(QString md5, int sockType, int srcPort, DataPlaneConnec
     this->con = con;
 }
 
-/*ProxyClient* ProxyClient::getProxyClient(QString md5, int sockType, int srcPort, DataPlaneConnection* con) {
-    if (proxyHashes.contains(md5)) {
-        return proxyHashes.value(md5);
-    } else {
-        return new ProxyClient(md5, sockType, srcPort, con);
-    }
-}*/
-
 void ProxyClient::run() {
     UnixSignalHandler* u = UnixSignalHandler::getInstance();
 
@@ -103,7 +95,3 @@ void ProxyClient::readyRead() {
 void ProxyClient::pcapFinish(int exitCode) {
     qWarning() << "pcap exited with exit code " << exitCode << "for client" << listenIp << listenPort;
 }
-
-/*void ProxyClient::sendBytes(const char *buf, int len) {
-    // use raw helper to send buffer
-}*/
