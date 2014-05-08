@@ -3,18 +3,18 @@
 #include "bonjour/bonjourrecord.h"
 #include "unixsignalhandler.h"
 
-ProxyServer::ProxyServer(const QString &friendUid, const QString &name, const QString &regType, const QString &domain,
-                       const QString &hostname, quint16 port) : Proxy(port, regType)
-{
+QString ProxyServer::computeMd5(const QString &friendUid, const QString &name, const QString &regType,
+                                 const QString &domain, const QString &hostname, quint16 port) {
     QString allParams = friendUid + name + regType + domain + hostname + QString::number(port);
 
     QByteArray hash = QCryptographicHash::hash(allParams.toUtf8().data(), QCryptographicHash::Md5);
-    idHash = QString(hash);
-    if (proxyHashes.contains(idHash)) {
-        throw 1; // already exists, we throw int "1"
-    }
-    proxyHashes.insert(idHash, this);
+    return QString(hash);
+}
 
+ProxyServer::ProxyServer(const QString &friendUid, const QString &name, const QString &regType, const QString &domain,
+                       const QString &hostname, quint16 port) : Proxy(port, regType,
+                                                                      computeMd5(friendUid, name, regType, domain, hostname, port))
+{
     qDebug() << "Proxy constructor!";
 
     QString newip = listenIp;

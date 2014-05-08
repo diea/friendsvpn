@@ -57,8 +57,8 @@ protected:
     /**
      * @brief Proxy is an abstract class
      */
-    Proxy(int port, int sockType);
-    Proxy(int port, const QString& regType);
+    Proxy(int port, int sockType, QString md5);
+    Proxy(int port, const QString& regType, QString md5);
 
     /**
      * @brief proxyHashes each proxy will be identified by a hash of its constructor parameters

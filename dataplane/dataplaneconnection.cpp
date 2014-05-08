@@ -109,6 +109,7 @@ void DataPlaneConnection::readBuffer(const char* buf) {
             memcpy(srcPort, packetBuf, sizeof(qint16));
             *srcPort = ntohs(*srcPort);
 
+            qDebug() << "new client proxy thread!";
             QThread* proxyThread = new QThread();
             prox = new ProxyClient(hash, sockType, *srcPort, this);
             connect(proxyThread, SIGNAL(started()), prox, SLOT(run()));

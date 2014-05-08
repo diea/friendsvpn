@@ -6,9 +6,15 @@ QHash<QString, Proxy*> Proxy::proxyHashes;
 
 QString Proxy::defaultIface = Proxy::getDefaultInterface();
 
-Proxy::Proxy(int srcPort, int sockType)
+Proxy::Proxy(int srcPort, int sockType, QString md5)
     : listenPort(srcPort), sockType(sockType)
 {
+    if (proxyHashes.contains(md5)) {
+        throw 1; // already exists, we throw int "1"
+    }
+    idHash = md5;
+    proxyHashes.insert(md5, this);
+
     listenIp = newIP();
 
     if (sockType == SOCK_STREAM) ipProto = IPPROTO_TCP;
@@ -16,8 +22,14 @@ Proxy::Proxy(int srcPort, int sockType)
     initRaw();
 }
 
-Proxy::Proxy(int srcPort, const QString& regType) : listenPort(srcPort)
+Proxy::Proxy(int srcPort, const QString& regType, QString md5) : listenPort(srcPort)
 {
+    if (proxyHashes.contains(md5)) {
+        throw 1; // already exists, we throw int "1"
+    }
+    idHash = md5;
+    proxyHashes.insert(md5, this);
+
     listenIp = newIP();
     if (regType.contains("tcp")) {
         sockType = SOCK_STREAM;

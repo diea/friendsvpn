@@ -17,6 +17,9 @@ private:
 
     QString friendUid;
 
+    static QString computeMd5(const QString &friendUid, const QString &name, const QString &regType, const QString &domain,
+                           const QString &hostname, quint16 port);
+
 public:
     explicit ProxyServer(const QString &friendUid, const QString &name, const QString &regType, const QString &domain,
                         const QString &hostname, quint16 port);

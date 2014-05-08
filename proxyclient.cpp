@@ -2,14 +2,9 @@
 #include "unixsignalhandler.h"
 
 ProxyClient::ProxyClient(QString md5, int sockType, int srcPort, DataPlaneConnection* con) :
-    Proxy(srcPort, sockType)
+    Proxy(srcPort, sockType, md5)
 {
     this->con = con;
-    if (proxyHashes.contains(md5)) {
-        throw 1; // already exists, we throw int "1"
-    }
-    idHash = md5;
-    proxyHashes.insert(md5, this);
 }
 
 /*ProxyClient* ProxyClient::getProxyClient(QString md5, int sockType, int srcPort, DataPlaneConnection* con) {
