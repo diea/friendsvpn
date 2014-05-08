@@ -100,8 +100,8 @@ void DataPlaneConnection::readBuffer(const char* buf) {
         }
 
         // get Proxy and send through it!
-        //Proxy* prox = Proxy::getProxy(hash);
-        //if (!prox) {
+        Proxy* prox = Proxy::getProxy(hash);
+        if (!prox) {
             // read tcp or udp header to get src port
             // the first 16 bits of UDP or TCP header are the src_port
             qint16* srcPort = static_cast<qint16*>(malloc(sizeof(qint16)));
@@ -114,7 +114,7 @@ void DataPlaneConnection::readBuffer(const char* buf) {
 
             qDebug() << (char*) (packetBuf + 21);
             printf("using printf %s \n", packetBuf + 21);
-
+#if 0
             qDebug() << "sending the bloody packet!";
             QProcess* raw = new QProcess();
             QStringList sendRawArgs;
@@ -131,19 +131,19 @@ void DataPlaneConnection::readBuffer(const char* buf) {
             qDebug() << "raw has written";
             raw->waitForReadyRead(2000);
             qDebug() << raw->readAll();
-
-            /*qDebug() << "new client proxy thread!";
+#endif
+            qDebug() << "new client proxy thread!";
             QThread* proxyThread = new QThread();
             prox = new ProxyClient(hash, sockType, *srcPort, this);
             prox->moveToThread(proxyThread);
             connect(proxyThread, SIGNAL(started()), prox, SLOT(run()));
             connect(proxyThread, SIGNAL(finished()), proxyThread, SLOT(deleteLater()));
             // TODO delete proxy client also on finished() ?
-            proxyThread->start();*/
+            proxyThread->start();
 
             free(srcPort);
-        //}
-        //prox->sendBytes(packetBuf, length);
+        }
+        prox->sendBytes(packetBuf, length);
     }
 
     // get client proxy and send data through it

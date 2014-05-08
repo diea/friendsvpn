@@ -14,6 +14,7 @@ Proxy::Proxy(int srcPort, int sockType, QString md5)
     }
     idHash = md5;
     proxyHashes.insert(md5, this);
+    left = 0;
 
     listenIp = newIP();
 
@@ -29,7 +30,7 @@ Proxy::Proxy(int srcPort, const QString& regType, QString md5) : listenPort(srcP
     }
     idHash = md5;
     proxyHashes.insert(md5, this);
-
+    left = 0;
     listenIp = newIP();
     if (regType.contains("tcp")) {
         sockType = SOCK_STREAM;
@@ -339,4 +340,66 @@ void Proxy::sendRawStandardOutput() {
     qDebug() << "SEND RAW OUTPUT";
     qDebug() << sendRaw->readAllStandardOutput();
 }
+
+void Proxy::readyRead() {
+    QProcess* pcap = dynamic_cast<QProcess*> (QObject::sender());
+    char packetAndLen[2010];
+    int pLenCnt = 1;
+    if (left == 0) {
+        // get length
+        char c;
+        pcap->getChar(&c);
+        if (c != '[') {
+            qWarning() << "format error";
+            return;
+        }
+        QString nb;
+        packetAndLen[0] = '[';
+        pcap->getChar(&c);
+        while (c != ']') {
+            if (!isdigit(c)) {
+                qWarning() << "format error, digit required between []";
+                return;
+            }
+            nb.append(c);
+            packetAndLen[pLenCnt] = c;
+            pcap->getChar(&c);
+            pLenCnt++;
+        }
+
+        if (nb.isEmpty()) { qWarning() << "format error, empty packet length!"; return; }
+        packetAndLen[pLenCnt] = ']';
+        left = nb.toInt();
+    }
+
+    if (pcap->bytesAvailable() < left) {
+        qDebug() << "waiting for more bytes";
+        return; // wait for more bytes
+    }
+
+    // get packet and send it to dtls connection
+    char packet[2000];
+    pcap->read(packet, left);
+    memcpy(packetAndLen + pLenCnt + 1, packet, left);
+
+    // send over DTLS with friendUid
+    QFile tcpPacket("tcpPackeFromPcap");
+    tcpPacket.open(QIODevice::WriteOnly);
+    tcpPacket.write(packetAndLen, left + (pLenCnt + 1));
+
+    con->sendBytes(packetAndLen, left + (pLenCnt + 1), idHash, sockType);
+
+    // send over raw! (test)
+    //this->sendBytes(packet, left);
+
+    left = 0;
+}
+
+void Proxy::pcapFinish(int exitCode) {
+    // TODO
+    // TODO check correspondance of exit code (seems like 255 -3 = 252 ?)
+    qWarning() << "pcap exited with exit code " << exitCode;
+}
+
+
 

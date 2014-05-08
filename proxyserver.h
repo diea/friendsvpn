@@ -9,12 +9,6 @@ class ProxyServer : public Proxy
 private:
     BonjourRecord rec;
 
-    /**
-     * @brief buffer used to buffer "left" bytes until packet has been read
-     */
-    unsigned int left;
-    QByteArray buffer;
-
     QString friendUid;
 
     static QString computeMd5(const QString &friendUid, const QString &name, const QString &regType, const QString &domain,
@@ -25,10 +19,6 @@ public:
                         const QString &hostname, quint16 port);
 
 signals:
-private slots:
-    void pcapFinish(int exitCode);
-    void sendRawFinish(int exitCode);
-    void readyRead();
 public slots:
     void run();
 };

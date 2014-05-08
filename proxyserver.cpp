@@ -22,7 +22,6 @@ ProxyServer::ProxyServer(const QString &friendUid, const QString &name, const QS
     QList<QString> ip;
     ip.append(newip);
     rec = BonjourRecord(name, regType, domain, hostname, ip, port);
-    left = 0;
 
     // get DataPlaneConnection associated with friendUid
     ConnectionInitiator* initiator = ConnectionInitiator::getInstance();
@@ -115,74 +114,4 @@ void ProxyServer::run() {
         */
         // advertise by registering the record with a bonjour registrar
         // TODO
-}
-
-void ProxyServer::pcapFinish(int exitCode) {
-    // TODO
-    // TODO check correspondance of exit code (seems like 255 -3 = 252 ?)
-    qWarning() << "pcap exited with exit code " << exitCode;
-}
-
-void ProxyServer::sendRawFinish(int exitCode) {
-    // TODO
-    // TODO check correspondance of exit code (seems like 255 -3 = 252 ?)
-    qWarning() << "sendRaw helper had an error " << exitCode;
-
-    if (exitCode == 3) {
-        //qDebug() << sendRaw.readAllStandardError();
-    }
-}
-
-void ProxyServer::readyRead() {
-    QProcess* pcap = dynamic_cast<QProcess*> (QObject::sender());
-    char packetAndLen[2010];
-    int pLenCnt = 1;
-    if (left == 0) {
-        // get length
-        char c;
-        pcap->getChar(&c);
-        if (c != '[') {
-            qWarning() << "format error";
-            return;
-        }
-        QString nb;
-        packetAndLen[0] = '[';
-        pcap->getChar(&c);
-        while (c != ']') {
-            if (!isdigit(c)) {
-                qWarning() << "format error, digit required between []";
-                return;
-            }
-            nb.append(c);
-            packetAndLen[pLenCnt] = c;
-            pcap->getChar(&c);
-            pLenCnt++;
-        }
-
-        if (nb.isEmpty()) { qWarning() << "format error, empty packet length!"; return; }
-        packetAndLen[pLenCnt] = ']';
-        left = nb.toInt();
-    }
-
-    if (pcap->bytesAvailable() < left) {
-        qDebug() << "waiting for more bytes";
-        return; // wait for more bytes
-    }
-
-    // get packet and send it to dtls connection
-    char packet[2000];
-    pcap->read(packet, left);
-    memcpy(packetAndLen + pLenCnt + 1, packet, left);
-
-    // send over DTLS with friendUid
-    QFile tcpPacket("tcpPackeFromPcap");
-    tcpPacket.open(QIODevice::WriteOnly);
-    tcpPacket.write(packetAndLen, left + (pLenCnt + 1));
-
-    con->sendBytes(packetAndLen, left + (pLenCnt + 1), idHash, sockType);
-
-    // send over raw! (test)
-    //this->sendBytes(packet, left);
-
-    left = 0;
 }

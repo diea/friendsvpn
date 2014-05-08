@@ -40,6 +40,12 @@ private:
      * @brief initRaw initializes the raw socket to inject packets
      */
     void initRaw();
+
+    /**
+     * @brief buffer used to buffer "left" bytes until packet has been read
+     */
+    unsigned int left;
+    QByteArray buffer;
 protected:
     QString listenIp;
     int listenPort;
@@ -102,7 +108,9 @@ private slots:
 
     void sendRawStandardError();
     void sendRawStandardOutput();
-
+protected slots:
+    void pcapFinish(int exitCode);
+    void readyRead();
 public slots:
     /**
      * @brief run: runs this proxy

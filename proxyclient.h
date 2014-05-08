@@ -7,12 +7,6 @@ class ProxyClient : public Proxy
     Q_OBJECT
 private:
     /**
-     * @brief buffer used to buffer "left" bytes until packet has been read
-     */
-    unsigned int left;
-    QByteArray buffer;
-
-    /**
      * @brief proxyHashes each proxy will be identified by a hash of its constructor parameters
      * so that we don't create twice the same proxy
      */
@@ -28,10 +22,7 @@ signals:
 
 public slots:
     void run();
-private slots:
-    void pcapFinish(int exitCode);
-    //void sendRawFinish(int exitCode);
-    void readyRead();
+
 };
 
 #endif // PROXYCLIENT_H
