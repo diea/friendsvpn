@@ -64,9 +64,13 @@ int main(int argc, char** argv) {
 	    fread(packet_send, packet_send_size, 1, stdin);
 
 
+	    printf("Sending to %s\n", argv[3]);
+	    printf("packet_send %s\n", (char*)packet_send);
+	    fflush(stdout);
 	    int num = sendto(rawsd, packet_send, packet_send_size, 0, res->ai_addr, res->ai_addrlen);
 	    if (num < 0) {
 	        fprintf(stderr, "Cannot send message (error %d):  %s\n", num, strerror(errno));
+	        fflush(stderr);
 	    }
     }
 
