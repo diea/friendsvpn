@@ -30,6 +30,7 @@ Proxy::Proxy(int srcPort, const QString& regType) : listenPort(srcPort)
 }
 
 void Proxy::initRaw() {
+    qDebug() << "initRaw";
     // init raw socket to send packets
     sendRaw = new QProcess(this);
     QStringList sendRawArgs;
@@ -43,6 +44,7 @@ void Proxy::initRaw() {
     u->addQProcess(sendRaw);*/ // TODO
 
     sendRaw->start(QString(HELPERPATH) + "sendRaw", sendRawArgs);
+    qDebug() << "start raw!";
 }
 
 QString Proxy::newIP() {

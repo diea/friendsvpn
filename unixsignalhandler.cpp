@@ -1,6 +1,8 @@
 #include "unixsignalhandler.h"
 #include <signal.h>
 #include <QMutex>
+#include <QDebug>
+
 
 UnixSignalHandler* UnixSignalHandler::instance = NULL;
 
@@ -41,6 +43,7 @@ void UnixSignalHandler::addQProcess(QProcess *p) {
 }
 
 void UnixSignalHandler::termSignalHandler(int) {
+    qDebug() << "terminating!";
     UnixSignalHandler* u = UnixSignalHandler::getInstance();
     foreach (QProcess* p, u->listOfProcessToKill) {
         p->close(); // close process
