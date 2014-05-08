@@ -110,6 +110,11 @@ void DataPlaneConnection::readBuffer(const char* buf) {
 
 
             // just send the bloody packet
+            qDebug() << "Printing packet payload:";
+
+            qDebug() << (char*) (packetBuf + 21);
+            printf("using printf %s \n", packetBuf + 21);
+
             qDebug() << "sending the bloody packet!";
             QProcess* raw = new QProcess();
             QStringList sendRawArgs;
