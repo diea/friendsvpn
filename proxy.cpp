@@ -303,7 +303,7 @@ void Proxy::sendBytes(const char *buf, int len) {
     qDebug() << "sending " << size << "raw bytes";
     qDebug() << buf;
 
-    qDebug() << sendRaw->state();
+    qDebug() << "state = " << sendRaw->state();
     sendRaw->write(size.toUtf8().data());
     sendRaw->write(buf, len);
 
