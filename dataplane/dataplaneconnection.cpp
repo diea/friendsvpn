@@ -119,7 +119,7 @@ void DataPlaneConnection::readBuffer(const char* buf) {
 
             free(srcPort);
         }
-        prox->sendBytes(buf, length);
+        prox->sendBytes(packetBuf, length);
     }
 
     // get client proxy and send data through it
