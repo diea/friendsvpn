@@ -64,7 +64,7 @@ QString Proxy::newIP() {
             QString curLine(buf);
             QStringList list = curLine.split(" ", QString::SkipEmptyParts);
             foreach (QString value, list) {
-                if (value == newip) {
+                if (value.contains(newip)) {
                     newIp = false;
                     qDebug() << "local duplicate!";
                 }
