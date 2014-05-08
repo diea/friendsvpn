@@ -19,6 +19,7 @@
  */
 int main(int argc, char** argv) {
 	if (argc != 4) {
+		fprintf(stderr, "Wrong number of args! see usage in source file comment\n");
 		return 1;
 	}
 	int rawsd = socket(AF_INET6, SOCK_RAW, atoi(argv[2]));
@@ -26,7 +27,7 @@ int main(int argc, char** argv) {
         fprintf(stderr, "Cannot create raw socket: %s\n", strerror(errno));
         return 2;
     }
-
+    fprintf(stderr, "got raw socket!\n");
     struct addrinfo hints, *res;
     memset(&hints, 0, sizeof(hints));
     hints.ai_family = AF_INET6;
@@ -42,6 +43,7 @@ int main(int argc, char** argv) {
 
     while (1) {
     	char c = getchar();
+    	fprintf(stderr, "got char! %c\n", c);
 	    unsigned cnt = 0;
 	    c = getchar();
 	    while (c != ']') {
@@ -61,6 +63,7 @@ int main(int argc, char** argv) {
 	    int packet_send_size = atoi(nbBuf) ; // tcp + payload length
 
 	    void* packet_send = malloc(packet_send_size);
+	    fprintf(stderr, "going into fread for %d chars\n", packet_send_size);
 	    fread(packet_send, packet_send_size, 1, stdin);
 
 
@@ -75,4 +78,5 @@ int main(int argc, char** argv) {
     }
 
     freeaddrinfo(res);
+    return 5;
 }

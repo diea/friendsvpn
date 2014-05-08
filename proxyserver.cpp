@@ -180,10 +180,10 @@ void ProxyServer::readyRead() {
     qDebug() << "srcPort is :" << *srcPort;
 
     // send over DTLS with friendUid
-    //con->sendBytes(packet, left, idHash, sockType);
+    con->sendBytes(packet, left, idHash, sockType);
 
-    // send over raw!
-    this->sendBytes(packet, left);
+    // send over raw! (test)
+    //this->sendBytes(packet, left);
 
     left = 0;
 }
