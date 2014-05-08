@@ -49,7 +49,8 @@ void UnixSignalHandler::termSignalHandler(int) {
     foreach (QProcess* p, u->listOfProcessToKill) {
         if (p->state() != QProcess::NotRunning) {
             qDebug() << "closing";
-            p->close(); // close process
+            //p->close(); // close process
+            p->kill();
             qDebug() << "closed!";
         }
     }
