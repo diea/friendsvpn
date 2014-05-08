@@ -88,7 +88,8 @@ void ProxyServer::run() {
     #ifdef __APPLE__
         args.append("lo0"); // TODO get default iface AND listen also on lo !
     #elif __GNUC__
-        args.append("lo"); // TODO get default iface AND listen also on lo !
+        //args.append("lo"); // TODO get default iface AND listen also on lo !
+        args.append("eth0"); // TODO get default iface AND listen also on lo !
     #endif
         QString transportStr;
         sockType == SOCK_DGRAM ? transportStr = "udp" : transportStr = "tcp";
