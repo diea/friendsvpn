@@ -6,6 +6,7 @@ DataPlaneClient::DataPlaneClient(QHostAddress ip, DataPlaneConnection* con, QObj
 {
     memset((void *) &remote_addr, 0, sizeof(struct sockaddr_storage));
     memset((void *) &local_addr, 0, sizeof(struct sockaddr_storage));
+    isActive = true;
 }
 
 void DataPlaneClient::run() {
@@ -119,7 +120,11 @@ void DataPlaneClient::run() {
     size_t len;
     qDebug() << "CLIENT BEGINS LISTEN UDP";
     while (!(SSL_get_shutdown(ssl) & SSL_RECEIVED_SHUTDOWN)) { // && num_timeouts < max_timeouts) {
-        mutex.lock(); if (!isActive) { mutex.unlock(); break; }
+        mutex.lock();
+        if (!isActive) {
+            mutex.unlock();
+            break;
+        }
         mutex.unlock();
         qDebug() << "reading!";
         reading = 1;
