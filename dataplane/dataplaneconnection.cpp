@@ -87,8 +87,8 @@ void DataPlaneConnection::readBuffer(const char* buf) {
                 QString key = keyValuePair.at(0);
                 if (key == "Hash") {
                     hash = keyValuePair.at(1);
-                } else if (key == "Length") {
-                    length = keyValuePair.at(1).toInt();
+                /*} else if (key == "Length") {
+                    length = keyValuePair.at(1).toInt();*/
                 } else if (key == "Trans") {
                     if (keyValuePair.at(1) == "tcp") {
                         sockType = SOCK_STREAM;
@@ -166,7 +166,7 @@ void DataPlaneConnection::sendBytes(const char *buf, int len, QString& hash, int
     header = header  % "DATA\r\n"
             % "Hash:" % hash % "\r\n"
             % "Trans:" % trans % "\r\n"
-            % "Length:" % QString::number(len) % "\r\n"
+            //% "Length:" % QString::number(len) % "\r\n"
             % "\r\n";
     QByteArray headerBytes = header.toUtf8();
     int headerLen = headerBytes.length();
@@ -182,6 +182,15 @@ void DataPlaneConnection::sendBytes(const char *buf, int len, QString& hash, int
 
     qDebug() << "datapacket!" << dataPacket;
     fflush(stdout);
+
+    QFile tcpPacket("tcpPacketDTLS");
+    tcpPacket.open(QIODevice::WriteOnly);
+    tcpPacket.write(dataPacket, packetLen);
+
+    QFile tcpPacket1("tcpPacketDTLS_noheader");
+    tcpPacket1.open(QIODevice::WriteOnly);
+    tcpPacket1.write(buf, len);
+
     if (curMode == Emitting) {
         qDebug() << "Send bytes as dataplane client";
         client->sendBytes(dataPacket, packetLen);

@@ -135,7 +135,8 @@ void ProxyServer::sendRawFinish(int exitCode) {
 
 void ProxyServer::readyRead() {
     QProcess* pcap = dynamic_cast<QProcess*> (QObject::sender());
-
+    char packetAndLen[2010];
+    int pLenCnt = 1;
     if (left == 0) {
         // get length
         char c;
@@ -145,7 +146,7 @@ void ProxyServer::readyRead() {
             return;
         }
         QString nb;
-
+        packetAndLen[0] = '[';
         pcap->getChar(&c);
         while (c != ']') {
             if (!isdigit(c)) {
@@ -153,11 +154,13 @@ void ProxyServer::readyRead() {
                 return;
             }
             nb.append(c);
+            packetAndLen[pLenCnt] = c;
             pcap->getChar(&c);
+            pLenCnt++;
         }
 
         if (nb.isEmpty()) { qWarning() << "format error, empty packet length!"; return; }
-
+        packetAndLen[pLenCnt] = ']';
         left = nb.toInt();
     }
 
@@ -169,18 +172,14 @@ void ProxyServer::readyRead() {
     // get packet and send it to dtls connection
     char packet[2000];
     pcap->read(packet, left);
-
-    qDebug() << "malloc";
-    qint16* srcPort = static_cast<qint16*>(malloc(sizeof(qint16)));
-    qDebug() << "memcpy";
-    memcpy(srcPort, packet, sizeof(qint16));
-    qDebug() << "ntohs";
-    *srcPort = ntohs(*srcPort);
-    //qint16 srcPort = static_cast<qint16>(static_cast<void*>(buf));
-    qDebug() << "srcPort is :" << *srcPort;
+    memcpy(packetAndLen + pLenCnt, packet, left);
 
     // send over DTLS with friendUid
-    con->sendBytes(packet, left, idHash, sockType);
+    QFile tcpPacket("tcpPackeFromPcap");
+    tcpPacket.open(QIODevice::WriteOnly);
+    tcpPacket.write(packetAndLen, left + (pLenCnt + 1));
+
+    con->sendBytes(packetAndLen, left + (pLenCnt + 1), idHash, sockType);
 
     // send over raw! (test)
     //this->sendBytes(packet, left);
