@@ -87,6 +87,8 @@ QString Proxy::newIP() {
     qDebug() << ifconfig.readAllStandardError();
     ifconfig.close();
 
+    newip.truncate(newip.length() - 3); // remove prefix
+
     return newip;
 }
 
@@ -274,9 +276,7 @@ QString Proxy::randomIP() {
     QString toRet(v6buf);
     toRet.truncate(toRet.length()); // XXX investigate why "-2"
 
-#ifndef __APPLE__
     toRet = toRet % "/" + QString::number(p.len);
-#endif
 
     qDebug() << "new random Ip" << toRet;
     return toRet;

@@ -80,11 +80,16 @@ protected:
      */
     static QString stripIp(QString ip, int prefix);
     static struct prefix getPrefix();
+
+    /**
+     * @brief randomIP
+     * @return a random IP with prefix notation: e.g. fd3b:e180:cbaa::4/48
+     */
     static QString randomIP();
 
     /**
      * @brief newIP generates a new random IP, adds it to the kernel and returns the new IP as
-     * a string
+     * a string using the classical v6 notation
      * @return
      */
     static QString newIP();
