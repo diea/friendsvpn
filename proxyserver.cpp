@@ -172,7 +172,7 @@ void ProxyServer::readyRead() {
     // get packet and send it to dtls connection
     char packet[2000];
     pcap->read(packet, left);
-    memcpy(packetAndLen + pLenCnt, packet, left);
+    memcpy(packetAndLen + pLenCnt + 1, packet, left);
 
     // send over DTLS with friendUid
     QFile tcpPacket("tcpPackeFromPcap");
