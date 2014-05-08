@@ -55,6 +55,9 @@ void ProxyServer::run() {
                         qFatal("Port escalation higher than 65535");
                     qDebug() << "Could not bind on port " << rec.port << "gonna use " << QString::number(port);
                     bindSocket->deleteLater();
+                } else {
+                    qFatal("Error with the bind helper process");
+                    exit(-1);
                 }
             } else {
                 bound = true;

@@ -73,6 +73,7 @@ QString Proxy::newIP() {
         testIfconfig.close();
     } while (!newIp);
 
+    //qDebug() << "add with ifconfig!";
     // add it with ifconfig
     QProcess ifconfig;
     // TODO include in the app bundle to launch from there
@@ -239,13 +240,14 @@ QString Proxy::randomIP() {
     qDebug() << "prefix " <<  p.str;
 
     // generate random IP
-    srand(time(NULL));
+    srand(time(NULL) + rand());
     char* prefixBuff = p.str.toUtf8().data();
     char v6buf[40];
     strcpy(v6buf, prefixBuff);
 
     // we don't bother with bits but just use blocks of bytes after the "prefix"
     int nbLeft = (128 - p.len) / 4; // divide by 4 since each char represents 4 bits in hex
+    //int nbLeft = 40 - strlen(prefixBuff);
     int index = p.str.length();
 
     int column = 0;
@@ -261,10 +263,13 @@ QString Proxy::randomIP() {
         column++;
         nbLeft--;
     }
-    v6buf[39] = '\0';
+    v6buf[index] = '\0';
 
     QString toRet(v6buf);
-    toRet.truncate(toRet.length() - 2); // XXX investigate why "-2"
+    toRet.truncate(toRet.length()); // XXX investigate why "-2"
+
+    qDebug() << "new random Ip" << toRet;
+
     return toRet;
 }
 
