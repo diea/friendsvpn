@@ -275,7 +275,7 @@ QString Proxy::randomIP() {
     toRet.truncate(toRet.length()); // XXX investigate why "-2"
 
 #ifndef __APPLE__
-    toRet = toRet % "/" + p.len;
+    toRet = toRet % "/" + QString::number(p.len);
 #endif
 
     qDebug() << "new random Ip" << toRet;
