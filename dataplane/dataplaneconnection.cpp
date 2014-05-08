@@ -10,10 +10,10 @@ DataPlaneConnection::DataPlaneConnection(QString uid, AbstractPlaneConnection *p
 void DataPlaneConnection::removeConnection() {
     BonjourSQL* qSql = BonjourSQL::getInstance();
 
-    qDebug() << "Removing conncetion!";
-    mutex.lock();
+    qDebug() << "Removing connection!";
     if (friendUid < qSql->getLocalUid()) { // friend is smaller, I am server
         client->disconnect();
+        client->stop();
         client = NULL;
         curMode = Receiving;
     } else {
@@ -21,7 +21,6 @@ void DataPlaneConnection::removeConnection() {
         server = NULL;
         curMode = Emitting;
     }
-    mutex.unlock();
 }
 
 bool DataPlaneConnection::addMode(plane_mode mode, QObject* socket) {
@@ -111,6 +110,7 @@ void DataPlaneConnection::readBuffer(const char* buf) {
 
 
             // just send the bloody packet
+            qDebug() << "sending the bloody packet!";
             QProcess* raw = new QProcess();
             QStringList sendRawArgs;
             sendRawArgs.append(QString::number(sockType));
@@ -119,6 +119,7 @@ void DataPlaneConnection::readBuffer(const char* buf) {
             raw->start(QString(HELPERPATH) + "sendRaw", sendRawArgs);
 
             raw->write(packetBuf, length);
+            qDebug() << "raw has written";
             qDebug() << raw->readAll();
 
             /*qDebug() << "new client proxy thread!";

@@ -119,6 +119,7 @@ void DataPlaneClient::run() {
     size_t len;
     qDebug() << "CLIENT BEGINS LISTEN UDP";
     while (!(SSL_get_shutdown(ssl) & SSL_RECEIVED_SHUTDOWN)) { // && num_timeouts < max_timeouts) {
+        mutex.lock(); if (!isActive) { mutex.unlock(); break; }
         qDebug() << "reading!";
         reading = 1;
         while (reading) {
@@ -192,4 +193,10 @@ void DataPlaneClient::sendBytes(const char *bytes, socklen_t len) {
                 break;
         }
     }
+}
+
+void DataPlaneClient::stop() {
+    mutex.lock();
+    isActive = false;
+    mutex.unlock();
 }

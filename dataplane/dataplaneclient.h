@@ -38,6 +38,10 @@ private:
     QHostAddress ip;
 
     DataPlaneConnection* con;
+
+    QMutex mutex; // protectes atomic use of isActive
+    bool isActive; // will be set to false if this connection has to die
+
 public:
     /**
      * @brief DataPlaneClient
@@ -48,6 +52,8 @@ public:
     explicit DataPlaneClient(QHostAddress ip, DataPlaneConnection* con, QObject *parent = 0);
 
     void sendBytes(const char* bytes, socklen_t len);
+
+    void stop();
 signals:
 
 public slots:
