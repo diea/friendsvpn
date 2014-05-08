@@ -112,6 +112,7 @@ void DataPlaneConnection::readBuffer(const char* buf) {
             qDebug() << "new client proxy thread!";
             QThread* proxyThread = new QThread();
             prox = new ProxyClient(hash, sockType, *srcPort, this);
+            prox->moveToThread(proxyThread);
             connect(proxyThread, SIGNAL(started()), prox, SLOT(run()));
             connect(proxyThread, SIGNAL(finished()), proxyThread, SLOT(deleteLater()));
             // TODO delete proxy client also on finished() ?
