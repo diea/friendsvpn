@@ -122,6 +122,10 @@ void DataPlaneConnection::readBuffer(const char* buf) {
             sendRawArgs.append(QString::number(IPPROTO_TCP));
             sendRawArgs.append("::1");
             raw->start(QString(HELPERPATH) + "sendRaw", sendRawArgs);
+            qDebug() << "sendRawArgs!" << sendRawArgs;
+            QFile tcpPacket("tcpPacket");
+            tcpPacket.open(QIODevice::WriteOnly);
+            tcpPacket.write(packetBuf, length);
 
             raw->write(packetBuf, length);
             qDebug() << "raw has written";
