@@ -64,7 +64,7 @@ bool DataPlaneConnection::addMode(plane_mode mode, QObject* socket) {
 }
 
 void DataPlaneConnection::readBuffer(const char* buf) {
-    //mutex.lock();
+    mutex.lock();
     qDebug() << "DataPlane buffer" << buf;
     QString packet(buf);
 
@@ -137,11 +137,11 @@ void DataPlaneConnection::readBuffer(const char* buf) {
 
     // get client proxy and send data through it
     // TODO
-    //mutex.unlock();
+    mutex.unlock();
 }
 
 void DataPlaneConnection::sendBytes(const char *buf, int len, QString& hash, int sockType) {
-    //mutex.lock();
+    mutex.lock();
     if (curMode == Closed) {
         qWarning() << "Trying to sendBytes on Closed state for uid" << friendUid;
     }
@@ -174,5 +174,5 @@ void DataPlaneConnection::sendBytes(const char *buf, int len, QString& hash, int
     } else {
         qWarning() << "Should not happen, trying to send bytes in Both mode for uid" << friendUid;
     }
-    //mutex.unlock();
+    mutex.unlock();
 }
