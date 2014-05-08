@@ -101,8 +101,8 @@ void DataPlaneConnection::readBuffer(const char* buf) {
         }
 
         // get Proxy and send through it!
-        Proxy* prox = Proxy::getProxy(hash);
-        if (!prox) {
+        //Proxy* prox = Proxy::getProxy(hash);
+        //if (!prox) {
             // read tcp or udp header to get src port
             // the first 16 bits of UDP or TCP header are the src_port
             qint16* srcPort = static_cast<qint16*>(malloc(sizeof(qint16)));
@@ -131,8 +131,8 @@ void DataPlaneConnection::readBuffer(const char* buf) {
             proxyThread->start();*/
 
             free(srcPort);
-        }
-        prox->sendBytes(packetBuf, length);
+        //}
+        //prox->sendBytes(packetBuf, length);
     }
 
     // get client proxy and send data through it
