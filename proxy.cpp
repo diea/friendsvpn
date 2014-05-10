@@ -408,8 +408,11 @@ start: // used to process packets when bytes are available but no signal will be
     while ((pcap->getChar(&c)) & (c !='\r')) { // fetch iface
         iface[i] = c;
         left--;
+        i++;
     }
     left--; // the '\r'
+    qDebug() << iface << "iface!";
+
     char srcIp[40];
     char mac[18];
     mac[0] = '\0'; // to detect if empty mac
@@ -424,7 +427,6 @@ start: // used to process packets when bytes are available but no signal will be
     left--; // the '\r'
     srcIp[i] = '\0'; // replace '\n' by '\0'
 
-   qDebug() << iface << "iface!";
     if (QString(iface) == "eth") { // ethernet, fetch MAC addr
         i = 0;
         while ((pcap->getChar(&c)) & (c !='\r')) {
