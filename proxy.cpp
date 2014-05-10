@@ -423,6 +423,8 @@ start: // used to process packets when bytes are available but no signal will be
     }
     left--; // the '\r'
     srcIp[i] = '\0'; // replace '\n' by '\0'
+
+   qDebug() << iface << "iface!";
     if (QString(iface) == "eth") { // ethernet, fetch MAC addr
         i = 0;
         while ((pcap->getChar(&c)) & (c !='\r')) {
