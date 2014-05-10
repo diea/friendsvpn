@@ -37,6 +37,13 @@ public:
      */
     QHash<QString, BonjourBrowser*> availableServices;
 
+    /**
+     * @brief recordHashes holds the records by their md5 hash
+     * md5(uid + name + regType + domaine + hostname + port)
+     * @return
+     */
+    static QHash<QString, BonjourRecord*> recordHashes;
+
     static BonjourDiscoverer* getInstance(QObject* parent = NULL);
     ~BonjourDiscoverer();
 

@@ -35,7 +35,8 @@ SOURCES += main.cpp \
     dataplane/serverworker.cpp \
     unixsignalhandler.cpp \
     proxyserver.cpp \
-    proxyclient.cpp
+    proxyclient.cpp \
+    ipresolver.cpp
 
 HEADERS  += \
     graphic/systray.h \
@@ -63,7 +64,8 @@ HEADERS  += \
     dataplane/serverworker.h \
     unixsignalhandler.h \
     proxyserver.h \
-    proxyclient.h
+    proxyclient.h \
+    ipresolver.h
 
 FORMS    +=
 

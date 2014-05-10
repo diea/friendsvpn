@@ -3,8 +3,6 @@
 
 /* ethernet headers are always exactly 14 bytes [1] */
 #define SIZE_ETHERNET 14
-/* loopback header */
-#define SIZE_NULL 4
 
 /* Ethernet addresses are 6 bytes */
 #define ETHER_ADDR_LEN	6

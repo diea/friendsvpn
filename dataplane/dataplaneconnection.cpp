@@ -134,6 +134,10 @@ void DataPlaneConnection::readBuffer(const char* buf) {
 #endif
             qDebug() << "new client proxy thread!";
             QThread* proxyThread = new QThread();
+
+            // compute the proxyClient's unique hash
+            // = md5(hash + srcPort + srcIp)
+
             prox = new ProxyClient(hash, sockType, *srcPort, this);
             prox->moveToThread(proxyThread);
             connect(proxyThread, SIGNAL(started()), prox, SLOT(run()));

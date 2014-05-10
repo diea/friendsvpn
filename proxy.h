@@ -19,6 +19,7 @@
 #include "bonjoursql.h"
 #include "dataplane/dataplaneconnection.h"
 #include "ph2phtp_parser.h"
+#include "ipresolver.h"
 
 struct prefix {
     QString str;
@@ -46,6 +47,9 @@ private:
      */
     unsigned int left;
     QByteArray buffer;
+
+    static IpResolver* resolver;
+
 protected:
     QString listenIp;
     int listenPort;
@@ -99,6 +103,12 @@ protected:
      * @return
      */
     static QString newIP();
+
+    /**
+     * @brief run_pcap will run the pcap processes for this proxy
+     */
+    void run_pcap();
+
 public:
     static QString getDefaultInterface();
 

@@ -1,3 +1,7 @@
+/**
+ * C Helper for the friendsvpn project.
+ * Inspired by www.tcpdump.org/sniffex.c
+ */
 #include <pcap.h>
 #include <stdio.h>
 #include <string.h>
@@ -9,27 +13,52 @@
 #include <netinet/in.h>
 #include <arpa/inet.h>
 #include <netdb.h>
-#include "rawSocketStructs.h"
+#include <net/ethernet.h>
+#include <unistd.h>
+
+#include "raw_structs.h"
 
 int datalink; /* stores the datalink used for the capture */
 
 /**
  * will print the bytes of tcp/udp header + payload so that main app can use those
  */
-void print_packet(const u_char *payload, int len) {
-	printf("[%d]", len); // print length
+void print_packet(const u_char *payload, int len, char* ipSrcStr, char* sourceMacStr) {
+	int printLen = 0;
+	if (datalink == DLT_EN10MB)
+		printLen += 5; // eth\r\n is size 5
+	else
+		printLen += 4;
+	printLen += strlen(ipSrcStr) + 2;
+
+	if (datalink == DLT_EN10MB)
+		printLen += strlen(sourceMacStr) + 2;
+	
+	printLen += len;
+	printf("[%d]", printLen); // print length
+	if (datalink == DLT_EN10MB) {
+		printf("eth\r\n");
+		printf("%s\r\n", ipSrcStr);
+		printf("%s\r\n", sourceMacStr);
+	} else {
+		printf("lo\r\n");
+		printf("%s\r\n", ipSrcStr);
+	}
 	fwrite(payload, 1, len, stdout);
 	fflush(stdout);
 }
 
 void got_packet(u_char* args, const struct pcap_pkthdr *header, const u_char *packet) {
 	/* declare pointers to packet headers */
-	const struct sniff_ethernet *ethernet;  /* The ethernet header [1] */
-	const struct sniff_loopback *loopback;
-	const struct sniff_ipv6 *ip;              /* The IP header */
+	const struct ether_header *ethernet;  /* The ethernet header */
+	const struct ipv6hdr *ip;              /* The IP header */
 	const struct sniff_tcp *tcp;            /* The TCP header */
 	const char *payload;                    /* Packet payload */
 	
+	char ipSrcStr[INET6_ADDRSTRLEN];
+	char sourceMacStr[18];
+	sourceMacStr[0] = '\0'; // so strlen returns 0 if not used.
+
 	int size_datalink;
 	int size_ipv6 = 40; /* ipv6 header has fixed size of 40 bytes */
 	int size_tcp;
@@ -37,17 +66,22 @@ void got_packet(u_char* args, const struct pcap_pkthdr *header, const u_char *pa
 
 	if (datalink == DLT_EN10MB) {
 		/* define ethernet header */
-		ethernet = (struct sniff_ethernet*)(packet);
+		ethernet = (struct ether_header*)(packet);
+		sprintf(sourceMacStr, "%02x:%02x:%02x:%02x:%02x:%02x",
+			ethernet->ether_shost[0], ethernet->ether_shost[1], ethernet->ether_shost[2],
+			ethernet->ether_shost[3], ethernet->ether_shost[4], ethernet->ether_shost[5]);
 		size_datalink = SIZE_ETHERNET;
 	} else {
-		loopback = (struct sniff_loopback*)(packet);
 		size_datalink = SIZE_NULL;
 	}
 
 	/* define/compute ip header offset */
-	ip = (struct sniff_ipv6*)(packet + size_datalink);
+	ip = (struct ipv6hdr*)(packet + size_datalink);
 
-	if (ip->ip_nxt == IPPROTO_TCP) {
+	struct in6_addr ipSrc = ip->ip6_src;
+	inet_ntop(AF_INET6, &(ipSrc), ipSrcStr, INET6_ADDRSTRLEN);
+
+	if (ip->ip6_nxt == IPPROTO_TCP) {
 		/* handle TCP */
 		/* define/compute tcp header offset */
 		tcp = (struct sniff_tcp*)(packet + size_datalink + size_ipv6);
@@ -62,10 +96,10 @@ void got_packet(u_char* args, const struct pcap_pkthdr *header, const u_char *pa
 		payload = (u_char *)(packet + size_datalink + size_ipv6);
 		
 		/* compute tcp payload (segment) size */
-		size_payload = ntohs(ip->ip_len);
-		print_packet(payload, size_payload);
-	} else if (ip->ip_nxt == IPPROTO_UDP) {
-		/* handle UDP */
+		size_payload = ntohs(ip->ip6_plen);
+		print_packet(payload, size_payload, ipSrcStr, sourceMacStr);
+	} else if (ip->ip6_nxt == IPPROTO_UDP) {
+		/* handle UDP TODO */
 	}
 }
 

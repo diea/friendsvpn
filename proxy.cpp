@@ -1,8 +1,10 @@
 #include "proxy.h"
 #include "unixsignalhandler.h"
 #include <QCryptographicHash>
+#include <string.h>
 
 QHash<QString, Proxy*> Proxy::proxyHashes;
+IpResolver* Proxy::resolver = IpResolver::getInstance();
 
 QString Proxy::defaultIface = Proxy::getDefaultInterface();
 
@@ -343,56 +345,123 @@ void Proxy::sendRawStandardOutput() {
 
 void Proxy::readyRead() {
     QProcess* pcap = dynamic_cast<QProcess*> (QObject::sender());
-    char packetAndLen[2010];
-    int pLenCnt = 1;
+start: // used to process packets when bytes are available but no signal will be called
+    qDebug() << "Got in readyread";
+    char lenBuffer[20];
     if (left == 0) {
+        int nbBufferedChars = 0;
         // get length
         char c;
-        pcap->getChar(&c);
+        if (!pcap->getChar(&c)) {
+            pcap->ungetChar(c);
+            qDebug() << "ungetchar!";
+            return; // wait for more!
+        }
         if (c != '[') {
             qWarning() << "format error";
             return;
         }
-        QString nb;
-        packetAndLen[0] = '[';
-        pcap->getChar(&c);
+        bool first = true;
         while (c != ']') {
-            if (!isdigit(c)) {
+            lenBuffer[nbBufferedChars] = c;
+            nbBufferedChars++;
+            if (!first && !isdigit(c)) {
                 qWarning() << "format error, digit required between []";
                 return;
             }
-            nb.append(c);
-            packetAndLen[pLenCnt] = c;
-            pcap->getChar(&c);
-            pLenCnt++;
+            first = false; // avoid the isdigit check for c == '['
+            if (!pcap->getChar(&c)) {
+                for (int i = nbBufferedChars - 1; i >= 0; i--) {
+                    qDebug() << "ungetchar!";
+                    pcap->ungetChar(lenBuffer[i]);
+                }
+                pcap->ungetChar(c);
+                return; // wait for more!
+            }
         }
-
-        if (nb.isEmpty()) { qWarning() << "format error, empty packet length!"; return; }
-        packetAndLen[pLenCnt] = ']';
-        left = nb.toInt();
+        if (nbBufferedChars == 1) {
+            qWarning() << "format error, empty packet length!";
+            return;
+        }
+        lenBuffer[nbBufferedChars] = ']';
+        lenBuffer[nbBufferedChars + 1] = '\0';
+        qDebug() << "lenbuffer" << lenBuffer;
+        char size[20];
+        bzero(size, sizeof(size));
+        for (int k = 1; k < nbBufferedChars; k++) {
+            size[k - 1] = lenBuffer[k];
+        }
+        qDebug() << size;
+        left = atoi(size);
     }
 
+    qDebug() <<  pcap->bytesAvailable();
     if (pcap->bytesAvailable() < left) {
         qDebug() << "waiting for more bytes";
         return; // wait for more bytes
     }
 
     // get packet and send it to dtls connection
+    char iface[5]; // we don't use pcap iface argument because we rely on the pcap datalink type, safer
+    char c;
+    int i = 0;
+    while ((pcap->getChar(&c)) & (c !='\r')) { // fetch iface
+        iface[i] = c;
+        left--;
+    }
+    left--; // the '\r'
+    char srcIp[40];
+    char mac[18];
+    mac[0] = '\0'; // to detect if empty mac
+
+    // fetch srcIp
+    i = 0;
+    while ((pcap->getChar(&c)) & (c !='\r')) {
+        srcIp[i] = c;
+        i++;
+        left--;
+    }
+    left--; // the '\r'
+    srcIp[i] = '\0'; // replace '\n' by '\0'
+    if (QString(iface) == "eth") { // ethernet, fetch MAC addr
+        i = 0;
+        while ((pcap->getChar(&c)) & (c !='\r')) {
+            mac[i] = c;
+            i++;
+            left--;
+        }
+        left--; // the '\r'
+        mac[i] = '\0';
+
+        qDebug() << "Resolver adds mapping " << mac << srcIp;
+        // add to IpResolver
+        resolver->addMapping(srcIp, mac, pcap->arguments().at(0));
+    }
+
     char packet[2000];
     pcap->read(packet, left);
-    memcpy(packetAndLen + pLenCnt + 1, packet, left);
+    char packetAndLen[2020];
+    sprintf(packetAndLen, "[%d]", left);
+    int sizeOfLen = strlen(packetAndLen); // we need to know the [size] string length for the memcpy
+    memcpy(packetAndLen + sizeOfLen + 1, packet, left);
 
     // send over DTLS with friendUid
     QFile tcpPacket("tcpPackeFromPcap");
     tcpPacket.open(QIODevice::WriteOnly);
-    tcpPacket.write(packetAndLen, left + (pLenCnt + 1));
+    tcpPacket.write(packetAndLen, left + sizeOfLen + 1);
 
-    con->sendBytes(packetAndLen, left + (pLenCnt + 1), idHash, sockType);
+    qDebug() << "source IP" << srcIp;
+    qDebug() << "source MAC" << mac;
+//    con->sendBytes(packetAndLen, left + (strlen(lenBuffer) + 1), idHash, sockType, QString(srcIp));
 
     // send over raw! (test)
     //this->sendBytes(packet, left);
 
     left = 0;
+    if (pcap->bytesAvailable() > 0) {
+        qDebug() << "There are" << pcap->bytesAvailable() << "bytes left";
+        goto start;
+    }
 }
 
 void Proxy::pcapFinish(int exitCode) {
@@ -401,5 +470,66 @@ void Proxy::pcapFinish(int exitCode) {
     qWarning() << "pcap exited with exit code " << exitCode;
 }
 
+void Proxy::run_pcap() {
+    int port = listenPort;
+    UnixSignalHandler* u = UnixSignalHandler::getInstance();
+
+    bool bound = false;
+    while (!bound) {
+        // create socket and bind for the kernel
+        QProcess* bindSocket = new QProcess(this);
+        QStringList bindSocketArgs;
+        bindSocketArgs.append(QString::number(sockType));
+        bindSocketArgs.append(QString::number(ipProto));
+        bindSocketArgs.append(QString::number(port));
+        bindSocketArgs.append(listenIp);
+        qDebug() << "bind socket args" << bindSocketArgs;
+        bindSocket->start(QString(HELPERPATH) + "newSocket", bindSocketArgs);
+        if (bindSocket->waitForFinished(400)) { // 200ms should be plenty enough for the process to fail on bind
+            if (bindSocket->exitCode() == 49) {
+                // loop again until IP is available but just sleep a moment
+                QThread::sleep(1);
+            } else if (bindSocket->exitCode() == 3) {
+                qDebug() << "exit code!" << bindSocket->exitCode();
+                qDebug() << bindSocket->readAllStandardError();
+                if (port < 60000) {
+                    port = 60001;
+                } else {
+                    port++;
+                }
+                if (port >= 65535)
+                    qFatal("Port escalation higher than 65535");
+                qDebug() << "Could not bind on port " << listenPort << "gonna use " << QString::number(port);
+                bindSocket->deleteLater();
+            } else {
+                qFatal("Error with the bind helper process");
+                exit(-1);
+            }
+        } else {
+            bound = true;
+            u->addQProcess(bindSocket);
+        }
+    }
+        // listen for packets with pcap, forward on the secure UDP link
+        QStringList args;
+    #ifdef __APPLE__
+        args.append("lo0"); // TODO get default iface AND listen also on lo !
+    #elif __GNUC__
+        //args.append("lo"); // TODO get default iface AND listen also on lo !
+        args.append("eth0"); // TODO get default iface AND listen also on lo !
+    #endif
+        QString transportStr;
+        sockType == SOCK_DGRAM ? transportStr = "udp" : transportStr = "tcp";
+        args.append("ip6 dst host " + listenIp + " and " + transportStr + " and dst port " + QString::number(port));
+        QProcess* pcap = new QProcess(this);
+        connect(pcap, SIGNAL(finished(int)), this, SLOT(pcapFinish(int)));
+        // TODO connect pcap to deleteLater ?
+        connect(pcap, SIGNAL(readyReadStandardOutput()), this, SLOT(readyRead()));
+        qDebug() << args;
+
+        u->addQProcess(pcap); // add pcap to be killed when main is killed
+
+        pcap->start(QString(HELPERPATH) + "pcapListen", args);
+}
 
 
