@@ -8,6 +8,7 @@
 #include <strings.h>
 #include <netdb.h>
 #include <errno.h>
+#include <string.h>
 
 /**
  * usage: sockType ipProto port addr
