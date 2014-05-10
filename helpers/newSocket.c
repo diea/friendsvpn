@@ -50,8 +50,8 @@ int main(int argc, char** argv) {
     //sleep(200); // wait two seconds for address to settle in kernel
     if (bind(fd, res->ai_addr, sizeof(struct sockaddr_in6)) < 0) {
         fprintf(stderr, "error on bind %d\n", errno);
-        if (errno == 49) { // "address" is taken, need to wait a bit more 
-            return 49;
+        if (errno == EADDRNOTAVAIL) { // "address" is taken, need to wait a bit more 
+            return EADDRNOTAVAIL;
         }
         return 3;
     }

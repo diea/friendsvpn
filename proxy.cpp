@@ -486,7 +486,7 @@ void Proxy::run_pcap() {
         qDebug() << "bind socket args" << bindSocketArgs;
         bindSocket->start(QString(HELPERPATH) + "newSocket", bindSocketArgs);
         if (bindSocket->waitForFinished(400)) { // 200ms should be plenty enough for the process to fail on bind
-            if (bindSocket->exitCode() == 49) {
+            if (bindSocket->exitCode() == EADDRNOTAVAIL) {
                 // loop again until IP is available but just sleep a moment
                 QThread::sleep(1);
             } else if (bindSocket->exitCode() == 3) {
