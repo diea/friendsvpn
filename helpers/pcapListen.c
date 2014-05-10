@@ -33,7 +33,7 @@ void print_packet(const u_char *payload, int len, char* ipSrcStr, char* sourceMa
 
 	if (datalink == DLT_EN10MB)
 		printLen += strlen(sourceMacStr) + 2;
-	
+
 	printLen += len;
 	printf("[%d]", printLen); // print length
 	if (datalink == DLT_EN10MB) {
@@ -126,34 +126,34 @@ int main(int argc, char** argv) {
 		filter_exp = argv[2];
 	} else {
 		fprintf(stderr, "Need to specify interface and filter!\n");
-		return -1;
+		return 1;
 	}
 
 	/* open capture device */
 	handle = pcap_open_live(dev, SNAP_LEN, 1, 1000, errbuf);
 	if (handle == NULL) {
 		fprintf(stderr, "Couldn't open device %s: %s\n", dev, errbuf);
-		return -3;
+		return 3;
 	}
 	/* make sure we're capturing on an Ethernet device [2] */
 	datalink = pcap_datalink(handle);
 	if (datalink != DLT_EN10MB && datalink != DLT_NULL) { // only ethernet or loopback
 		fprintf(stderr, "%s is not an Ethernet or loopback\n", dev);
-		return -3;
+		return 4;
 	}
 
 	/* compile the filter expression */
 	if (pcap_compile(handle, &fp, filter_exp, 0, 0) == -1) {
 		fprintf(stderr, "Couldn't parse filter %s: %s\n",
 		    filter_exp, pcap_geterr(handle));
-		return -4;
+		return 4;
 	}
 
 	/* apply the compiled filter */
 	if (pcap_setfilter(handle, &fp) == -1) {
 		fprintf(stderr, "Couldn't install filter %s: %s\n",
 		    filter_exp, pcap_geterr(handle));
-		return -3;
+		return 3;
 	}
 
 	/* now we can set our callback function */
