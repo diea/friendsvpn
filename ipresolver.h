@@ -3,6 +3,7 @@
 
 #include <QObject>
 #include <QHash>
+#include <QMutex>
 
 /**
  * @brief The ipResolver class will hold the local mappings of MAC - IPs and do a Neighbor Solicitation
