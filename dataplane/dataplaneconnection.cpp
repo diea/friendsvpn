@@ -1,6 +1,7 @@
 #include "dataplaneconnection.h"
 #include "bonjoursql.h"
 #include "proxyclient.h"
+#include <QCryptographicHash>
 
 DataPlaneConnection::DataPlaneConnection(QString uid, AbstractPlaneConnection *parent) :
     AbstractPlaneConnection(uid, parent), friendUid(uid)
@@ -102,54 +103,61 @@ void DataPlaneConnection::readBuffer(const char* buf) {
             }
         }
 
-        // get Proxy and send through it!
-        Proxy* prox = Proxy::getProxy(hash);
+        // get server Proxy and send through it!
+        Proxy* prox = Proxy::getProxy(hash); // try and get server (hash)
+
         if (!prox) {
+            // compute client proxy
             // read tcp or udp header to get src port
+
             // the first 16 bits of UDP or TCP header are the src_port
             qint16* srcPort = static_cast<qint16*>(malloc(sizeof(qint16)));
             memcpy(srcPort, packetBuf, sizeof(qint16));
             *srcPort = ntohs(*srcPort);
 
+            QByteArray clientHash = QCryptographicHash::hash(QString(hash + srcIp + QString::number(*srcPort)).toUtf8(), QCryptographicHash::Md5);
+            prox = Proxy::getProxy(clientHash);
+            if (!prox) {
+                // just send the bloody packet
+                qDebug() << "Printing packet payload:";
 
-            // just send the bloody packet
-            qDebug() << "Printing packet payload:";
+                qDebug() << (char*) (packetBuf + 21);
+                printf("using printf %s \n", packetBuf + 21);
+    #if 0
+                qDebug() << "sending the bloody packet!";
+                QProcess* raw = new QProcess();
+                QStringList sendRawArgs;
+                sendRawArgs.append(QString::number(sockType));
+                sendRawArgs.append(QString::number(IPPROTO_TCP));
+                sendRawArgs.append("::1");
+                raw->start(QString(HELPERPATH) + "sendRaw", sendRawArgs);
+                qDebug() << "sendRawArgs!" << sendRawArgs;
+                QFile tcpPacket("tcpPacket");
+                tcpPacket.open(QIODevice::WriteOnly);
+                tcpPacket.write(packetBuf, length);
 
-            qDebug() << (char*) (packetBuf + 21);
-            printf("using printf %s \n", packetBuf + 21);
-#if 0
-            qDebug() << "sending the bloody packet!";
-            QProcess* raw = new QProcess();
-            QStringList sendRawArgs;
-            sendRawArgs.append(QString::number(sockType));
-            sendRawArgs.append(QString::number(IPPROTO_TCP));
-            sendRawArgs.append("::1");
-            raw->start(QString(HELPERPATH) + "sendRaw", sendRawArgs);
-            qDebug() << "sendRawArgs!" << sendRawArgs;
-            QFile tcpPacket("tcpPacket");
-            tcpPacket.open(QIODevice::WriteOnly);
-            tcpPacket.write(packetBuf, length);
+                raw->write(packetBuf, length);
+                qDebug() << "raw has written";
+                raw->waitForReadyRead(2000);
+                qDebug() << raw->readAll();
+    #endif
+                qDebug() << "new client proxy thread!";
+                QThread* proxyThread = new QThread();
 
-            raw->write(packetBuf, length);
-            qDebug() << "raw has written";
-            raw->waitForReadyRead(2000);
-            qDebug() << raw->readAll();
-#endif
-            qDebug() << "new client proxy thread!";
-            QThread* proxyThread = new QThread();
+                // compute the proxyClient's unique hash
+                // = md5(hash + srcPort + srcIp)
 
-            // compute the proxyClient's unique hash
-            // = md5(hash + srcPort + srcIp)
+                prox = new ProxyClient(clientHash, sockType, *srcPort, this);
+                prox->moveToThread(proxyThread);
+                connect(proxyThread, SIGNAL(started()), prox, SLOT(run()));
+                connect(proxyThread, SIGNAL(finished()), proxyThread, SLOT(deleteLater()));
+                // TODO delete proxy client also on finished() ?
+                proxyThread->start();
 
-            prox = new ProxyClient(hash, sockType, *srcPort, this);
-            prox->moveToThread(proxyThread);
-            connect(proxyThread, SIGNAL(started()), prox, SLOT(run()));
-            connect(proxyThread, SIGNAL(finished()), proxyThread, SLOT(deleteLater()));
-            // TODO delete proxy client also on finished() ?
-            proxyThread->start();
-
-            free(srcPort);
+                free(srcPort);
+            }
         }
+
         prox->sendBytes(packetBuf, length, srcIp);
     }
 

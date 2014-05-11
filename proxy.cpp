@@ -22,7 +22,6 @@ Proxy::Proxy(int srcPort, int sockType, QString md5)
 
     if (sockType == SOCK_STREAM) ipProto = IPPROTO_TCP;
     else ipProto = IPPROTO_UDP;
-    initRaw();
 }
 
 Proxy::Proxy(int srcPort, const QString& regType, QString md5) : listenPort(srcPort)
@@ -41,17 +40,24 @@ Proxy::Proxy(int srcPort, const QString& regType, QString md5) : listenPort(srcP
         sockType = SOCK_DGRAM;
         ipProto = IPPROTO_UDP;
     }
-    initRaw();
 }
 
-void Proxy::initRaw() {
+QProcess* Proxy::initRaw(QString ipDst, int srcPort) {
     qDebug() << "initRaw";
     // init raw socket to send packets
-    sendRaw = new QProcess(this);
+    QProcess* sendRaw = new QProcess(this);
     QStringList sendRawArgs;
-    sendRawArgs.append(QString::number(sockType));
-    sendRawArgs.append(QString::number(ipProto));
+    IpResolver* resolv = IpResolver::getInstance();
+    struct ip_mac_mapping map = resolv->getMapping(ipDst);
+    sendRawArgs.append(map.interface);
     sendRawArgs.append(listenIp);
+    sendRawArgs.append(ipDst);
+    sendRawArgs.append(QString::number(sockType));
+    sendRawArgs.append(QString::number(srcPort));
+    //sendRawArgs.append(QString::number(dstPort));
+    if (!map.mac.isEmpty()) {
+        sendRawArgs.append(map.mac);
+    }
 
     connect(sendRaw, SIGNAL(finished(int)), this, SLOT(sendRawFinish(int)));
     connect(sendRaw, SIGNAL(readyReadStandardError()), this, SLOT(sendRawStandardError()));
@@ -62,6 +68,7 @@ void Proxy::initRaw() {
 
     sendRaw->start(QString(HELPERPATH) + "sendRaw", sendRawArgs);
     qDebug() << "start raw!";
+    return sendRaw;
 }
 
 QString Proxy::newIP() {
@@ -299,23 +306,6 @@ QString Proxy::randomIP() {
     return toRet;
 }
 
-/*void Proxy::sendBytes(const char *buf, int len) {
-    // use raw sock to send the bytes
-    QString size("[");
-    size.append(QString::number(len));
-    size.append("]");
-
-    qDebug() << "sending " << size << "raw bytes";
-    qDebug() << buf;
-
-    qDebug() << "state = " << sendRaw->state();
-    sendRaw->write(size.toUtf8().data());
-    sendRaw->write(buf, len);
-
-    //qDebug() << sendRaw->readAllStandardError();
-    //qDebug() << sendRaw->readAllStandardOutput();
-}*/
-
 Proxy* Proxy::getProxy(QString md5) {
     if (proxyHashes.contains(md5)) {
         return proxyHashes.value(md5);
@@ -334,11 +324,13 @@ void Proxy::sendRawFinish(int exitCode) {
 }
 
 void Proxy::sendRawStandardError() {
+    QProcess* sendRaw = dynamic_cast<QProcess*> (QObject::sender());
     qDebug() << "SEND RAW ERROR";
     qDebug() << sendRaw->readAllStandardError();
 }
 
 void Proxy::sendRawStandardOutput() {
+    QProcess* sendRaw = dynamic_cast<QProcess*> (QObject::sender());
     qDebug() << "SEND RAW OUTPUT";
     qDebug() << sendRaw->readAllStandardOutput();
 }
@@ -444,6 +436,13 @@ start: // used to process packets when bytes are available but no signal will be
 
     char packet[2000];
     pcap->read(packet, left);
+
+    if (port != listenPort) {
+        // first 16 bits = source Port of UDP and TCP
+        qint16* dstPort = static_cast<qint16*>(static_cast<void*>(packet + 2)); // second 16 bits dstPort (or + 2 bytes)
+        *dstPort = ntohs(listenPort); // restore the original port
+    }
+
     char packetAndLen[2020];
     sprintf(packetAndLen, "[%d]", left);
     int sizeOfLen = strlen(packetAndLen); // we need to know the [size] string length for the memcpy
@@ -457,6 +456,7 @@ start: // used to process packets when bytes are available but no signal will be
     qDebug() << "source IP" << srcIp;
     qDebug() << "source MAC" << mac;
     QString qsrcIp(srcIp);
+
     con->sendBytes(packetAndLen, left + sizeOfLen + 1, idHash, sockType, qsrcIp);
 
     // send over raw! (test)
@@ -476,7 +476,7 @@ void Proxy::pcapFinish(int exitCode) {
 }
 
 void Proxy::run_pcap() {
-    int port = listenPort;
+    port = listenPort;
     UnixSignalHandler* u = UnixSignalHandler::getInstance();
 
     bool bound = false;

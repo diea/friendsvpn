@@ -70,7 +70,6 @@ struct ip_mac_mapping IpResolver::getMapping(QString ip) {
         ndp.close();
 #endif
         struct ip_mac_mapping nullMapping;
-        nullMapping.mac = "NULL";
         // fail
         return nullMapping;
     }

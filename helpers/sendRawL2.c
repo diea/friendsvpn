@@ -29,14 +29,14 @@
 #include "raw_structs.h"
 
 void print_usage() {
-    fprintf(stderr,"usage: sendRaw <interface> <ipv6-src> <ipv6-dst> <sockType> [<mac-dst>] \n");
+    fprintf(stderr,"usage: sendRaw <interface> <ipv6-src> <ipv6-dst> <sockType> <port-src> [<mac-dst>] \n");
     fprintf(stderr,"    mac-dst must be used if Ethernet interface\n");
     exit(1);
 }
 
 int main(int argc,const char* argv[]) {
     // Get interface name and target IP address from command line.
-    if (argc < 5) {
+    if (argc < 6) {
         print_usage();
     }
     const char* if_name=argv[1];
@@ -64,7 +64,7 @@ int main(int argc,const char* argv[]) {
     size_t linkHeaderSize = 0;
     if (datalink == DLT_EN10MB) {
         printf("argc: %d\n", argc);
-        if (argc < 6) {
+        if (argc < 7) {
             print_usage();
         }
         // Construct Ethernet header (except for source MAC address).
@@ -73,10 +73,10 @@ int main(int argc,const char* argv[]) {
         header.ether_type=htons(ETH_IPV6);
 
         printf("reading mac!\n");
-        // read mac-addr from argv[5]
+        // read mac-addr from argv[6]
         char *token;
         int i = 0;
-        while (((token = strsep(&argv[5], ":")) != NULL) && (i < 6)) {
+        while (((token = strsep(&argv[6], ":")) != NULL) && (i < 6)) {
             //char hexValue[4] = "0x";
             //strcpy(hexValue, token);
             //printf("%s\n", hexValue);
@@ -223,8 +223,15 @@ int main(int argc,const char* argv[]) {
         if (sockType == SOCK_DGRAM) { // udp has length field, that is used in pseudo header (RFC 2460)
             udp = (struct sniff_udp*) (packet_send);
             pHeader.payload_len = udp->udp_length;
+
+            // change src_port
+            udp->sport = htons(atoi(argv[5]));
         } else { // tcp has no length field, so same as ipv6
             pHeader.payload_len = htonl(atoi(nbBuf));
+
+            // change src_port
+            tcp = (struct sniff_tcp*) (packet_send);
+            tcp->th_sport = htons(atoi(argv[5]));
         }
 
         printf("packet_send %s\n", (char*)packet_send);

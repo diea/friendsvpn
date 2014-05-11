@@ -36,12 +36,6 @@ class Proxy : public QObject
 {
     Q_OBJECT
 private:
-    QProcess* sendRaw;
-    /**
-     * @brief initRaw initializes the raw socket to inject packets
-     */
-    void initRaw();
-
     /**
      * @brief buffer used to buffer "left" bytes until packet has been read
      */
@@ -52,7 +46,9 @@ private:
 
 protected:
     QString listenIp;
-    int listenPort;
+    int listenPort; // the prefered listen port
+
+    int port; // the active listen port
 
     int sockType; // to know if SOCK_STREAM or SOCK_DATAGRAM
     int ipProto; // again, TCP or UDP
@@ -109,6 +105,21 @@ protected:
      */
     void run_pcap();
 
+    /**
+     * @brief initRaw initializes the raw socket to inject packets
+     * @param if dstPort and srcPort must not be changed, leave these parameters at 0
+     */
+    QProcess* initRaw(QString ipDst, int srcPort = 0);
+    /**
+     * @brief receiveBytes
+     * @param buf
+     * @param len = sizeLen + length of packet
+     * @param sizeLen is the size of the [size] string in the packet buffer
+     * @param hash
+     * @param sockType
+     * @param srcIp
+     */
+    //virtual void receiveBytes(char *buf, int len, int sizeLen, QString& hash, int sockType, QString& srcIp) = 0;
 public:
     static QString getDefaultInterface();
 
@@ -121,13 +132,22 @@ private slots:
 protected slots:
     void pcapFinish(int exitCode);
     void readyRead();
+
 public slots:
     /**
      * @brief run: runs this proxy
      */
     virtual void run() = 0;
 
-    virtual void sendBytes(const char* buf, int len, QString srcIp) = 0;
+    /**
+     * @brief sendBytes
+     * @param buf
+     * @param len
+     * @param dstIp
+     *
+     * dstIp argument is unused by client, it's for the server to know to which ip to send
+     */
+    virtual void sendBytes(const char* buf, int len, QString dstIp) = 0;
 };
 
 #endif // PROXY_H

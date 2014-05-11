@@ -1,16 +1,21 @@
 #ifndef PROXYCLIENT_H
 #define PROXYCLIENT_H
 #include "proxy.h"
+#include "bonjour/bonjourrecord.h"
 
 class ProxyClient : public Proxy
 {
     Q_OBJECT
 private:
     /**
-     * @brief proxyHashes each proxy will be identified by a hash of its constructor parameters
-     * so that we don't create twice the same proxy
+     * @brief serverRecord will be the server record for which this proxy client will proxy to
      */
-    //static QHash<QString, ProxyClient*> proxyHashes;
+    BonjourRecord* serverRecord;
+    QProcess* sendRaw;
+
+    int origSrcPort;
+
+    //void receiveBytes(char *buf, int len, int sizeLen, QString& hash, int sockType, QString& srcIp);
 
 public:
     ProxyClient(QString md5, int sockType, int srcPort, DataPlaneConnection* con);

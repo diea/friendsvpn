@@ -31,6 +31,11 @@ public:
     static IpResolver* getInstance();
 
     void addMapping(QString ip, QString mac, QString interface);
+    /**
+     * @brief getMapping
+     * @param ip
+     * @return a default constructed ip_mac_mapping if ip is not in the kernel's neighbor memory
+     */
     struct ip_mac_mapping getMapping(QString ip);
 
 signals:
