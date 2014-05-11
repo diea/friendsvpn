@@ -55,6 +55,9 @@ QProcess* Proxy::initRaw(QString ipDst, int srcPort) {
     sendRawArgs.append(QString::number(sockType));
     sendRawArgs.append(QString::number(srcPort));
     //sendRawArgs.append(QString::number(dstPort));
+
+    qDebug() << "sendRawArgs" << sendRawArgs;
+
     if (!map.mac.isEmpty()) {
         sendRawArgs.append(map.mac);
     }
@@ -443,7 +446,7 @@ start: // used to process packets when bytes are available but no signal will be
     if (port != listenPort) {
         // first 16 bits = source Port of UDP and TCP
         qint16* dstPort = static_cast<qint16*>(static_cast<void*>(packet + 2)); // second 16 bits dstPort (or + 2 bytes)
-        *dstPort = ntohs(listenPort); // restore the original port
+        *dstPort = htons(listenPort); // restore the original port
     }
 
     char packetAndLen[2020];
