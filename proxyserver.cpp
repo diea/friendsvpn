@@ -44,3 +44,7 @@ void ProxyServer::run() {
     // advertise by registering the record with a bonjour registrar
     // TODO
 }
+
+void ProxyServer::sendBytes(const char *buf, int len, QString srcIp) {
+    qDebug() << "I am a server sending bytes!";
+}

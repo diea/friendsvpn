@@ -71,6 +71,7 @@ void DataPlaneConnection::readBuffer(const char* buf) {
     QString header;
     if (list.at(0) == "DATA") {
         QString hash;
+        QString srcIp;
         int sockType;
         int length;
         const char* packetBuf; // packet
@@ -95,6 +96,8 @@ void DataPlaneConnection::readBuffer(const char* buf) {
                     } else {
                         sockType = SOCK_DGRAM;
                     }
+                } else if (key == "SrcIP") {
+                    srcIp = keyValuePair.at(1);
                 }
             }
         }
@@ -147,7 +150,7 @@ void DataPlaneConnection::readBuffer(const char* buf) {
 
             free(srcPort);
         }
-        prox->sendBytes(packetBuf, length);
+        prox->sendBytes(packetBuf, length, srcIp);
     }
 
     // get client proxy and send data through it
@@ -155,7 +158,7 @@ void DataPlaneConnection::readBuffer(const char* buf) {
     mutex.unlock();
 }
 
-void DataPlaneConnection::sendBytes(const char *buf, int len, QString& hash, int sockType) {
+void DataPlaneConnection::sendBytes(const char *buf, int len, QString& hash, int sockType, QString& srcIp) {
     mutex.lock();
     if (curMode == Closed) {
         qWarning() << "Trying to sendBytes on Closed state for uid" << friendUid;
@@ -171,6 +174,7 @@ void DataPlaneConnection::sendBytes(const char *buf, int len, QString& hash, int
             % "Hash:" % hash % "\r\n"
             % "Trans:" % trans % "\r\n"
             % "Length:" % QString::number(len) % "\r\n"
+            % "SrcIP:" % srcIp % "\r\n"
             % "\r\n";
     QByteArray headerBytes = header.toUtf8();
     int headerLen = headerBytes.length();

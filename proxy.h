@@ -127,7 +127,7 @@ public slots:
      */
     virtual void run() = 0;
 
-    void sendBytes(const char* buf, int len);
+    virtual void sendBytes(const char* buf, int len, QString srcIp) = 0;
 };
 
 #endif // PROXY_H

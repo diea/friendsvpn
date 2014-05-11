@@ -59,10 +59,10 @@ int main(int argc, char *argv[])
     // init signal handler
     UnixSignalHandler* u = UnixSignalHandler::getInstance();
 
-    IpResolver* ip = IpResolver::getInstance();
+    /*IpResolver* ip = IpResolver::getInstance();
     struct ip_mac_mapping map = ip->getMapping("fd3b:e180:cbaa:1::1");
-    qDebug() << map.mac;
-/*
+    qDebug() << map.mac;*/
+
     BonjourSQL* qSql = BonjourSQL::getInstance();
 
     // discover services
@@ -75,7 +75,7 @@ int main(int argc, char *argv[])
 
     ConnectionInitiator* con = ConnectionInitiator::getInstance();
     con->run();
-*/
+
    /* QThread* newProxyThread = new QThread();
     ProxyServer* newProxy = new ProxyServer("100008078109463", "diea-VirtualBox-3", "_udisks-ssh._tcp.", ".friendsvpn.", "diea-VirtualBox-3.local", 6000);
     // no move to thread ?

@@ -22,6 +22,7 @@ signals:
 
 public slots:
     void run();
+    void sendBytes(const char *buf, int len, QString srcIp);
 
 };
 

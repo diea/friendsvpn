@@ -299,7 +299,7 @@ QString Proxy::randomIP() {
     return toRet;
 }
 
-void Proxy::sendBytes(const char *buf, int len) {
+/*void Proxy::sendBytes(const char *buf, int len) {
     // use raw sock to send the bytes
     QString size("[");
     size.append(QString::number(len));
@@ -314,7 +314,7 @@ void Proxy::sendBytes(const char *buf, int len) {
 
     //qDebug() << sendRaw->readAllStandardError();
     //qDebug() << sendRaw->readAllStandardOutput();
-}
+}*/
 
 Proxy* Proxy::getProxy(QString md5) {
     if (proxyHashes.contains(md5)) {
@@ -456,7 +456,8 @@ start: // used to process packets when bytes are available but no signal will be
 
     qDebug() << "source IP" << srcIp;
     qDebug() << "source MAC" << mac;
-//    con->sendBytes(packetAndLen, left + (strlen(lenBuffer) + 1), idHash, sockType, QString(srcIp));
+    QString qsrcIp(srcIp);
+    con->sendBytes(packetAndLen, left + sizeOfLen + 1, idHash, sockType, qsrcIp);
 
     // send over raw! (test)
     //this->sendBytes(packet, left);

@@ -11,3 +11,7 @@ void ProxyClient::run() {
     run_pcap();
     // TODO check when pcap listens on other port than original client port and change when sending TCP
 }
+
+void ProxyClient::sendBytes(const char *buf, int len, QString srcIp) {
+    qDebug() << "I am a client sending bytes!";
+}
