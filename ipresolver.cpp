@@ -73,8 +73,6 @@ struct ip_mac_mapping IpResolver::getMapping(QString ip) {
         QProcess testIfconfig;
         testIfconfig.start("/sbin/ifconfig | grep " + ip);
         testIfconfig.waitForReadyRead();
-        char buf[3000];
-        int length;
         while ((length = testIfconfig.readLine(buf, 3000))) {
             QString curLine(buf);
             QStringList list = curLine.split(" ", QString::SkipEmptyParts);
