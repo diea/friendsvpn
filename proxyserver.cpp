@@ -30,15 +30,17 @@ ProxyServer::ProxyServer(const QString &friendUid, const QString &name, const QS
 
 void ProxyServer::run() {
     run_pcap();
-        /*
-        QStringList sendRawArgs;
-        sendRawArgs.append(QString::number(sockType));
-        sendRawArgs.append(QString::number(ipProto));
-        sendRawArgs.append("fd3b:e180:cbaa:1:156e:72ed:97d0:a60");
+    // if listening on other port, need to change dstPort of TCP/UDP packet before sending over DTLS
 
-        connect(&sendRaw, SIGNAL(finished(int)), this, SLOT(sendRawFinish(int)));
-        sendRaw.start(QString(HELPERPATH) + "sendRaw", sendRawArgs);
-        */
-        // advertise by registering the record with a bonjour registrar
-        // TODO
+    /*
+    QStringList sendRawArgs;
+    sendRawArgs.append(QString::number(sockType));
+    sendRawArgs.append(QString::number(ipProto));
+    sendRawArgs.append("fd3b:e180:cbaa:1:156e:72ed:97d0:a60");
+
+    connect(&sendRaw, SIGNAL(finished(int)), this, SLOT(sendRawFinish(int)));
+    sendRaw.start(QString(HELPERPATH) + "sendRaw", sendRawArgs);
+    */
+    // advertise by registering the record with a bonjour registrar
+    // TODO
 }

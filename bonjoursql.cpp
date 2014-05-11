@@ -28,6 +28,7 @@ BonjourSQL::BonjourSQL(QObject *parent) :
             }
         }
     }
+    db.close();
 }
 
 BonjourSQL* BonjourSQL::getInstance() {
@@ -75,6 +76,7 @@ void BonjourSQL::initDB() {
 
 bool BonjourSQL::insertService(QString name, QString trans_prot) {
     qryMut.lock();
+    db.open();
     QSqlQuery query = QSqlQuery(QSqlDatabase::database());
     query.prepare("INSERT INTO Service VALUES(?, ?, ?)");
     query.bindValue(0, name);
@@ -84,6 +86,7 @@ bool BonjourSQL::insertService(QString name, QString trans_prot) {
     // test query
     qDebug() << "SQL SERVICE: " << "INSERT INTO Service VALUES(" + name +", "+uid+", "+trans_prot+")";
     qDebug() << "Insert Service error" << query.lastError();
+    db.close();
     qryMut.unlock();
     return true;
 }
@@ -91,6 +94,7 @@ bool BonjourSQL::insertService(QString name, QString trans_prot) {
 // TODO test this
 bool BonjourSQL::removeService(QString name, QString trans_prot) {
     qryMut.lock();
+    db.open();
     QSqlQuery query = QSqlQuery(QSqlDatabase::database());
     query.prepare("DELETE FROM Authorized_user WHERE Device_Service_name = ? AND Device_Service_User_uid = ? AND Device_Service_Trans_prot = ?");
     query.bindValue(0, name);
@@ -109,6 +113,7 @@ bool BonjourSQL::removeService(QString name, QString trans_prot) {
     query.bindValue(1, uid);
     query.bindValue(2, trans_prot);
     query.exec();
+    db.close();
     qryMut.unlock();
     // test query
     return true;
@@ -116,6 +121,7 @@ bool BonjourSQL::removeService(QString name, QString trans_prot) {
 
 bool BonjourSQL::insertDevice(QString hostname, int port, QString service_name, QString service_trans_prot, QString record_name) {
     qryMut.lock();
+    db.open();
     QSqlQuery query = QSqlQuery(QSqlDatabase::database());
     query.prepare("INSERT INTO Record VALUES(?, ?, ?, ?, ?, ?)");
     query.bindValue(0, hostname);
@@ -128,12 +134,14 @@ bool BonjourSQL::insertDevice(QString hostname, int port, QString service_name, 
     // test qry
     qDebug() << hostname << " " << port << " " << service_name << " " << service_trans_prot << " " << record_name;
     qDebug() << "Insert device error : " << db.lastError().text();
+    db.close();
     qryMut.unlock();
     return true;
 }
 
 QString BonjourSQL::fetchXmlRpc() {
     qryMut.lock();
+    db.open();
     //qDebug() << "sql threadid " << QThread::currentThreadId();
     QList<QHostAddress> list = QNetworkInterface::allAddresses();
     QString sqlString;
@@ -174,9 +182,11 @@ QString BonjourSQL::fetchXmlRpc() {
         query.bindValue(0, id);
         query.bindValue(1, ipv6);
         query.exec();
+        db.close();
         qryMut.unlock();
         return xmlrpcReq;
     }
+    db.close();
     qryMut.unlock();
     return NULL;
 }
@@ -184,6 +194,7 @@ QString BonjourSQL::fetchXmlRpc() {
 
 QList< User* > BonjourSQL::getFriends() {
     qryMut.lock();
+    db.open();
     QSqlQuery query = QSqlQuery(QSqlDatabase::database());
     query.prepare("SELECT uid, ipv6, certificate, privateKey FROM User WHERE uid IN (SELECT id as "
                   "uid FROM Authorized_user WHERE Record_Service_User_uid = ?)");
@@ -199,12 +210,14 @@ QList< User* > BonjourSQL::getFriends() {
 
         list.append(new User(uid, ipv6, cert, key));
     }
+    db.close();
     qryMut.unlock();
     return list;
 }
 
 QSslCertificate BonjourSQL::getLocalCert() {
     qryMut.lock();
+    db.open();
     QSqlQuery query = QSqlQuery(QSqlDatabase::database());
     query.prepare("SELECT certificate FROM User WHERE uid = ?");
     query.bindValue(0, uid);
@@ -212,11 +225,13 @@ QSslCertificate BonjourSQL::getLocalCert() {
 
     if (query.next()) {
         QSslCertificate cert(query.value(0).toByteArray(), QSsl::Pem);
+        db.close();
         qryMut.unlock();
         return cert;
     } else {
         // error
         qDebug() << "No certificate for user " << uid;
+        db.close();
         qryMut.unlock();
         return QSslCertificate(NULL);
     }
@@ -224,6 +239,7 @@ QSslCertificate BonjourSQL::getLocalCert() {
 
 QSslKey BonjourSQL::getMyKey() {
     qryMut.lock();
+    db.open();
     QSqlQuery query = QSqlQuery(QSqlDatabase::database());
     query.prepare("SELECT privateKey FROM User WHERE uid = ?");
     query.bindValue(0, uid);
@@ -231,11 +247,13 @@ QSslKey BonjourSQL::getMyKey() {
 
     if (query.next()) {
         QSslKey key(query.value(0).toByteArray(), QSsl::Rsa, QSsl::Pem);
+        db.close();
         qryMut.unlock();
         return key;
     } else {
         // error
         qDebug() << "No certificate for user " << uid;
+        db.close();
         qryMut.unlock();
         return QSslKey(NULL);
     }
@@ -247,6 +265,7 @@ QString BonjourSQL::getLocalUid() {
 
 QString BonjourSQL::getLocalIP() {
     qryMut.lock();
+    db.open();
     QSqlQuery query = QSqlQuery(QSqlDatabase::database());
     query.prepare("SELECT ipv6 FROM User WHERE uid = ?");
     query.bindValue(0, uid);
@@ -254,11 +273,13 @@ QString BonjourSQL::getLocalIP() {
 
     if (query.next()) {
         QString ipv6 = query.value(0).toString();
+        db.close();
         qryMut.unlock();
         return ipv6;
     } else {
         // error
         qDebug() << "No ipv6 for user " << uid;
+        db.close();
         qryMut.unlock();
         return "::1"; // TODO handle this case
     }
@@ -266,6 +287,7 @@ QString BonjourSQL::getLocalIP() {
 
 QString BonjourSQL::getUidFromIP(QString IP) {
     qryMut.lock();
+    db.open();
     QSqlQuery query = QSqlQuery(QSqlDatabase::database());
     query.prepare("SELECT uid FROM User WHERE ipv6 = ?");
     query.bindValue(0, IP);
@@ -273,11 +295,13 @@ QString BonjourSQL::getUidFromIP(QString IP) {
 
     if (query.next()) {
         QString user_uid = query.value(0).toString();
+        db.close();
         qryMut.unlock();
         return user_uid;
     } else {
         // error
         qDebug() << "No uid for ip " << IP;
+        db.close();
         qryMut.unlock();
         return "NULL";
     }
@@ -286,6 +310,7 @@ QString BonjourSQL::getUidFromIP(QString IP) {
 
 QList < BonjourRecord* > BonjourSQL::getRecordsFor(QString friendUid) {
     qryMut.lock();
+    db.open();
     //qDebug() << "qry(db)";
     QList < BonjourRecord * > list;
     QSqlQuery qry(QSqlDatabase::database());
@@ -293,8 +318,9 @@ QList < BonjourRecord* > BonjourSQL::getRecordsFor(QString friendUid) {
 
     if (!qry.prepare("SELECT * FROM Authorized_user WHERE id = ? AND Record_Service_User_uid = ?")) {
         qDebug() << "ERROR SQL " << qry.lastError();
+        /*db.close();
+        initDB(); // make new connection*/
         db.close();
-        initDB(); // make new connection
         qryMut.unlock();
         return list;
     }
@@ -336,6 +362,7 @@ QList < BonjourRecord* > BonjourSQL::getRecordsFor(QString friendUid) {
             }
         }
     }
+    db.close();
     qryMut.unlock();
     return list;
 }

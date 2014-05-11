@@ -40,14 +40,6 @@ int main(int argc, char** argv) {
     int portno = atoi(argv[3]);
     ((struct sockaddr_in6*) res->ai_addr)->sin6_port = htons(portno);
 
-    /*struct sockaddr_in6 serv_addr;
-    memset(&serv_addr, 0, sizeof(serv_addr));
-    int portno = atoi(argv[3]);
-    inet_pton(AF_INET6, (const char *) &argv[4], &(serv_addr.sin6_addr));
-    serv_addr.sin6_family = AF_INET6;
-    serv_addr.sin6_port = htons(portno);*/
-
-    //sleep(200); // wait two seconds for address to settle in kernel
     if (bind(fd, res->ai_addr, sizeof(struct sockaddr_in6)) < 0) {
         fprintf(stderr, "error on bind %d\n", errno);
         if (errno == EADDRNOTAVAIL) { // "address" is taken, need to wait a bit more 

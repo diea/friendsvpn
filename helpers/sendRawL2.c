@@ -71,7 +71,6 @@ int main(int argc,const char* argv[]) {
         // (Destination set to broadcast address, FF:FF:FF:FF:FF:FF.)
         struct ether_header header;
         header.ether_type=htons(ETH_IPV6);
-        //memset(header.ether_dhost,0xff,sizeof(header.ether_dhost));
 
         printf("reading mac!\n");
         // read mac-addr from argv[5]

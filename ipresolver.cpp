@@ -1,4 +1,6 @@
 #include "ipresolver.h"
+#include <QProcess>
+
 IpResolver* IpResolver::instance = NULL;
 
 IpResolver::IpResolver() :
@@ -33,12 +35,43 @@ struct ip_mac_mapping IpResolver::getMapping(QString ip) {
         mutex.unlock();
         return mappings.value(ip);
     } else {
-        // do neighbor solicitation
-
-        // fail
         mutex.unlock();
+        // check kernel neighbor cache
+        QProcess ndp;
+#ifdef __APPLE__
+        ndp.start("ndp -an");
+        ndp.waitForReadyRead();
+        char buf[3000];
+        int length;
+        while ((length = ndp.readLine(buf, 3000))) {
+            QString curLine(buf);
+            QStringList list = curLine.split(" ", QString::SkipEmptyParts);
+            if (list.at(0) == ip) {
+                this->addMapping(ip, list.at(1), list.at(3));
+                ndp.close();
+                return getMapping(ip);
+            }
+        }
+        ndp.close();
+#elif __GNUC__
+        ndp.start("ip -6 neigh");
+        ndp.waitForReadyRead();
+        char buf[3000];
+        int length;
+        while ((length = ndp.readLine(buf, 3000))) {
+            QString curLine(buf);
+            QStringList list = curLine.split(" ", QString::SkipEmptyParts);
+            if (list.at(0) == ip) {
+                this->addMapping(ip, list.at(4), list.at(2));
+                ndp.close();
+                return getMapping(ip);
+            }
+        }
+        ndp.close();
+#endif
         struct ip_mac_mapping nullMapping;
         nullMapping.mac = "NULL";
+        // fail
         return nullMapping;
     }
 }

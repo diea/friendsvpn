@@ -9,4 +9,5 @@ ProxyClient::ProxyClient(QString md5, int sockType, int srcPort, DataPlaneConnec
 
 void ProxyClient::run() {
     run_pcap();
+    // TODO check when pcap listens on other port than original client port and change when sending TCP
 }
