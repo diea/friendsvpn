@@ -116,6 +116,15 @@ QString Proxy::newIP() {
 
     newip.truncate(newip.length() - 3); // remove prefix
 
+    // add to local cache!
+    IpResolver* r = IpResolver::getInstance();
+
+    // XXX better way of determining local loopback interface ?
+#ifdef __APPLE__
+    r->addMapping(newip, "", "lo0");
+#elif __GNUC__
+    r->addMapping(newip, "", "lo");
+#endif
     return newip;
 }
 
