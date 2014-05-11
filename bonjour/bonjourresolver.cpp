@@ -83,19 +83,19 @@ void BonjourResolver::hostInfoReady(const QHostInfo &info) {
     record->resolved = true;
     record->hostname = info.hostName();
 
-    // compute record hash
-    QString allParams = qSql->getLocalUid() + record->serviceName +
-            record->registeredType + record->replyDomain + record->hostname + QString::number(record->port);
-    QByteArray hash = QCryptographicHash::hash(allParams.toUtf8().data(), QCryptographicHash::Md5);
-    // add record to hashes list
-    //BonjourDiscoverer::recordHashes.insert(QString(hash), record);
-    BonjourDiscoverer::recordHashes.insert(QString(allParams), record);
-
     // truncate everything after ".local"
     int indexLocal;
     if ((indexLocal = record->hostname.indexOf(".local")) > -1) {
         record->hostname.truncate(indexLocal + 6);
     }
+
+    // compute record hash
+    QString allParams = qSql->getLocalUid() + record->serviceName +
+            record->registeredType + record->hostname + QString::number(record->port);
+    QByteArray hash = QCryptographicHash::hash(allParams.toUtf8().data(), QCryptographicHash::Md5);
+    // add record to hashes list
+    //BonjourDiscoverer::recordHashes.insert(QString(hash), record);
+    BonjourDiscoverer::recordHashes.insert(QString(allParams), record);
 
     QString transProt;
     if (record->registeredType.indexOf("tcp") > -1) {
