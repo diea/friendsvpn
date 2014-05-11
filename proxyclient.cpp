@@ -2,13 +2,13 @@
 #include "unixsignalhandler.h"
 #include "bonjour/bonjourdiscoverer.h"
 
-ProxyClient::ProxyClient(QString md5, int sockType, int srcPort, DataPlaneConnection* con) :
+ProxyClient::ProxyClient(QString md5, QString servermd5, int sockType, int srcPort, DataPlaneConnection* con) :
     Proxy(srcPort, sockType, md5)
 {
     this->con = con;
-    qDebug() << "md5" << md5;
+    qDebug() << "md5" << servermd5;
     qDebug() << BonjourDiscoverer::recordHashes;
-    serverRecord = BonjourDiscoverer::recordHashes.value(md5);
+    serverRecord = BonjourDiscoverer::recordHashes.value(servermd5);
     if (!serverRecord) {
         // no more available
         qFatal("The record is no more available");

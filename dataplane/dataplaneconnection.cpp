@@ -147,7 +147,7 @@ void DataPlaneConnection::readBuffer(const char* buf) {
                 // compute the proxyClient's unique hash
                 // = md5(hash + srcPort + srcIp)
 
-                prox = new ProxyClient(clientHash, sockType, *srcPort, this);
+                prox = new ProxyClient(clientHash, hash, sockType, *srcPort, this);
                 prox->moveToThread(proxyThread);
                 connect(proxyThread, SIGNAL(started()), prox, SLOT(run()));
                 connect(proxyThread, SIGNAL(finished()), proxyThread, SLOT(deleteLater()));
