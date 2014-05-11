@@ -68,17 +68,17 @@ void BonjourResolver::bonjourSocketReadyRead() {
 }
 
 void BonjourResolver::hostInfoReady(const QHostInfo &info) {
-    QList<QString> v4;
+    //QList<QString> v4;
     QList<QString> v6;
     qDebug() << "Full list of addresses " << info.addresses();
     foreach(QHostAddress adr, info.addresses()) {
         if (adr.protocol() == QAbstractSocket::IPv6Protocol) {
             v6.append(adr.toString());
         } else if (adr.protocol() == QAbstractSocket::IPv4Protocol) {
-            v4.append(adr.toString());
+            //v4.append(adr.toString());
         }
     }
-    v6.append(v4);
+    //v6.append(v4); we don't use v4.
     record->ips = v6;
     record->resolved = true;
     record->hostname = info.hostName();

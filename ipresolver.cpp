@@ -1,6 +1,6 @@
 #include "ipresolver.h"
 #include <QProcess>
-
+#include <QDebug>
 IpResolver* IpResolver::instance = NULL;
 
 IpResolver::IpResolver() :
@@ -47,7 +47,7 @@ struct ip_mac_mapping IpResolver::getMapping(QString ip) {
             QString curLine(buf);
             QStringList list = curLine.split(" ", QString::SkipEmptyParts);
             if (list.at(0) == ip) {
-                this->addMapping(ip, list.at(1), list.at(3));
+                this->addMapping(ip, list.at(1), list.at(2));
                 ndp.close();
                 return getMapping(ip);
             }
@@ -69,9 +69,10 @@ struct ip_mac_mapping IpResolver::getMapping(QString ip) {
         }
         ndp.close();
 #endif
+        qDebug() << "going into ifconfig";
         // is it a local address ?
         QProcess testIfconfig;
-        testIfconfig.start("/sbin/ifconfig | grep " + ip);
+        testIfconfig.start("/sbin/ifconfig");
         testIfconfig.waitForReadyRead();
         while ((length = testIfconfig.readLine(buf, 3000))) {
             QString curLine(buf);
@@ -81,7 +82,7 @@ struct ip_mac_mapping IpResolver::getMapping(QString ip) {
 #ifdef __APPLE__
                     this->addMapping(ip, "", "lo0");
 #elif __GNUC__
-                    this->addMapping(ip, "", "lo0");
+                    this->addMapping(ip, "", "lo");
 #endif
                     testIfconfig.close();
                     return getMapping(ip);
