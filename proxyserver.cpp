@@ -9,7 +9,8 @@ QString ProxyServer::computeMd5(const QString &friendUid, const QString &name, c
     QString allParams = friendUid + name + regType + domain + hostname + QString::number(port);
 
     QByteArray hash = QCryptographicHash::hash(allParams.toUtf8().data(), QCryptographicHash::Md5);
-    return QString(hash);
+    //return QString(hash);
+    return allParams; // TODO change
 }
 
 ProxyServer::ProxyServer(const QString &friendUid, const QString &name, const QString &regType, const QString &domain,

@@ -88,7 +88,8 @@ void BonjourResolver::hostInfoReady(const QHostInfo &info) {
             record->registeredType + record->replyDomain + record->hostname + QString::number(record->port);
     QByteArray hash = QCryptographicHash::hash(allParams.toUtf8().data(), QCryptographicHash::Md5);
     // add record to hashes list
-    BonjourDiscoverer::recordHashes.insert(QString(hash), record);
+    //BonjourDiscoverer::recordHashes.insert(QString(hash), record);
+    BonjourDiscoverer::recordHashes.insert(QString(allParams), record);
 
     // truncate everything after ".local"
     int indexLocal;
