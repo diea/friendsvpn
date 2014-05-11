@@ -6,6 +6,8 @@ ProxyClient::ProxyClient(QString md5, int sockType, int srcPort, DataPlaneConnec
     Proxy(srcPort, sockType, md5)
 {
     this->con = con;
+    qDebug() << "md5" << md5;
+    qDebug() << BonjourDiscoverer::recordHashes;
     serverRecord = BonjourDiscoverer::recordHashes.value(md5);
     if (!serverRecord) {
         // no more available
@@ -20,7 +22,6 @@ ProxyClient::ProxyClient(QString md5, int sockType, int srcPort, DataPlaneConnec
 
 void ProxyClient::run() {
     run_pcap();
-    // TODO check when pcap listens on other port than original client port and change when sending TCP
 }
 
 void ProxyClient::sendBytes(const char *buf, int len, QString) {

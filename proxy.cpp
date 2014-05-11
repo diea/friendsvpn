@@ -402,7 +402,8 @@ start: // used to process packets when bytes are available but no signal will be
         left--;
         i++;
     }
-    left--; // the '\r'
+    pcap->getChar(&c); // remove the '\n'
+    left -= 2; // the '\r\n'
     qDebug() << iface << "iface!";
 
     char srcIp[40];
@@ -416,7 +417,8 @@ start: // used to process packets when bytes are available but no signal will be
         i++;
         left--;
     }
-    left--; // the '\r'
+    pcap->getChar(&c); // remove the '\n'
+    left -= 2; // the '\r\n'
     srcIp[i] = '\0'; // replace '\n' by '\0'
 
     if (QString(iface) == "eth") { // ethernet, fetch MAC addr
@@ -426,7 +428,8 @@ start: // used to process packets when bytes are available but no signal will be
             i++;
             left--;
         }
-        left--; // the '\r'
+        pcap->getChar(&c); // remove the '\n'
+        left -= 2; // the '\r\n'
         mac[i] = '\0';
 
         qDebug() << "Resolver adds mapping " << mac << srcIp;

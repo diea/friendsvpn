@@ -31,7 +31,6 @@ ProxyServer::ProxyServer(const QString &friendUid, const QString &name, const QS
 
 void ProxyServer::run() {
     run_pcap();
-    // if listening on other port, need to change dstPort of TCP/UDP packet before sending over DTLS
 
     // advertise by registering the record with a bonjour registrar
     // TODO
