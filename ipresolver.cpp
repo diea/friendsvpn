@@ -69,6 +69,29 @@ struct ip_mac_mapping IpResolver::getMapping(QString ip) {
         }
         ndp.close();
 #endif
+        // is it a local address ?
+        QProcess testIfconfig;
+        testIfconfig.start("/sbin/ifconfig | grep " + ip);
+        testIfconfig.waitForReadyRead();
+        char buf[3000];
+        int length;
+        while ((length = testIfconfig.readLine(buf, 3000))) {
+            QString curLine(buf);
+            QStringList list = curLine.split(" ", QString::SkipEmptyParts);
+            foreach (QString value, list) {
+                if (value.contains(ip)) {
+#ifdef __APPLE__
+                    this->addMapping(ip, "", "lo0");
+#elif __GNUC__
+                    this->addMapping(ip, "", "lo0");
+#endif
+                    testIfconfig.close();
+                    return getMapping(ip);
+                }
+            }
+        }
+        testIfconfig.close();
+
         struct ip_mac_mapping nullMapping;
         // fail
         return nullMapping;

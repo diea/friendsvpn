@@ -48,6 +48,7 @@ QProcess* Proxy::initRaw(QString ipDst, int srcPort) {
     QProcess* sendRaw = new QProcess(this);
     QStringList sendRawArgs;
     IpResolver* resolv = IpResolver::getInstance();
+    qDebug() << "get mapping for" << ipDst;
     struct ip_mac_mapping map = resolv->getMapping(ipDst);
     sendRawArgs.append(map.interface);
     sendRawArgs.append(listenIp);
@@ -118,7 +119,6 @@ QString Proxy::newIP() {
 
     // add to local cache!
     IpResolver* r = IpResolver::getInstance();
-
     // XXX better way of determining local loopback interface ?
 #ifdef __APPLE__
     r->addMapping(newip, "", "lo0");
