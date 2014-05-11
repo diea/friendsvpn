@@ -105,6 +105,15 @@ int main(int argc,const char* argv[]) {
         }
         source_mac_addr = ptr;
     #elif __GNUC__
+        struct ifreq ifr;
+        size_t if_name_len=strlen(if_name);
+        if (if_name_len<sizeof(ifr.ifr_name)) {
+            memcpy(ifr.ifr_name,if_name,if_name_len);
+            ifr.ifr_name[if_name_len]=0;
+        } else {
+            fprintf(stderr,"interface name is too long");
+            exit(1);
+        }
         // Open an IPv4-family socket for use when calling ioctl.
         int fd=socket(AF_INET,SOCK_DGRAM,0);
         if (fd==-1) {
@@ -164,16 +173,6 @@ int main(int argc,const char* argv[]) {
     ip6.ip6_dst = ((struct sockaddr_in6 *) res->ai_addr)->sin6_addr;
 
     printf("ipv6 constructed!\n");
-
-    struct ifreq ifr;
-    size_t if_name_len=strlen(if_name);
-    if (if_name_len<sizeof(ifr.ifr_name)) {
-        memcpy(ifr.ifr_name,if_name,if_name_len);
-        ifr.ifr_name[if_name_len]=0;
-    } else {
-        fprintf(stderr,"interface name is too long");
-        exit(1);
-    }
 
     // checksum of nreq
     // begin by making pseudo header
