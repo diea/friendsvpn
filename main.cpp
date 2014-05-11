@@ -59,11 +59,11 @@ int main(int argc, char *argv[])
     // init signal handler
     UnixSignalHandler* u = UnixSignalHandler::getInstance();
 
-    IpResolver* ip = IpResolver::getInstance();
+    /*IpResolver* ip = IpResolver::getInstance();
     struct ip_mac_mapping map = ip->getMapping("192.168.1.127");
-    qDebug() << map.interface;
+    qDebug() << map.interface;*/
 
-    /*BonjourSQL* qSql = BonjourSQL::getInstance();
+    BonjourSQL* qSql = BonjourSQL::getInstance();
 
     // discover services
     QThread discovererThread;
@@ -74,7 +74,7 @@ int main(int argc, char *argv[])
     //disco->discoverServices();
 
     ConnectionInitiator* con = ConnectionInitiator::getInstance();
-    con->run();*/
+    con->run();
 
    /* QThread* newProxyThread = new QThread();
     ProxyServer* newProxy = new ProxyServer("100008078109463", "diea-VirtualBox-3", "_udisks-ssh._tcp.", ".friendsvpn.", "diea-VirtualBox-3.local", 6000);
