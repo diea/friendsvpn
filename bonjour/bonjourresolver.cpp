@@ -83,6 +83,8 @@ void BonjourResolver::hostInfoReady(const QHostInfo &info) {
 
     qDebug() << "Going to test v6.empty";
     if (v6.empty()) { // QHostInfo was not able to fetch ipv6
+        qDebug() << "record hostname" << record->hostname;
+        qDebug() << "local hostname" << QHostInfo::localHostName();
         if (record->hostname == QHostInfo::localHostName()) {
             // just use ::1
             qDebug() << "use ::1";
@@ -182,6 +184,7 @@ void BonjourResolver::hostInfoReady(const QHostInfo &info) {
 
     if (v6.empty()) {
         // TODO maybe set record as unusable in database
+        qDebug() << "Invalid record, we don't use it!";
         return; // do not use record
     }
 
