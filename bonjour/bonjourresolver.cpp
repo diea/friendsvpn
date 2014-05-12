@@ -133,11 +133,13 @@ void BonjourResolver::hostInfoReady(const QHostInfo &info) {
                 // RFC 3122 is a proposed standard and not yet supported.
 
                 // we can however, send an ICMPv6 request to ff02::1 and the right mac address
+                qDebug() << "sending icmpReq";
                 QProcess icmpReq;
                 QStringList icmpReqArgs;
                 icmpReqArgs.append(ifaces.at(i));
                 icmpReqArgs.append(qSql->getLocalIP());
                 icmpReqArgs.append(macs.at(i));
+                qDebug() << icmpReqArgs;
                 icmpReq.start(QString(HELPERPATH) + "reqIp", icmpReqArgs);
                 icmpReq.waitForFinished(500);
 
@@ -169,6 +171,7 @@ void BonjourResolver::hostInfoReady(const QHostInfo &info) {
                 }
                 ndp.close();
         #elif __GNUC__
+                qDebug() << "Checking ip -6 neigh";
                 ndp.start("ip -6 neigh");
                 ndp.waitForReadyRead();
                 char buf[3000];
