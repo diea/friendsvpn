@@ -191,10 +191,6 @@ ethLoopback:
     pHeader.ip6_dst = ip6.ip6_dst;
     pHeader.nextHeader = ip6.ip6_nxt;
 
-    //void* bufferChecksum = malloc(sizeof(struct ipv6upper) + sizeof(struct neighbor_req));
-    //memcpy(bufferChecksum, &pHeader, sizeof(struct ipv6upper));
-    //memcpy(bufferChecksum + sizeof(struct ipv6upper), &nreq, sizeof(struct neighbor_req));
-
     //nreq.checksum = ~(checksum(bufferChecksum, sizeof(struct ipv6upper) + sizeof(struct neighbor_req)));
 
     int sockType = atoi(argv[4]);
@@ -237,10 +233,31 @@ ethLoopback:
             udp->sport = htons(atoi(argv[5]));
         } else { // tcp has no length field, so same as ipv6
             pHeader.payload_len = htonl(atoi(nbBuf));
-
             // change src_port
             tcp = (struct sniff_tcp*) (packet_send);
             tcp->th_sport = htons(atoi(argv[5]));
+
+            memset(&(tcp->th_sum), 0, sizeof(u_short)); // checksum field to 0
+
+            int nbBytes = packet_send_size;
+            int padding = packet_send_size % 16;
+            
+
+            printf("Packet send size %d\n", packet_send_size);
+            if (padding) {
+                nbBytes = (packet_send_size / 16) * 16 + 16;
+                printf("Rounded nbBytes %d\n", nbBytes);
+                printf("Need to pad %d bits\n", 16 - padding);
+            }
+
+            int checksumBufSize = sizeof(struct ipv6upper) + nbBytes;
+            void* bufferChecksum = malloc(checksumBufSize);
+            memset(bufferChecksum, 0, checksumBufSize); // set everthing to 0 so padding is done
+            memcpy(bufferChecksum, &pHeader, sizeof(struct ipv6upper));
+            memcpy(bufferChecksum + sizeof(struct ipv6upper), packet_send, packet_send_size);
+
+            tcp->th_sum = ~(checksum(bufferChecksum, sizeof(struct ipv6upper) + nbBytes));
+            free(bufferChecksum);
         }
 
         printf("packet_send %s\n", (char*)packet_send);
@@ -261,6 +278,7 @@ ethLoopback:
             pcap_close(pcap);
             exit(1);
         }
+        free(packet_send);
     }
 
     // Close the PCAP descriptor.
