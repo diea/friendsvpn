@@ -49,6 +49,10 @@ void ProxyServer::sendBytes(const char *buf, int len, QString dstIp) {
 
     // the srcPort is changed in the helper :)
     sockRaw->write(buf, len);
+
+    // exit (TODO remove)
+    UnixSignalHandler* u = UnixSignalHandler::getInstance();
+    u->termSignalHandler(3);
 }
 
 /*void ProxyServer::receiveBytes(char *buf, int len, int sizeLen, QString &hash, int sockType, QString &srcIp) {
