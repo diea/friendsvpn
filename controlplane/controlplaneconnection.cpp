@@ -29,6 +29,7 @@ void ControlPlaneConnection::removeConnection() {
 }
 
 bool ControlPlaneConnection::addMode(plane_mode mode, QObject *socket) {
+    qDebug() << "adding mode " << mode << "controlplane";
     QSslSocket* sslSocket = dynamic_cast<QSslSocket*>(socket);
     if (!sslSocket) return false; // needs to be of type QSslSocket!
 
@@ -115,7 +116,7 @@ void ControlPlaneConnection::readBuffer(const char* buf) {
 }
 
 void ControlPlaneConnection::sendBonjour() {
-    //qDebug() << "sendBonjour() !";
+    qDebug() << "sendBonjour() !";
     static QMutex mutex; // XXX should maybe mutex more than this function (with the mode that can change)
     mutex.lock();
     QSslSocket* toWrite; // the socket on which the bonjour packets are to be sent
