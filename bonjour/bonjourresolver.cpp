@@ -1,5 +1,7 @@
 #include "bonjourresolver.h"
 #include "bonjourdiscoverer.h"
+#include "config.h"
+#include "ipresolver.h"
 
 BonjourResolver::BonjourResolver(BonjourRecord* record, QObject *parent) :
     QObject(parent)
@@ -68,18 +70,118 @@ void BonjourResolver::bonjourSocketReadyRead() {
 }
 
 void BonjourResolver::hostInfoReady(const QHostInfo &info) {
-    //QList<QString> v4;
+    QList<QString> v4;
     QList<QString> v6;
     qDebug() << "Full list of addresses " << info.addresses();
     foreach(QHostAddress adr, info.addresses()) {
         if (adr.protocol() == QAbstractSocket::IPv6Protocol) {
             v6.append(adr.toString());
         } else if (adr.protocol() == QAbstractSocket::IPv4Protocol) {
-            //v4.append(adr.toString());
+            v4.append(adr.toString());
         }
     }
-    //v6.append(v4); we don't use v4.
+
+    if (v6.empty()) { // QHostInfo was not able to fetch ipv6
+        if (record->hostname == QHostInfo::localHostName()) {
+            // just use ::1
+            record->ips.append("::1");
+        } else {
+            if (!v4.empty()) { // get MAC from ARP table, send a neighbor discovery and check kernel table
+                QList<QString> macs; // list of retrieve mac addresses
+                QList<QString> ifaces; // for each mac we need to know on which interface it was
+                QProcess arp;
+                arp.start("arp -an");
+                arp.waitForReadyRead(200);
+                char buf[3000];
+                int length;
+                while ((length = arp.readLine(buf, 3000))) {
+                    QString curLine(buf);
+                    QStringList list = curLine.split(" ", QString::SkipEmptyParts);
+                    foreach (QString ipv4, v4) {
+                        if (list.at(1).contains(ipv4)) {
+                            macs.append(list.at(3));
+#ifdef __APPLE__
+                            ifaces.append(list.at(5));
+#elif __GNUC__
+                            ifaces.append(list.at(6));
+#endif
+                        }
+                    }
+                }
+                arp.close();
+
+                for (int i = 0; i < macs.length(); i++) {
+                    // send an inverse neighbor discovery icmpv6 just in case no previous contact was made: DOES NOT WORK
+                    // RFC 3122 is a proposed standard and not yet supported.
+
+                    // we can however, send an ICMPv6 request to ff02::1 and the right mac address
+                    QProcess icmpReq;
+                    QStringList icmpReqArgs;
+                    icmpReqArgs.append(ifaces.at(i));
+                    icmpReqArgs.append(qSql->getLocalIP());
+                    icmpReqArgs.append(macs.at(i));
+                    icmpReq.start(QString(HELPERPATH) + "reqIp", icmpReqArgs);
+                    icmpReq.waitForFinished(500);
+
+                    // read from neighbor table.
+                    QThread::sleep(2); // wait two seconds for icmp response to arrive
+
+                    // now check neighbor table
+                    QProcess ndp;
+            #ifdef __APPLE__
+                    ndp.start("ndp -an");
+                    ndp.waitForReadyRead();
+                    while ((length = ndp.readLine(buf, 3000))) {
+                        QString curLine(buf);
+                        QStringList list = curLine.split(" ", QString::SkipEmptyParts);
+                        if (list.at(1) == macs.at(i)) {
+                            QString ipv6 = list.at(0);
+                            if (ipv6.startsWith("fe80")) {
+                                // remove everything after %; % included
+                                int percentIndex = ipv6.indexOf("%");
+                                ipv6.truncate(percentIndex);
+                            }
+
+                            // at the same time we can add the mapping to our resolver
+                            IpResolver* r = IpResolver::getInstance();
+                            r->addMapping(ipv6, macs.at(i), ifaces.at(i));
+
+                            v6.append(ipv6);
+                        }
+                    }
+                    ndp.close();
+            #elif __GNUC__
+                    ndp.start("ip -6 neigh");
+                    ndp.waitForReadyRead();
+                    char buf[3000];
+                    int length;
+                    while ((length = ndp.readLine(buf, 3000))) {
+                        QString curLine(buf);
+                        QStringList list = curLine.split(" ", QString::SkipEmptyParts);
+                        if (list.at(4) == macs.at(i)) {
+                            QString ipv6 = list.at(0);
+
+                            // at the same time we can add the mapping to our resolver
+                            IpResolver* r = IpResolver::getInstance();
+                            r->addMapping(ipv6, macs.at(i), ifaces.at(i));
+
+                            v6.append(ipv6);
+                        }
+                    }
+                    ndp.close();
+            #endif
+                }
+            }
+        }
+    }
+
     record->ips = v6;
+
+    if (v6.empty()) {
+        // TODO maybe set record as unusable in database
+        return; // do not use record
+    }
+
     record->resolved = true;
     record->hostname = info.hostName();
 

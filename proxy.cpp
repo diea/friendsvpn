@@ -1,5 +1,6 @@
 #include "proxy.h"
 #include "unixsignalhandler.h"
+#include "config.h"
 #include <QCryptographicHash>
 #include <string.h>
 

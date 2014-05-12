@@ -13,4 +13,11 @@
 #define DATAPLANEPORT 61324
 #define CONTROLPLANELISTENPORT 61323
 
+
+#ifdef __APPLE__
+#define HELPERPATH "/Users/diea/Dropbox/CiscoVPN/app/friendsvpn/helpers/"
+#elif __GNUC__
+#define HELPERPATH "./helpers/"
+#endif
+
 #endif // CONFIG_H

@@ -5,6 +5,7 @@
 #define SOL_ICMPV6 58
 
 #define TTL 255
+#define ICMPREQ_HOP 64
 
 /* loopback header */
 #define SIZE_NULL 4
@@ -53,6 +54,40 @@ struct ipv6hdr { /* as defined on OSX */
 #define ip6_nxt     ip6_ctlun.ip6_un1.ip6_un1_nxt
 #define ip6_hlim    ip6_ctlun.ip6_un1.ip6_un1_hlim
 #define ip6_hops    ip6_ctlun.ip6_un1.ip6_un1_hlim
+
+
+/* Neighbor discovery structures */
+struct sourceLLoption {
+    uint8_t type;
+    uint8_t length;
+    u_char ether_shost[ETHER_ADDR_LEN]; // link layer addr
+} __attribute__((__packed__));
+
+struct inverseNeighbor_req { /* rfc3122 */
+    uint8_t type;
+    uint8_t code;
+    uint16_t checksum;
+    uint32_t reserved;
+    struct sourceLLoption sourceLL;
+    struct sourceLLoption destLL;
+} __attribute__((__packed__));
+
+struct neighbor_req {
+    uint8_t type;
+    uint8_t code;
+    uint16_t checksum;
+    uint32_t reserved;
+    struct in6_addr targetAddress;
+    struct sourceLLoption sourceLL;
+} __attribute__((__packed__));
+
+struct icmpv6_req {
+    uint8_t type;
+    uint8_t code;
+    uint16_t checksum;
+    uint16_t id;
+    uint16_t seqnb;
+} __attribute__((__packed__));
 
 /* TCP header from sniffex.c, tcpdump.org */
 typedef u_int tcp_seq;
