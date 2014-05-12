@@ -121,7 +121,9 @@ void BonjourResolver::hostInfoReady(const QHostInfo &info) {
 #ifdef __APPLE__
                         ifaces.append(list.at(5));
 #elif __GNUC__
-                        ifaces.append(list.at(6));
+                        QString iface = list.at(6);
+                        iface.truncate(iface.length() - 1);
+                        ifaces.append(iface);
 #endif
                     }
                 }
