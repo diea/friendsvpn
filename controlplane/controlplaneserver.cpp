@@ -35,6 +35,7 @@ void ControlPlaneServer::start() {
 }
 
 void ControlPlaneServer::newIncoming() {
+    qDebug() << "New incoming control Plane !";
     QTcpSocket* socket = tcpSrv->nextPendingConnection();
     SslSocket* sslSock = new SslSocket();
 
