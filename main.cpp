@@ -63,7 +63,7 @@ int main(int argc, char *argv[])
     struct ip_mac_mapping map = ip->getMapping("192.168.1.127");
     qDebug() << map.interface;*/
 
-    /*BonjourSQL* qSql = BonjourSQL::getInstance();
+    BonjourSQL* qSql = BonjourSQL::getInstance();
 
     // discover services
     QThread discovererThread;
@@ -74,9 +74,9 @@ int main(int argc, char *argv[])
     //disco->discoverServices();
 
     ConnectionInitiator* con = ConnectionInitiator::getInstance();
-    con->run();*/
+    con->run();
 
-    QThread* newProxyThread = new QThread();
+    /*QThread* newProxyThread = new QThread();
     ProxyServer* newProxy = new ProxyServer("100008078109463", "diea-VirtualBox-3", "_udisks-ssh._tcp.", ".friendsvpn.", "diea-VirtualBox-3.local", 6000);
     // no move to thread ?
     QObject::connect(newProxyThread, SIGNAL(started()), newProxy, SLOT(run()));
@@ -88,7 +88,7 @@ int main(int argc, char *argv[])
     // no move to thread ?
     QObject::connect(newProxyThread1, SIGNAL(started()), newProxy1, SLOT(run()));
     QObject::connect(newProxyThread1, SIGNAL(finished()), newProxyThread1, SLOT(deleteLater()));
-    newProxyThread1->start();
+    newProxyThread1->start();*/
 
     return a.exec();
 }
