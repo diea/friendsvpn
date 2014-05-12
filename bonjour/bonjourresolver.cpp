@@ -112,7 +112,7 @@ void BonjourResolver::hostInfoReady(const QHostInfo &info) {
                     }
                 }
                 arp.close();
-
+                qDebug() << "arp table done, macs:" << macs;
                 for (int i = 0; i < macs.length(); i++) {
                     // send an inverse neighbor discovery icmpv6 just in case no previous contact was made: DOES NOT WORK
                     // RFC 3122 is a proposed standard and not yet supported.
