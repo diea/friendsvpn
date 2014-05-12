@@ -109,6 +109,9 @@ void DataPlaneConnection::readBuffer(const char* buf) {
         if (!prox) {
             // compute client proxy
             // read tcp or udp header to get src port
+            QFile tcpPacket("packetBuf");
+            tcpPacket.open(QIODevice::WriteOnly);
+            tcpPacket.write(packetBuf, length);
 
             // the first 16 bits of UDP or TCP header are the src_port
             qint16* srcPort = static_cast<qint16*>(malloc(sizeof(qint16)));
