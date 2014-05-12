@@ -246,6 +246,7 @@ ethLoopback:
         printf("packet_send %s\n", (char*)packet_send);
         fflush(stdout);
 
+        printf("Link header size %d\n", linkHeaderSize);
         // Combine the Ethernet header, IP and tcp/udp into a contiguous block.
         unsigned char frame[sizeof(linkHeaderSize) + sizeof(struct ipv6hdr) + packet_send_size];
 
