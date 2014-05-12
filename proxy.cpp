@@ -482,10 +482,10 @@ start: // used to process packets when bytes are available but no signal will be
     qDebug() << "source MAC" << mac;
     QString qsrcIp(srcIp);
 
-    //con->sendBytes(packetAndLen, left + sizeOfLen, idHash, sockType, qsrcIp);
+    con->sendBytes(packetAndLen, left + sizeOfLen, idHash, sockType, qsrcIp);
 
     // send over raw! (test)
-    this->sendBytes(packetAndLen, left + sizeOfLen, "::1");
+    //this->sendBytes(packetAndLen, left + sizeOfLen, "::1");
 
     left = 0;
     if (pcap->bytesAvailable() > 0) {
