@@ -76,7 +76,7 @@ int main(int argc, char *argv[])
     ConnectionInitiator* con = ConnectionInitiator::getInstance();
     con->run();*/
 
-   /* QThread* newProxyThread = new QThread();
+    QThread* newProxyThread = new QThread();
     ProxyServer* newProxy = new ProxyServer("100008078109463", "diea-VirtualBox-3", "_udisks-ssh._tcp.", ".friendsvpn.", "diea-VirtualBox-3.local", 6000);
     // no move to thread ?
     QObject::connect(newProxyThread, SIGNAL(started()), newProxy, SLOT(run()));
@@ -88,20 +88,8 @@ int main(int argc, char *argv[])
     // no move to thread ?
     QObject::connect(newProxyThread1, SIGNAL(started()), newProxy1, SLOT(run()));
     QObject::connect(newProxyThread1, SIGNAL(finished()), newProxyThread1, SLOT(deleteLater()));
-    newProxyThread1->start();*/
+    newProxyThread1->start();
 
-    QFile pcktBuf("packetBuf");
-    pcktBuf.open(QIODevice::ReadOnly);
-
-    char* packetBuf = pcktBuf.readAll().data();
-
-    int accIndex = 3;
-    // the first 16 bits of UDP or TCP header are the src_port
-    qint16* srcPort = static_cast<qint16*>(malloc(sizeof(qint16)));
-    memcpy(srcPort, packetBuf + accIndex + 1, sizeof(qint16));
-    *srcPort = ntohs(*srcPort);
-
-    qDebug() << *srcPort;
     return a.exec();
 }
 #endif

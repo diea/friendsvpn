@@ -457,23 +457,31 @@ start: // used to process packets when bytes are available but no signal will be
         // first 16 bits = source Port of UDP and TCP
         qint16* dstPort = static_cast<qint16*>(static_cast<void*>(packet + 2)); // second 16 bits dstPort (or + 2 bytes)
         *dstPort = htons(listenPort); // restore the original port
+        qDebug() << "dst Port!" << *dstPort;
     }
 
     char packetAndLen[2020];
     sprintf(packetAndLen, "[%d]", left);
     int sizeOfLen = strlen(packetAndLen); // we need to know the [size] string length for the memcpy
-    memcpy(packetAndLen + sizeOfLen + 1, packet, left);
+    memcpy(packetAndLen + sizeOfLen, packet, left);
+
+    // the first 16 bits of UDP or TCP header are the src_port
+    qint16* srcPort = static_cast<qint16*>(malloc(sizeof(qint16)));
+    memcpy(srcPort, packetAndLen + 4, sizeof(qint16));
+    *srcPort = ntohs(*srcPort);
+
+    qDebug() << "source Port!" << *srcPort;
 
     // send over DTLS with friendUid
     QFile tcpPacket("tcpPackeFromPcap");
     tcpPacket.open(QIODevice::WriteOnly);
-    tcpPacket.write(packetAndLen, left + sizeOfLen + 1);
+    tcpPacket.write(packetAndLen, left + sizeOfLen);
 
     qDebug() << "source IP" << srcIp;
     qDebug() << "source MAC" << mac;
     QString qsrcIp(srcIp);
 
-    con->sendBytes(packetAndLen, left + sizeOfLen + 1, idHash, sockType, qsrcIp);
+    con->sendBytes(packetAndLen, left + sizeOfLen, idHash, sockType, qsrcIp);
 
     // send over raw! (test)
     //this->sendBytes(packet, left);
