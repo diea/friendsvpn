@@ -84,7 +84,8 @@ void BonjourResolver::hostInfoReady(const QHostInfo &info) {
     if (v6.empty()) { // QHostInfo was not able to fetch ipv6
         if (record->hostname == QHostInfo::localHostName()) {
             // just use ::1
-            record->ips.append("::1");
+            qDebug() << "use ::1";
+            v6.append("::1");
         } else {
             if (!v4.empty()) { // get MAC from ARP table, send a neighbor discovery and check kernel table
                 QList<QString> macs; // list of retrieve mac addresses
