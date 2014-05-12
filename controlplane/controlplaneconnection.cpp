@@ -54,7 +54,7 @@ void ControlPlaneConnection::readBuffer(const char* buf) {
     qDebug() << buf;
     QString packet(buf);
 
-    QStringList list = packet.split("\r\n");
+    /*QStringList list = packet.split("\r\n");
     qDebug() << "parser list!";
     qDebug() << list;
 
@@ -110,8 +110,8 @@ void ControlPlaneConnection::readBuffer(const char* buf) {
             qDebug() << "not starting with BONJOUR";
             return;
         }
-        qDebug() << "end of reading buffer";
-    }
+    }*/
+    qDebug() << "end of reading buffer";
 }
 
 void ControlPlaneConnection::sendBonjour() {
