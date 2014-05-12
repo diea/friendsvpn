@@ -81,6 +81,7 @@ void BonjourResolver::hostInfoReady(const QHostInfo &info) {
         }
     }
 
+    qDebug() << "Going to test v6.empty";
     if (v6.empty()) { // QHostInfo was not able to fetch ipv6
         if (record->hostname == QHostInfo::localHostName()) {
             // just use ::1
@@ -91,6 +92,7 @@ void BonjourResolver::hostInfoReady(const QHostInfo &info) {
                 QList<QString> macs; // list of retrieve mac addresses
                 QList<QString> ifaces; // for each mac we need to know on which interface it was
                 QProcess arp;
+                qDebug() << "checking arp table";
                 arp.start("arp -an");
                 arp.waitForReadyRead(200);
                 char buf[3000];
