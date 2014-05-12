@@ -36,6 +36,7 @@ void print_usage() {
 }
 
 int main(int argc,const char* argv[]) {
+    setuid(0);
     // Get interface name and target IP address from command line.
     if (argc < 6) {
         print_usage();
@@ -241,7 +242,6 @@ ethLoopback:
 
             int nbBytes = packet_send_size;
             int padding = packet_send_size % 16;
-            
 
             printf("Packet send size %d\n", packet_send_size);
             if (padding) {
