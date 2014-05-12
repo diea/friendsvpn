@@ -122,6 +122,10 @@ struct sniff_udp {
     uint16_t        udp_sum;    /* checksum */
 } __attribute__((__packed__)); 
 
+/*uint16_t checksum (void* buffer, int bytes) {
+
+}*/
+
 /**
  * Compute tcp/udp checksum from buffer (usually pseudoheader + ...)
  *

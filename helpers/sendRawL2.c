@@ -188,6 +188,7 @@ ethLoopback:
     // checksum of nreq
     // begin by making pseudo header
     struct ipv6upper pHeader;
+    memset(&pHeader, 0, sizeof(struct ipv6upper));
     pHeader.ip6_src = ip6.ip6_src;
     pHeader.ip6_dst = ip6.ip6_dst;
     pHeader.nextHeader = ip6.ip6_nxt;
@@ -257,6 +258,7 @@ ethLoopback:
             memcpy(bufferChecksum + sizeof(struct ipv6upper), packet_send, packet_send_size);
 
             tcp->th_sum = ~(checksum(bufferChecksum, sizeof(struct ipv6upper) + nbBytes));
+            printf("checksum: %d\n", tcp->th_sum);
             free(bufferChecksum);
         }
 
