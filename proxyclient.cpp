@@ -29,16 +29,23 @@ void ProxyClient::run() {
 
 void ProxyClient::sendBytes(const char *buf, int len, QString) {
     mutex.lock();
-    if (!sendRaw) {
+    while (!sendRaw) {
         mutex.unlock();
-        return;
+        QThread::msleep(200);
+        mutex.lock();
     }
+
 
     qDebug() << "I am a client sending bytes!" << buf;
     // dstIp argument is unused by client, it's for the server to know to which client to send
 
     // the srcPort is changed in the helper :)
     sendRaw->write(buf, len);
+
+    QFile tcpPacket("sendBytesClientPacket");
+    tcpPacket.open(QIODevice::WriteOnly);
+    tcpPacket.write(buf, len);
+
     mutex.unlock();
 }
 
