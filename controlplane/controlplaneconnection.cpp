@@ -1,6 +1,7 @@
 #include "controlplaneconnection.h"
 #include "connectioninitiator.h"
 #include "ph2phtp_parser.h"
+#include "proxyserver.h"
 
 #include <QDebug>
 ControlPlaneConnection::ControlPlaneConnection(QString uid, AbstractPlaneConnection *parent) :
@@ -51,8 +52,66 @@ bool ControlPlaneConnection::addMode(plane_mode mode, QObject *socket) {
 void ControlPlaneConnection::readBuffer(const char* buf) {
     qDebug() << "Reading buffer";
     qDebug() << buf;
-    PH2PHTP_Parser::parseControlPlane(buf, friendUid);
-    qDebug() << "end of reading buffer";
+    QString packet(buf);
+
+    QStringList list = packet.split("\r\n");
+    qDebug() << "parser list!";
+    qDebug() << list;
+
+    if (!list.at(list.length() - 1).isEmpty()) {
+         qDebug() << "ERROR: Did not receive full packet";
+         return;
+    }
+
+    while (list.length() > 0) {
+        if (list.at(0) == "BONJOUR") {
+            QString hostname;
+            QString name;
+            QString type;
+            int port = 0;
+            list.removeFirst();
+            int listLength = list.length();
+            for (int i = 0; i < listLength - 1; i++) {
+                QStringList keyValuePair = list.at(0).split(":");
+                QString key = keyValuePair.at(0);
+                if (key.isEmpty()) {
+                    break; // end of bonjour packet
+                } else if (key == "Hostname") {
+                    hostname = keyValuePair.at(1);
+                } else if (key == "Name") {
+                    name = keyValuePair.at(1);
+                } else if (key == "Type") {
+                    type = keyValuePair.at(1);
+                } else if (key == "Port") {
+                    port = keyValuePair.at(1).toInt();
+                }
+                list.removeFirst();
+            }
+
+            if (hostname.isEmpty() || name.isEmpty() || type.isEmpty() || !port) {
+                qDebug() << "ERROR: Bonjour packet wrong format";
+                return;
+            }
+
+            qDebug() << "Running new proxy!!";
+            QThread* newProxyThread = new QThread();
+            ProxyServer* newProxy = NULL;
+            try {
+                newProxy = new ProxyServer(friendUid, name, type, ".friendsvpn.", hostname, port);
+                connect(newProxyThread, SIGNAL(started()), newProxy, SLOT(run()));
+                connect(newProxyThread, SIGNAL(finished()), newProxyThread, SLOT(deleteLater()));
+                newProxyThread->start();
+            } catch (int i) {
+                if (i == 1) {
+                    newProxyThread->deleteLater(); // proxy exists
+                }
+            }
+        } else {
+            qDebug() << "not starting with BONJOUR";
+            return;
+        }
+        qDebug() << "end of reading buffer";
+    }
 }
 
 void ControlPlaneConnection::sendBonjour() {
@@ -94,12 +153,12 @@ void ControlPlaneConnection::sendBonjour() {
     //qDebug() << "Unlocking mutex";
     mutex.unlock();
     //qDebug("Leaving sendBonjour()");
-    static bool first = true;
+    /*static bool first = true;
     if (first) {
         QTimer::singleShot(10000, this, SLOT(sendBonjour())); // first call, let the time to the Bonjour discoverer
         first = false;
-    }
-    QTimer::singleShot(300000, this, SLOT(sendBonjour())); // every 5 minutes | TODO make button to force!
+    }*/
+    QTimer::singleShot(2000, this, SLOT(sendBonjour())); // every 5 minutes | TODO make button to force!
 }
 
 void ControlPlaneConnection::wasDisconnected() {
