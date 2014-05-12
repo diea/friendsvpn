@@ -64,22 +64,29 @@ int main(int argc,const char* argv[]) {
     size_t linkHeaderSize = 0;
     if (datalink == DLT_EN10MB) {
         printf("argc: %d\n", argc);
+        bool linuxLoopback = false;
         if (argc < 7) {
+            #ifdef __APPLE__
             print_usage();
+            #elif __GNUC__
+            // special zero-ed out linux ethernet loopback packet
+            linuxLoopback = true;
+            #endif
         }
         // Construct Ethernet header (except for source MAC address).
         // (Destination set to broadcast address, FF:FF:FF:FF:FF:FF.)
         struct ether_header header;
+        memset(header, 0, sizeof(ether_header));
         header.ether_type=htons(ETH_IPV6);
+
+        if (linuxLoopback)
+            goto ethLoopback;
 
         printf("reading mac!\n");
         // read mac-addr from argv[6]
         char *token;
         int i = 0;
         while (((token = strsep(&argv[6], ":")) != NULL) && (i < 6)) {
-            //char hexValue[4] = "0x";
-            //strcpy(hexValue, token);
-            //printf("%s\n", hexValue);
             header.ether_dhost[i] = strtoul(token, NULL, 16);
             printf("%x\n", header.ether_dhost[i]);
             i++;
@@ -126,10 +133,11 @@ int main(int argc,const char* argv[]) {
             close(fd);
             exit(1);
         }
-        if (ifr.ifr_hwaddr.sa_family!=ARPHRD_ETHER) {
+        if (ifr.ifr_hwaddr.sa_family != ARPHRD_ETHER) {
             fprintf(stderr,"not an Ethernet interface\n");
             close(fd);
-            exit(1);
+            /* On linux ubuntu the loopback is actually an Ethernet interface with the ethernet header
+            zeroed out! */
         }
         const unsigned char* source_mac_addr=(unsigned char*)ifr.ifr_hwaddr.sa_data;
         close(fd);
@@ -137,6 +145,7 @@ int main(int argc,const char* argv[]) {
         printf("memcpy ether s_host\n");
         memcpy(header.ether_shost,source_mac_addr,sizeof(header.ether_shost));
         printf("memcpy ether s_host out!\n");
+ethLoopback:
         linkHeader = (void*) &header;
         linkHeaderSize = sizeof(struct ether_header);
     } else {
