@@ -113,9 +113,21 @@ void DataPlaneConnection::readBuffer(const char* buf) {
             tcpPacket.open(QIODevice::WriteOnly);
             tcpPacket.write(packetBuf, length);
 
+            // get index of ]
+            int accIndex = 0;
+            for (int i = 0; i < length; i++) {
+                if (packetBuf[i] == ']') {
+                    accIndex = i;
+                    break;
+                }
+            }
+            if (!accIndex) {
+                qDebug() << "wrong packet format received";
+                return;
+            }
             // the first 16 bits of UDP or TCP header are the src_port
             qint16* srcPort = static_cast<qint16*>(malloc(sizeof(qint16)));
-            memcpy(srcPort, packetBuf, sizeof(qint16));
+            memcpy(srcPort, packetBuf + accIndex + 1, sizeof(qint16));
             *srcPort = ntohs(*srcPort);
 
             qDebug() << "Captured srcPort" << *srcPort;
