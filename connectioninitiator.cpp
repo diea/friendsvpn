@@ -37,10 +37,10 @@ void ConnectionInitiator::startServer() {
     server = new ControlPlaneServer(cert, key, QHostAddress::AnyIPv6, CONTROLPLANELISTENPORT, this);
     server->start();
 
-    /*dpServer = DataPlaneServer::getInstance();
+    dpServer = DataPlaneServer::getInstance();
     dpServer->moveToThread(&dpServerThread);
     connect(&dpServerThread, SIGNAL(started()), dpServer, SLOT(start()));
-    dpServerThread.start();*/
+    dpServerThread.start();
 }
 
 void ConnectionInitiator::startClients() {
