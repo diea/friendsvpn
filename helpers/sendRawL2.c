@@ -20,6 +20,7 @@
 #include <unistd.h>
 #include <netdb.h>
 #include <ctype.h>
+#include <bool.h>
 
 #ifdef __APPLE__
 #include <ifaddrs.h>
@@ -76,7 +77,7 @@ int main(int argc,const char* argv[]) {
         // Construct Ethernet header (except for source MAC address).
         // (Destination set to broadcast address, FF:FF:FF:FF:FF:FF.)
         struct ether_header header;
-        memset(header, 0, sizeof(ether_header));
+        memset(&header, 0, sizeof(struct ether_header));
         header.ether_type=htons(ETH_IPV6);
 
         if (linuxLoopback)
