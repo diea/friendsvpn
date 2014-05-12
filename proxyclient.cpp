@@ -13,24 +13,32 @@ ProxyClient::ProxyClient(QString md5, QString servermd5, int sockType, int srcPo
         // no more available
         qFatal("The record is no more available");
     }
+}
 
+void ProxyClient::run() {
+    mutex.lock();
+    run_pcap();
     // I am a client so I know the dstIp is the server
     // I change the dstPort to the one from the server
     // I use listenPort which may be different than original port if bind has failed
     qDebug() << "initiation raw on source port " << port;
     sendRaw = initRaw(serverRecord->ips.at(0), port);
-}
-
-void ProxyClient::run() {
-    run_pcap();
+    mutex.unlock();
 }
 
 void ProxyClient::sendBytes(const char *buf, int len, QString) {
+    mutex.lock();
+    if (!sendRaw) {
+        mutex.unlock();
+        return;
+    }
+
     qDebug() << "I am a client sending bytes!" << buf;
     // dstIp argument is unused by client, it's for the server to know to which client to send
 
     // the srcPort is changed in the helper :)
     sendRaw->write(buf, len);
+    mutex.unlock();
 }
 
 /*void ProxyClient::receiveBytes(char *buf, int len, int sizeLen, QString& hash, int sockType, QString& srcIp) {

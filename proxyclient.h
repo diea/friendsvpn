@@ -12,6 +12,7 @@ private:
      */
     BonjourRecord* serverRecord;
     QProcess* sendRaw;
+    QMutex mutex;
 
     int origSrcPort;
 
