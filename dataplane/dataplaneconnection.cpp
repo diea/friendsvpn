@@ -127,7 +127,7 @@ void DataPlaneConnection::readBuffer(const char* buf) {
             }
             // the first 16 bits of UDP or TCP header are the src_port
             qint16* srcPort = static_cast<qint16*>(malloc(sizeof(qint16)));
-            memcpy(srcPort, packetBuf + accIndex + 1, sizeof(qint16));
+            memcpy(srcPort, packetBuf + accIndex, sizeof(qint16));
             *srcPort = ntohs(*srcPort);
 
             qDebug() << "Captured srcPort" << *srcPort;
