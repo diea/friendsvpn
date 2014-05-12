@@ -20,6 +20,7 @@ IpResolver* IpResolver::getInstance() {
 
 void IpResolver::addMapping(QString ip, QString mac, QString interface) {
     struct ip_mac_mapping newmap;
+    qDebug() << "add mapping " << ip << mac << interface;
     newmap.interface = interface;
     newmap.mac = mac;
     newmap.ip = ip;
