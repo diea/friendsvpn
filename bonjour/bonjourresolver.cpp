@@ -84,8 +84,8 @@ void BonjourResolver::hostInfoReady(const QHostInfo &info) {
     qDebug() << "Going to test v6.empty";
     if (v6.empty()) { // QHostInfo was not able to fetch ipv6
         qDebug() << "record hostname" << info.hostName();
-        qDebug() << "local hostname" << QHostInfo::localHostName();
-        if (info.hostName() == QHostInfo::localHostName()) {
+        qDebug() << "local hostname" << QHostInfo::localDomainName();
+        if (info.hostName() == QHostInfo::localDomainName()) {
             // just use ::1
             qDebug() << "use ::1";
             v6.append("::1");
