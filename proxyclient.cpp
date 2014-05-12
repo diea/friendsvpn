@@ -13,6 +13,7 @@ ProxyClient::ProxyClient(QString md5, QString servermd5, int sockType, int srcPo
         // no more available
         qFatal("The record is no more available");
     }
+    sendRaw = NULL;
 }
 
 void ProxyClient::run() {
