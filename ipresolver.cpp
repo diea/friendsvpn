@@ -6,6 +6,11 @@ IpResolver* IpResolver::instance = NULL;
 IpResolver::IpResolver() :
     QObject()
 {
+#ifdef __APPLE__
+    addMapping("::1", "", "lo0");
+#elif __GNUC__
+    addMapping("::1", "", "lo");
+#endif
 }
 
 IpResolver* IpResolver::getInstance() {
