@@ -1,7 +1,7 @@
 #include "controlplaneconnection.h"
 #include "connectioninitiator.h"
 #include "ph2phtp_parser.h"
-#include "proxyserver.h"
+//#include "proxyserver.h"
 
 #include <QDebug>
 ControlPlaneConnection::ControlPlaneConnection(QString uid, AbstractPlaneConnection *parent) :
