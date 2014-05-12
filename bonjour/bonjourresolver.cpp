@@ -107,6 +107,10 @@ void BonjourResolver::hostInfoReady(const QHostInfo &info) {
             QList<QString> macs; // list of retrieve mac addresses
             QList<QString> ifaces; // for each mac we need to know on which interface it was
             QProcess arp;
+
+            // TODO make a quick ping before checking arp table
+
+
             qDebug() << "checking arp table";
             arp.start("arp -an");
             arp.waitForReadyRead(200);

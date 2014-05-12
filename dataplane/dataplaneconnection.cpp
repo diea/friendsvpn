@@ -115,6 +115,8 @@ void DataPlaneConnection::readBuffer(const char* buf) {
             memcpy(srcPort, packetBuf, sizeof(qint16));
             *srcPort = ntohs(*srcPort);
 
+            qDebug() << "Captured srcPort" << *srcPort;
+
             QByteArray clientHash = QCryptographicHash::hash(QString(hash + srcIp + QString::number(*srcPort)).toUtf8(), QCryptographicHash::Md5);
             prox = Proxy::getProxy(clientHash);
             if (!prox) {

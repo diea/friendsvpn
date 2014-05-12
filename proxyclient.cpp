@@ -17,6 +17,7 @@ ProxyClient::ProxyClient(QString md5, QString servermd5, int sockType, int srcPo
     // I am a client so I know the dstIp is the server
     // I change the dstPort to the one from the server
     // I use listenPort which may be different than original port if bind has failed
+    qDebug() << "initiation raw on source port " << port;
     sendRaw = initRaw(serverRecord->ips.at(0), port);
 }
 

@@ -36,7 +36,7 @@ void print_usage() {
 
 int main(int argc,const char* argv[]) {
     // Get interface name and target IP address from command line.
-    if (argc < 6) {
+    if (argc < 5) {
         print_usage();
     }
     const char* if_name=argv[1];
@@ -64,7 +64,7 @@ int main(int argc,const char* argv[]) {
     size_t linkHeaderSize = 0;
     if (datalink == DLT_EN10MB) {
         printf("argc: %d\n", argc);
-        if (argc < 7) {
+        if (argc < 6) {
             print_usage();
         }
         // Construct Ethernet header (except for source MAC address).
