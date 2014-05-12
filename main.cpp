@@ -63,7 +63,7 @@ int main(int argc, char *argv[])
     struct ip_mac_mapping map = ip->getMapping("192.168.1.127");
     qDebug() << map.interface;*/
 
-    BonjourSQL* qSql = BonjourSQL::getInstance();
+    /*BonjourSQL* qSql = BonjourSQL::getInstance();
 
     // discover services
     QThread discovererThread;
@@ -74,7 +74,7 @@ int main(int argc, char *argv[])
     //disco->discoverServices();
 
     ConnectionInitiator* con = ConnectionInitiator::getInstance();
-    con->run();
+    con->run();*/
 
    /* QThread* newProxyThread = new QThread();
     ProxyServer* newProxy = new ProxyServer("100008078109463", "diea-VirtualBox-3", "_udisks-ssh._tcp.", ".friendsvpn.", "diea-VirtualBox-3.local", 6000);
@@ -90,6 +90,18 @@ int main(int argc, char *argv[])
     QObject::connect(newProxyThread1, SIGNAL(finished()), newProxyThread1, SLOT(deleteLater()));
     newProxyThread1->start();*/
 
+    QFile pcktBuf("packetBuf");
+    pcktBuf.open(QIODevice::ReadOnly);
+
+    char* packetBuf = pcktBuf.readAll().data();
+
+    int accIndex = 3;
+    // the first 16 bits of UDP or TCP header are the src_port
+    qint16* srcPort = static_cast<qint16*>(malloc(sizeof(qint16)));
+    memcpy(srcPort, packetBuf + accIndex + 1, sizeof(qint16));
+    *srcPort = ntohs(*srcPort);
+
+    qDebug() << *srcPort;
     return a.exec();
 }
 #endif

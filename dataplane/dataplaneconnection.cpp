@@ -115,9 +115,9 @@ void DataPlaneConnection::readBuffer(const char* buf) {
 
             // get index of ]
             int accIndex = 0;
-            while (packetBuf[++accIndex] != ']') { }
+            while ((packetBuf[++accIndex] != ']') && (accIndex < length)) { }
 
-            if (!accIndex) {
+            if (accIndex == length) {
                 qDebug() << "wrong packet format received";
                 return;
             }
