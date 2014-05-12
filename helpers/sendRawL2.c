@@ -20,7 +20,7 @@
 #include <unistd.h>
 #include <netdb.h>
 #include <ctype.h>
-#include <bool.h>
+#include <stdbool.h>
 
 #ifdef __APPLE__
 #include <ifaddrs.h>
