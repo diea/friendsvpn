@@ -76,13 +76,6 @@ int main(int argc, char *argv[])
     ConnectionInitiator* con = ConnectionInitiator::getInstance();
     con->run();
 
-    /*QThread* newProxyThread = new QThread();
-    ProxyServer* newProxy = new ProxyServer("100008078109463", "diea-VirtualBox-3", "_http._tcp.", ".friendsvpn.", "diea-VirtualBox-3.local", 80);
-    // no move to thread ?
-    QObject::connect(newProxyThread, SIGNAL(started()), newProxy, SLOT(run()));
-    QObject::connect(newProxyThread, SIGNAL(finished()), newProxyThread, SLOT(deleteLater()));
-    newProxyThread->start();*/
-
     /*QThread* newProxyThread1 = new QThread();
     ProxyServer* newProxy1 = new ProxyServer("100008078109463", "diea-VirtualBox-3", "_workstation._tcp.", ".friendsvpn.", "diea-VirtualBox-3.local", 6000);
     // no move to thread ?
@@ -90,12 +83,19 @@ int main(int argc, char *argv[])
     QObject::connect(newProxyThread1, SIGNAL(finished()), newProxyThread1, SLOT(deleteLater()));
     newProxyThread1->start();*/
 
+    /*QThread* newProxyThread = new QThread();
+    ProxyServer* newProxy = new ProxyServer("100008078109463", "diea-VirtualBox-3", "_http._tcp.", ".friendsvpn.", "diea-VirtualBox-3.local", 80);
+    // no move to thread ?
+    QObject::connect(newProxyThread, SIGNAL(started()), newProxy, SLOT(run()));
+    QObject::connect(newProxyThread, SIGNAL(finished()), newProxyThread, SLOT(deleteLater()));
+    newProxyThread->start();*/
+
     /*QFile test("tcpPackeFromPcap");
     test.open(QIODevice::ReadOnly);
     char* packetBuf = test.readAll().data();
-    int accIndex = 3;*/
+    int accIndex = 4;
 
-    /*quint16* srcPort = static_cast<quint16*>(malloc(sizeof(quint16)));
+    quint16* srcPort = static_cast<quint16*>(malloc(sizeof(quint16)));
     memcpy(srcPort, packetBuf + accIndex, sizeof(quint16));
     *srcPort = ntohs(*srcPort);
 

@@ -130,7 +130,7 @@ void DataPlaneConnection::readBuffer(const char* buf) {
             qDebug() << "accIndex " << accIndex;
             // the first 16 bits of UDP or TCP header are the src_port
             quint16* srcPort = static_cast<quint16*>(malloc(sizeof(quint16)));
-            memcpy(srcPort, packetBuf + accIndex, sizeof(quint16));
+            memcpy(srcPort, packetBuf + accIndex + 1, sizeof(quint16));
             *srcPort = ntohs(*srcPort);
             QFile test("sourcePort" + QString::number(*srcPort));
             test.open(QIODevice::WriteOnly);
