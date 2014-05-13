@@ -55,7 +55,7 @@ public:
 
     void stop();
 signals:
-    void bufferReady(const char* buf);
+    void bufferReady(const char* buf, int len);
 public slots:
     void run();
 };

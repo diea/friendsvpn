@@ -63,125 +63,133 @@ bool DataPlaneConnection::addMode(plane_mode mode, QObject* socket) {
     return true;
 }
 
-void DataPlaneConnection::readBuffer(const char* buf) {
+void DataPlaneConnection::readBuffer(const char* buf, int len) {
     mutex.lock();
-    qDebug() << "DataPlane buffer" << buf;
-    QString packet(buf);
+    qDebug() << "DataPlane buffer length" << len << "and buffer" << buf;
 
-    /* /!\ buffer can be multiple packets */
-
-    QStringList list = packet.split("\r\n");
-    QString header;
-    if (list.at(0) == "DATA") {
-        QString hash;
-        QString srcIp;
-        int sockType;
-        int length;
-        const char* packetBuf; // packet
-        header = header % "DATA\r\n";
-        for (int i = 1; i < list.length() - 1 ; i++) {
-            header = header % list.at(i) % "\r\n";
-            if (list.at(i).isEmpty()) {
-                if (!list.at(i + 1).isEmpty()) {
-                    QByteArray headerBytes = header.toUtf8();
-                    packetBuf = buf + headerBytes.length();
-                }
-            } else {
-                QStringList keyValuePair = list.at(i).split("=");
-                QString key = keyValuePair.at(0);
-                if (key == "Hash") {
-                    hash = keyValuePair.at(1);
-                } else if (key == "Length") {
-                    length = keyValuePair.at(1).toInt();
-                } else if (key == "Trans") {
-                    if (keyValuePair.at(1) == "tcp") {
-                        sockType = SOCK_STREAM;
-                    } else {
-                        sockType = SOCK_DGRAM;
+    int bufferPosition = 0; // to know where to start reading in the buffer (useful when there are multiple packets)
+    while (len > 0) {
+        QString packet(buf + bufferPosition);
+        /* /!\ buffer can be multiple packets */
+        QStringList list = packet.split("\r\n");
+        QString header;
+        if (list.at(0) == "DATA") {
+            QString hash;
+            QString srcIp;
+            int sockType;
+            int length;
+            const char* packetBuf; // packet
+            header = header % "DATA\r\n";
+            for (int i = 1; i < list.length() - 1 ; i++) {
+                header = header % list.at(i) % "\r\n";
+                if (list.at(i).isEmpty()) {
+                    if (!list.at(i + 1).isEmpty()) {
+                        QByteArray headerBytes = header.toUtf8();
+                        packetBuf = buf + headerBytes.length();
+                        len -= headerBytes.length(); // we read the header remove it from len
+                        bufferPosition += headerBytes.length();
                     }
-                } else if (key == "SrcIP") {
-                    srcIp = keyValuePair.at(1);
+                } else {
+                    QStringList keyValuePair = list.at(i).split("=");
+                    QString key = keyValuePair.at(0);
+                    if (key == "Hash") {
+                        hash = keyValuePair.at(1);
+                    } else if (key == "Length") {
+                        length = keyValuePair.at(1).toInt();
+                    } else if (key == "Trans") {
+                        if (keyValuePair.at(1) == "tcp") {
+                            sockType = SOCK_STREAM;
+                        } else {
+                            sockType = SOCK_DGRAM;
+                        }
+                    } else if (key == "SrcIP") {
+                        srcIp = keyValuePair.at(1);
+                    }
                 }
             }
-        }
 
-        // get server Proxy and send through it!
-        qDebug() << "Try and get proxy on hash";
-        qDebug() << hash;
-        Proxy* prox = Proxy::getProxy(hash); // try and get server (hash)
+            // get server Proxy and send through it!
+            qDebug() << "Try and get proxy on hash";
+            qDebug() << hash;
+            Proxy* prox = Proxy::getProxy(hash); // try and get server (hash)
 
-        if (!prox) {
-            qDebug() << "No proxy was found!";
-            // compute client proxy
-            // read tcp or udp header to get src port
-            QFile tcpPacket("packetBuf");
-            tcpPacket.open(QIODevice::WriteOnly);
-            tcpPacket.write(packetBuf, length);
-
-            // get index of ]
-            int accIndex = 0;
-            while ((packetBuf[++accIndex] != ']') && (accIndex < length)) { }
-
-            if (accIndex == length) {
-                qDebug() << "wrong packet format received";
-                return;
-            }
-
-            qDebug() << "accIndex " << accIndex;
-            // the first 16 bits of UDP or TCP header are the src_port
-            quint16* srcPort = static_cast<quint16*>(malloc(sizeof(quint16)));
-            memcpy(srcPort, packetBuf + accIndex + 1, sizeof(quint16));
-            *srcPort = ntohs(*srcPort);
-            QFile test("sourcePort" + QString::number(*srcPort));
-            test.open(QIODevice::WriteOnly);
-            test.write(packetBuf, length);
-
-            qDebug() << "Captured srcPort" << *srcPort;
-
-            QByteArray clientHash = QCryptographicHash::hash(QString(hash + srcIp + QString::number(*srcPort)).toUtf8(), QCryptographicHash::Md5);
-            prox = Proxy::getProxy(clientHash);
             if (!prox) {
-                // just send the bloody packet
-                qDebug() << "Printing packet payload:";
-
-                qDebug() << (char*) (packetBuf + 21);
-                printf("using printf %s \n", packetBuf + 21);
-    #if 0
-                qDebug() << "sending the bloody packet!";
-                QProcess* raw = new QProcess();
-                QStringList sendRawArgs;
-                sendRawArgs.append(QString::number(sockType));
-                sendRawArgs.append(QString::number(IPPROTO_TCP));
-                sendRawArgs.append("::1");
-                raw->start(QString(HELPERPATH) + "sendRaw", sendRawArgs);
-                qDebug() << "sendRawArgs!" << sendRawArgs;
-                QFile tcpPacket("tcpPacket");
+                qDebug() << "No proxy was found!";
+                // compute client proxy
+                // read tcp or udp header to get src port
+                QFile tcpPacket("packetBuf");
                 tcpPacket.open(QIODevice::WriteOnly);
                 tcpPacket.write(packetBuf, length);
 
-                raw->write(packetBuf, length);
-                qDebug() << "raw has written";
-                raw->waitForReadyRead(2000);
-                qDebug() << raw->readAll();
-    #endif
-                qDebug() << "new client proxy thread!";
-                QThread* proxyThread = new QThread();
+                // get index of ]
+                int accIndex = 0;
+                while ((packetBuf[++accIndex] != ']') && (accIndex < length)) { }
 
-                // compute the proxyClient's unique hash
-                // = md5(hash + srcPort + srcIp)
+                if (accIndex == length) {
+                    qDebug() << "wrong packet format received";
+                    return;
+                }
 
-                prox = new ProxyClient(clientHash, hash, srcIp, sockType, *srcPort, this);
-                prox->moveToThread(proxyThread);
-                connect(proxyThread, SIGNAL(started()), prox, SLOT(run()));
-                connect(proxyThread, SIGNAL(finished()), proxyThread, SLOT(deleteLater()));
-                // TODO delete proxy client also on finished() ?
-                proxyThread->start();
+                qDebug() << "accIndex " << accIndex;
+                // the first 16 bits of UDP or TCP header are the src_port
+                quint16* srcPort = static_cast<quint16*>(malloc(sizeof(quint16)));
+                memcpy(srcPort, packetBuf + accIndex + 1, sizeof(quint16));
+                *srcPort = ntohs(*srcPort);
+                QFile test("sourcePort" + QString::number(*srcPort));
+                test.open(QIODevice::WriteOnly);
+                test.write(packetBuf, length);
 
-                free(srcPort);
+                qDebug() << "Captured srcPort" << *srcPort;
+
+                QByteArray clientHash = QCryptographicHash::hash(QString(hash + srcIp + QString::number(*srcPort)).toUtf8(), QCryptographicHash::Md5);
+                prox = Proxy::getProxy(clientHash);
+                if (!prox) {
+                    // just send the bloody packet
+                    qDebug() << "Printing packet payload:";
+
+                    qDebug() << (char*) (packetBuf + 21);
+                    printf("using printf %s \n", packetBuf + 21);
+        #if 0
+                    qDebug() << "sending the bloody packet!";
+                    QProcess* raw = new QProcess();
+                    QStringList sendRawArgs;
+                    sendRawArgs.append(QString::number(sockType));
+                    sendRawArgs.append(QString::number(IPPROTO_TCP));
+                    sendRawArgs.append("::1");
+                    raw->start(QString(HELPERPATH) + "sendRaw", sendRawArgs);
+                    qDebug() << "sendRawArgs!" << sendRawArgs;
+                    QFile tcpPacket("tcpPacket");
+                    tcpPacket.open(QIODevice::WriteOnly);
+                    tcpPacket.write(packetBuf, length);
+
+                    raw->write(packetBuf, length);
+                    qDebug() << "raw has written";
+                    raw->waitForReadyRead(2000);
+                    qDebug() << raw->readAll();
+        #endif
+                    qDebug() << "new client proxy thread!";
+                    QThread* proxyThread = new QThread();
+
+                    // compute the proxyClient's unique hash
+                    // = md5(hash + srcPort + srcIp)
+
+                    prox = new ProxyClient(clientHash, hash, srcIp, sockType, *srcPort, this);
+                    prox->moveToThread(proxyThread);
+                    connect(proxyThread, SIGNAL(started()), prox, SLOT(run()));
+                    connect(proxyThread, SIGNAL(finished()), proxyThread, SLOT(deleteLater()));
+                    // TODO delete proxy client also on finished() ?
+                    proxyThread->start();
+
+                    free(srcPort);
+                }
             }
+            prox->sendBytes(packetBuf, length, srcIp);
+            // we read the packet, remove from len
+            len -= length;
+            bufferPosition += length;
         }
-        prox->sendBytes(packetBuf, length, srcIp);
     }
+
 
     // get client proxy and send data through it
     // TODO

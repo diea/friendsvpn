@@ -138,7 +138,7 @@ void DataPlaneClient::run() {
                  //printf("%s \n", buf);
                  // TODO call dataplaneconnection
                  //con->readBuffer(buf);
-                 emit bufferReady(buf);
+                 emit bufferReady(buf, len);
                  reading = 0;
                  break;
                 case SSL_ERROR_WANT_READ:

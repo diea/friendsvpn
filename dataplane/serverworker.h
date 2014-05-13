@@ -20,7 +20,7 @@ public:
     void disconnect();
     void sendBytes(const char* buf, int len);
 signals:
-    void bufferReady(const char* buf);
+    void bufferReady(const char* buf, int len);
 public slots:
     void connection_handle();
 };

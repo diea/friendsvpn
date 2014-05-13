@@ -60,7 +60,7 @@ void ConnectionInitiator::startClients() {
         //DataPlaneClient* dc = new DataPlaneClient(QHostAddress("::1"));
         connect(dcThread, SIGNAL(started()), dc, SLOT(run()));
         connect(dcThread, SIGNAL(finished()), dcThread, SLOT(deleteLater()));
-        connect(dc, SIGNAL(bufferReady(const char*)), con, SLOT(readBuffer(const char*)));
+        connect(dc, SIGNAL(bufferReady(const char*, int)), con, SLOT(readBuffer(const char*, int)));
 
         dc->moveToThread(dcThread);
         dcThread->start();

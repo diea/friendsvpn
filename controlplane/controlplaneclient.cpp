@@ -88,7 +88,8 @@ void ControlPlaneClient::sslClientReadyRead() {
     } else { // socket is associated with controlplaneconnection
         qDebug() << "Client received data";
         //qDebug() << sslClient->readAll();
-        sslClient->getControlPlaneConnection()->readBuffer(sslClient->readAll().data());
+        QByteArray bytesBuf = sslClient->readAll();
+        sslClient->getControlPlaneConnection()->readBuffer(bytesBuf.data(), bytesBuf.length());
     }
 }
 

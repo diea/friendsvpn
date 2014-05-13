@@ -199,7 +199,7 @@ void DataPlaneServer::start() {
         worker->moveToThread(workerThread);
         connect(workerThread, SIGNAL(started()), worker, SLOT(connection_handle()));
         connect(workerThread, SIGNAL(finished()), worker, SLOT(deleteLater()));
-        connect(worker, SIGNAL(bufferReady(const char*)), dpc, SLOT(readBuffer(const char*)));
+        connect(worker, SIGNAL(bufferReady(const char*, int)), dpc, SLOT(readBuffer(const char*, int)));
         workerThread->start();
 
         dpc->addMode(Receiving, worker);

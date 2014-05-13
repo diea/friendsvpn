@@ -27,7 +27,7 @@ public:
 signals:
 
 public slots:
-    void readBuffer(const char* buf);
+    void readBuffer(const char* buf, int len);
 
 };
 

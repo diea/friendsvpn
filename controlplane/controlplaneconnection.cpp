@@ -50,7 +50,7 @@ bool ControlPlaneConnection::addMode(plane_mode mode, QObject *socket) {
     return true;
 }
 
-void ControlPlaneConnection::readBuffer(const char* buf) {
+void ControlPlaneConnection::readBuffer(const char* buf, int) {
     qDebug() << "Reading buffer";
     qDebug() << buf;
     QString packet(buf);
