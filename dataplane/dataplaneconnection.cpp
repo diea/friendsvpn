@@ -65,45 +65,40 @@ bool DataPlaneConnection::addMode(plane_mode mode, QObject* socket) {
 
 void DataPlaneConnection::readBuffer(const char* buf, int len) {
     int bufferPosition = 0; // to know where to start reading in the buffer (useful when there are multiple packets)
-    int nbLoops = 4;
     while (len > 0) {
-        nbLoops--;
-        QString packet(buf + bufferPosition); // XXX safe ?
-        qDebug() << packet;
-        QStringList list = packet.split("\r\n");
-        QString header;
+        char headLen[20];
+        int j = 0;
+        while (buf[j] != 'D') { // get header length
+            headLen[j] = buf[j];
+            len--;
+        }
+        int headerLength = atoi(headLen);
+        len -= headerLength;
+        const char* packetBuf = buf + headerLength; // packet
+
+        QString header = QString::fromLatin1(buf + bufferPosition, headerLength);
+        qDebug() << header;
+        QStringList list = header.split("\r\n", QString::SkipEmptyParts);
         if (list.at(0) == "DATA") {
             QString hash;
             QString srcIp;
             int sockType;
             int length;
-            const char* packetBuf; // packet
-            header = header % "DATA\r\n";
             for (int i = 1; i < list.length() - 1 ; i++) {
-                header = header % list.at(i) % "\r\n";
-                if (list.at(i).isEmpty()) {
-                    if (!list.at(i + 1).isEmpty()) {
-                        QByteArray headerBytes = header.toUtf8();
-                        packetBuf = buf + headerBytes.length();
-                        len -= headerBytes.length(); // we read the header remove it from len
-                        bufferPosition += headerBytes.length();
+                QStringList keyValuePair = list.at(i).split("=");
+                QString key = keyValuePair.at(0);
+                if (key == "Hash") {
+                    hash = keyValuePair.at(1);
+                } else if (key == "Length") {
+                    length = keyValuePair.at(1).toInt();
+                } else if (key == "Trans") {
+                    if (keyValuePair.at(1) == "tcp") {
+                        sockType = SOCK_STREAM;
+                    } else {
+                        sockType = SOCK_DGRAM;
                     }
-                } else {
-                    QStringList keyValuePair = list.at(i).split("=");
-                    QString key = keyValuePair.at(0);
-                    if (key == "Hash") {
-                        hash = keyValuePair.at(1);
-                    } else if (key == "Length") {
-                        length = keyValuePair.at(1).toInt();
-                    } else if (key == "Trans") {
-                        if (keyValuePair.at(1) == "tcp") {
-                            sockType = SOCK_STREAM;
-                        } else {
-                            sockType = SOCK_DGRAM;
-                        }
-                    } else if (key == "SrcIP") {
-                        srcIp = keyValuePair.at(1);
-                    }
+                } else if (key == "SrcIP") {
+                    srcIp = keyValuePair.at(1);
                 }
             }
 
@@ -156,17 +151,7 @@ void DataPlaneConnection::readBuffer(const char* buf, int len) {
                     raw->waitForReadyRead(2000);
                     qDebug() << raw->readAll();
         #endif
-                    qDebug() << "new client proxy thread!";
-                    //QThread* proxyThread = new QThread();
-                    // compute the proxyClient's unique hash
-                    // = md5(hash + srcPort + srcIp)
-
                     prox = new ProxyClient(clientHash, hash, srcIp, sockType, *srcPort, this);
-                    //prox->moveToThread(proxyThread);
-                    //connect(proxyThread, SIGNAL(started()), prox, SLOT(run()));
-                    //connect(proxyThread, SIGNAL(finished()), proxyThread, SLOT(deleteLater()));
-                    // TODO delete proxy client also on finished() ?
-                    //proxyThread->start();
                     prox->run();
 
                     free(srcPort);
@@ -204,7 +189,11 @@ void DataPlaneConnection::sendBytes(const char *buf, int len, QString& hash, int
             % "Length=" % QString::number(len) % "\r\n"
             % "SrcIP=" % srcIp % "\r\n"
             % "\r\n";
+
     QByteArray headerBytes = header.toUtf8();
+    header = QString::number(headerBytes.length()) % header; // prepend header length (without the length's length) to the header
+
+    headerBytes = header.toUtf8();
     int headerLen = headerBytes.length();
 
     int packetLen = len + headerLen;
