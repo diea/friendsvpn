@@ -194,6 +194,7 @@ void DataPlaneConnection::readBuffer(const char* buf, int len) {
             prox->sendBytes(packetBuf, length, srcIp);
             // we read the packet, remove from len
             len -= length;
+            qDebug() << "We had LEN" << len << "and length" << length;
             bufferPosition += length;
         } else {
             qDebug() << "PACKET DID NOT START WITH PROXY";
