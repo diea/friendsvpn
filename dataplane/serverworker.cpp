@@ -59,15 +59,15 @@ void ServerWorker::connection_handle() {
     printf("\n\n Cipher: %s", SSL_CIPHER_get_name(SSL_get_current_cipher(ssl)));
     printf ("\n------------------------------------------------------------\n\n");
 
-    while (!(SSL_get_shutdown(ssl) & SSL_RECEIVED_SHUTDOWN) && num_timeouts < max_timeouts) {
+    while (!(SSL_get_shutdown(ssl) & SSL_RECEIVED_SHUTDOWN)) { // && num_timeouts < max_timeouts) {
         reading = 1;
         while (reading) {
             len = SSL_read(ssl, buf, sizeof(buf));
-
+            qDebug() << "server worker reading!";
             switch (SSL_get_error(ssl, len)) {
                 case SSL_ERROR_NONE:
-                 //printf("read %d bytes\n", (int) len);
-                 //printf("%s \n", buf);
+                qDebug() << "sever worker read" << len << "bytes";
+                qDebug() << buf;
                  // TODO call dataplaneconnection
                  con->readBuffer(buf);
                  reading = 0;

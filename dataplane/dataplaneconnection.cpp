@@ -104,9 +104,12 @@ void DataPlaneConnection::readBuffer(const char* buf) {
         }
 
         // get server Proxy and send through it!
+        qDebug() << "Try and get proxy on hash";
+        qDebug() << hash;
         Proxy* prox = Proxy::getProxy(hash); // try and get server (hash)
 
         if (!prox) {
+            qDebug() << "No proxy was found!";
             // compute client proxy
             // read tcp or udp header to get src port
             QFile tcpPacket("packetBuf");
