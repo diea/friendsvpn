@@ -77,6 +77,7 @@ void DataPlaneConnection::readBuffer(const char* buf, int len) {
 
         /* /!\ buffer can be multiple packets */
         QStringList list = packet.split("\r\n");
+        qDebug() << "packet list " << list;
         QString header;
         if (list.at(0) == "DATA") {
             QString hash;
