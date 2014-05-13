@@ -119,7 +119,7 @@ void DataPlaneConnection::readBuffer(const char* buf, int len) {
             Proxy* prox = Proxy::getProxy(hash); // try and get server (hash)
 
             if (!prox) {
-                qDebug() << "No proxy was found!";
+                qDebug() << "No server proxy was found!";
                 // compute client proxy
                 // read tcp or udp header to get src port
                 QFile tcpPacket("packetBuf");
@@ -186,13 +186,23 @@ void DataPlaneConnection::readBuffer(const char* buf, int len) {
                     proxyThread->start();
 
                     free(srcPort);
+                } else {
+                    qDebug() << "Found the client proxy ! :)";
                 }
             }
             prox->sendBytes(packetBuf, length, srcIp);
             // we read the packet, remove from len
             len -= length;
             bufferPosition += length;
+        } else {
+            qDebug() << "PACKET DID NOT START WITH PROXY";
+            len--;
         }
+    }
+
+    if (nbLoops < 1) {
+        qDebug() << "nbLoops is " << nbLoops;
+        exit(0);
     }
     // get client proxy and send data through it
     // TODO
