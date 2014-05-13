@@ -68,7 +68,7 @@ void DataPlaneConnection::readBuffer(const char* buf, int len) {
     qDebug() << "DataPlane buffer length" << len << "and buffer" << buf;
 
     QFile viewWhatsup("viewWhatsup" + QString::number(len));
-    viewWhatsup.open(QIODevice::Append);
+    viewWhatsup.open(QIODevice::WriteOnly);
 
     int bufferPosition = 0; // to know where to start reading in the buffer (useful when there are multiple packets)
     int nbLoops = 4;
@@ -191,6 +191,10 @@ void DataPlaneConnection::readBuffer(const char* buf, int len) {
             qDebug() << "We had LEN" << len << "and length" << length;
             bufferPosition += length;
         } else {
+            QFile wrongPacket("viewWrongPacket");
+            wrongPacket.open(QIODevice::WriteOnly);
+            viewWhatsup.write(buf + bufferPosition, len);
+            viewWhatsup.write("\n PACKET DID NOT START WITH PROXY \n");
             qDebug() << "PACKET DID NOT START WITH PROXY";
             len--;
         }
