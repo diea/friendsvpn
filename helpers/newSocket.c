@@ -50,7 +50,7 @@ int main(int argc, char** argv) {
         exit(0);
     }
     //int portno = atoi(argv[3]); // TODO should be htons ? and maybe not needed but put it in getaddrinfo!
-    ((struct sockaddr_in6*) res->ai_addr)->sin6_port = htons(portno);
+    //((struct sockaddr_in6*) res->ai_addr)->sin6_port = htons(portno);
 
     if (bind(fd, res->ai_addr, sizeof(struct sockaddr_in6)) < 0) {
         fprintf(stderr, "error on bind %d\n", errno);
@@ -62,7 +62,10 @@ int main(int argc, char** argv) {
 #ifndef __APPLE__ /* linux */
     /* on linux the "bind" trick does not work due to bind's implementation needing a "listen"
      * to accept connections, we will thus prevent the kernel from sending its RST using an ip6tables
-     * rule */
+     * rule
+     * we still bind on linux to avoid the ICMPv6 address unreachable message if we begin sending packets using this new
+     * IPv6 too quickly
+     */
     struct sigaction sa;
     sa.sa_handler = &sig_handler;
     sa.sa_flags = SA_RESTART;
