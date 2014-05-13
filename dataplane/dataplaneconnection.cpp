@@ -187,8 +187,10 @@ void DataPlaneConnection::sendBytes(const char *buf, int len, QString& hash, int
         qWarning() << "Trying to sendBytes on Closed state for uid" << friendUid;
     }
 
-    qDebug() << (char*) (buf + 21);
-    printf("using printf %s \n", buf + 21);
+    //qDebug() << (char*) (buf + 21);
+    //printf("using printf %s \n", buf + 21);
+
+    qDebug() << "Dataplane send Bytes !";
 
     // make the DATA header
     QString header;
@@ -208,8 +210,8 @@ void DataPlaneConnection::sendBytes(const char *buf, int len, QString& hash, int
     strncpy(dataPacket, headerC, headerLen);
     memcpy(dataPacket + headerLen, buf, len);
 
-    qDebug() << (char*) (dataPacket + 21);
-    printf("using printf %s \n", dataPacket + 21);
+    //qDebug() << (char*) (dataPacket + 21);
+    //printf("using printf %s \n", dataPacket + 21);
 
     qDebug() << "datapacket!" << dataPacket;
     fflush(stdout);
