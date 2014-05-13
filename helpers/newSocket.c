@@ -13,7 +13,7 @@
 
 char* ip6tablesRule = NULL;
 
-void sig_handler(int) {
+void sig_handler(int signal) {
     /* used on linux to delete the ip6tables rule */
     if (!ip6tablesRule) return;
 
