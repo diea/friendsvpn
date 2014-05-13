@@ -71,6 +71,7 @@ void DataPlaneConnection::readBuffer(const char* buf, int len) {
         while (buf[j] != 'D') { // get header length
             headLen[j] = buf[j];
             len--;
+            j++;
         }
         int headerLength = atoi(headLen);
         len -= headerLength;
