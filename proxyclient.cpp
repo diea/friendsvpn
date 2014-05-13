@@ -2,12 +2,13 @@
 #include "unixsignalhandler.h"
 #include "bonjour/bonjourdiscoverer.h"
 
-ProxyClient::ProxyClient(QString md5, QString servermd5, int sockType, int srcPort, DataPlaneConnection* con) :
+ProxyClient::ProxyClient(QString md5, QString servermd5,  QString serversrcIp, int sockType, int srcPort, DataPlaneConnection* con) :
     Proxy(srcPort, sockType, md5)
 {
     this->con = con;
     qDebug() << "md5" << servermd5;
-    servermd5 = servermd5;
+    this->servermd5 = servermd5;
+    this->serversrcIp = serversrcIp;
     qDebug() << BonjourDiscoverer::recordHashes;
     serverRecord = BonjourDiscoverer::recordHashes.value(servermd5);
     if (!serverRecord) {
@@ -51,5 +52,5 @@ void ProxyClient::sendBytes(const char *buf, int len, QString) {
 }
 
 void ProxyClient::receiveBytes(const char* buf, int len, int sockType, QString& srcIp) {
-    con->sendBytes(buf, len, servermd5, sockType, srcIp);
+    con->sendBytes(buf, len, servermd5, sockType, serversrcIp);
 }
