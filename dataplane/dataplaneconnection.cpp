@@ -64,7 +64,6 @@ bool DataPlaneConnection::addMode(plane_mode mode, QObject* socket) {
 }
 
 void DataPlaneConnection::readBuffer(const char* buf, int len) {
-    qDebug() << "read buffer";
     int bufferPosition = 0; // to know where to start reading in the buffer (useful when there are multiple packets)
     while (len > 0) {
         char headLen[20];
@@ -76,13 +75,11 @@ void DataPlaneConnection::readBuffer(const char* buf, int len) {
             j++;
         }
         int headerLength = atoi(headLen);
-        //qDebug() << "headerLength is" << headerLength;
         len -= headerLength;
 
         const char* packetBuf = buf + bufferPosition + headerLength; // packet
         QString header = QString::fromLatin1(buf + bufferPosition, headerLength);
 
-        //qDebug() << header;
         QStringList list = header.split("\r\n", QString::SkipEmptyParts);
         if (list.at(0) == "DATA") {
             QString hash;
@@ -104,7 +101,6 @@ void DataPlaneConnection::readBuffer(const char* buf, int len) {
                     }
                 } else if (key == "SrcIP") {
                     srcIp = keyValuePair.at(1);
-                    qDebug() << "got SrcIp" << srcIp;
                 }
             }
 
@@ -120,7 +116,6 @@ void DataPlaneConnection::readBuffer(const char* buf, int len) {
 
                 // get index of ]
                 int accIndex = 0;
-                qDebug() << packetBuf;
                 while ((packetBuf[++accIndex] != ']') && (accIndex < length)) { }
 
                 if (accIndex == length) {

@@ -363,6 +363,7 @@ void Proxy::sendRawStandardOutput() {
 
 void Proxy::readyRead() {
     QProcess* pcap = dynamic_cast<QProcess*> (QObject::sender());
+    qDebug() << "READY READ!\n";
 start: // used to process packets when bytes are available but no signal will be called
     char lenBuffer[20];
     if (left == 0) {
@@ -489,10 +490,6 @@ start: // used to process packets when bytes are available but no signal will be
     QString qsrcIp(srcIp);
 
     this->receiveBytes(packetAndLen, left + sizeOfLen, sockType, qsrcIp);
-    //con->sendBytes(packetAndLen, left + sizeOfLen, idHash, sockType, qsrcIp);
-
-    // send over raw! (test)
-    //this->sendBytes(packetAndLen, left + sizeOfLen, "::1");
 
     left = 0;
     if (pcap->bytesAvailable() > 0) {
