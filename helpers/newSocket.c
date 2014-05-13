@@ -34,7 +34,6 @@ int main(int argc, char** argv) {
 
     if (argc != 5) return 1;
 
-#ifdef __APPLE__
     // create socket and bind for the kernel
     int fd = socket(AF_INET6, atoi(argv[1]), atoi(argv[2]));
     if (fd < 0) {
@@ -45,12 +44,12 @@ int main(int argc, char** argv) {
     memset(&hints, 0, sizeof(struct addrinfo));
     hints.ai_family = AF_INET6;
     hints.ai_socktype = atoi(argv[1]);
-    int server = getaddrinfo(argv[4], NULL, &hints, &res);
+    int server = getaddrinfo(argv[4], atoi(argv[3]), &hints, &res);
     if (server) {
         fprintf(stderr,"ERROR, no such host\n");
         exit(0);
     }
-    int portno = atoi(argv[3]); // TODO should be htons ? and maybe not needed but put it in getaddrinfo!
+    //int portno = atoi(argv[3]); // TODO should be htons ? and maybe not needed but put it in getaddrinfo!
     ((struct sockaddr_in6*) res->ai_addr)->sin6_port = htons(portno);
 
     if (bind(fd, res->ai_addr, sizeof(struct sockaddr_in6)) < 0) {
@@ -60,7 +59,7 @@ int main(int argc, char** argv) {
         }
         return 3;
     }
-#elif __GNUC__ /* linux */
+#ifndef __APPLE__ /* linux */
     /* on linux the "bind" trick does not work due to bind's implementation needing a "listen"
      * to accept connections, we will thus prevent the kernel from sending its RST using an ip6tables
      * rule */
@@ -76,7 +75,6 @@ int main(int argc, char** argv) {
     ip6tablesRule = malloc(400 * sizeof(char));
     sprintf(ip6tablesRule, "ip6tables -A OUTPUT -s %s -p tcp --sport %s --tcp-flags RST RST -j DROP", argv[4], argv[3]);
     system(ip6tablesRule);
-
 #endif
     fprintf(stderr, "all is well!\n");
 
