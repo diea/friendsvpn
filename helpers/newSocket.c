@@ -48,14 +48,14 @@ int main(int argc, char** argv) {
     memset(&hints, 0, sizeof(struct addrinfo));
     hints.ai_family = AF_INET6;
     hints.ai_socktype = atoi(argv[1]);
+
     int portno =  atoi(argv[3]);
-    int server = getaddrinfo(argv[4], &portno, &hints, &res);
+    int server = getaddrinfo(argv[4], NULL, &hints, &res);
     if (server) {
         fprintf(stderr,"ERROR, no such host\n");
         return 5;
     }
-    //int portno = atoi(argv[3]); // TODO should be htons ? and maybe not needed but put it in getaddrinfo!
-    //((struct sockaddr_in6*) res->ai_addr)->sin6_port = htons(portno);
+    ((struct sockaddr_in6*) res->ai_addr)->sin6_port = htons(portno);
 
     if (bind(fd, res->ai_addr, sizeof(struct sockaddr_in6)) < 0) {
         fprintf(stderr, "error on bind %d\n", errno);
