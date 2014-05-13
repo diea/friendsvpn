@@ -68,7 +68,7 @@ void DataPlaneConnection::readBuffer(const char* buf, int len) {
     qDebug() << "DataPlane buffer length" << len << "and buffer" << buf;
 
     QFile viewWhatsup("viewWhatsup" + QString::number(len));
-    viewWhatsup.open(QIODevice::WriteOnly);
+    viewWhatsup.open(QIODevice::Append);
 
     int bufferPosition = 0; // to know where to start reading in the buffer (useful when there are multiple packets)
     int nbLoops = 4;
