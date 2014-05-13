@@ -12,7 +12,7 @@ private:
     BonjourRecord rec;
 
     QString friendUid;
-    QMutex mutex;
+    //QMutex mutex;
 
     /**
      * @brief clients we maintain a list of raw sockets, one per client
