@@ -76,13 +76,13 @@ void DataPlaneConnection::readBuffer(const char* buf, int len) {
             j++;
         }
         int headerLength = atoi(headLen);
-        qDebug() << "headerLength is" << headerLength;
+        //qDebug() << "headerLength is" << headerLength;
         len -= headerLength;
 
         const char* packetBuf = buf + bufferPosition + headerLength; // packet
         QString header = QString::fromLatin1(buf + bufferPosition, headerLength);
 
-        qDebug() << header;
+        //qDebug() << header;
         QStringList list = header.split("\r\n", QString::SkipEmptyParts);
         if (list.at(0) == "DATA") {
             QString hash;
@@ -104,6 +104,7 @@ void DataPlaneConnection::readBuffer(const char* buf, int len) {
                     }
                 } else if (key == "SrcIP") {
                     srcIp = keyValuePair.at(1);
+                    qDebug() << "got SrcIp" << srcIp;
                 }
             }
 
