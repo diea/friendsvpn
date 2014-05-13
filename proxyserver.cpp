@@ -56,13 +56,6 @@ void ProxyServer::sendBytes(const char *buf, int len, QString dstIp) {
     */
 }
 
-/*void ProxyServer::receiveBytes(char *buf, int len, int sizeLen, QString &hash, int sockType, QString &srcIp) {
-    // restore the original server's port
-    if (port != listenPort) {
-        char* packet = buf + sizeLen;
-        // first 16 bits = source Port of UDP and TCP
-        qint16* dstPort = static_cast<qint16*>(static_cast<void*>(packet + 2)); // second 16 bits dstPort (or + 2bytes)
-        *dstPort = ntohs(listenPort); // restore the original servers's port
-    }
-    con->sendBytes(buf, len, hash, sockType, srcIp);
-}*/
+void ProxyServer::receiveBytes(const char* buf, int len, int sockType, QString& srcIp) {
+    con->sendBytes(buf, len, idHash, sockType, srcIp);
+}

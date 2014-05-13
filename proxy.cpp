@@ -416,6 +416,7 @@ start: // used to process packets when bytes are available but no signal will be
         i++;
     }
     pcap->getChar(&c); // remove the '\n'
+    iface[i] = '\0';
     left -= 2; // the '\r\n'
     qDebug() << iface << "iface!";
 
@@ -482,7 +483,8 @@ start: // used to process packets when bytes are available but no signal will be
     qDebug() << "source MAC" << mac;
     QString qsrcIp(srcIp);
 
-    con->sendBytes(packetAndLen, left + sizeOfLen, idHash, sockType, qsrcIp);
+    this->receiveBytes(packetAndLen, left + sizeOfLen, sockType, qsrcIp);
+    //con->sendBytes(packetAndLen, left + sizeOfLen, idHash, sockType, qsrcIp);
 
     // send over raw! (test)
     //this->sendBytes(packetAndLen, left + sizeOfLen, "::1");

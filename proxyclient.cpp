@@ -7,6 +7,7 @@ ProxyClient::ProxyClient(QString md5, QString servermd5, int sockType, int srcPo
 {
     this->con = con;
     qDebug() << "md5" << servermd5;
+    servermd5 = servermd5;
     qDebug() << BonjourDiscoverer::recordHashes;
     serverRecord = BonjourDiscoverer::recordHashes.value(servermd5);
     if (!serverRecord) {
@@ -49,13 +50,6 @@ void ProxyClient::sendBytes(const char *buf, int len, QString) {
     mutex.unlock();
 }
 
-/*void ProxyClient::receiveBytes(char *buf, int len, int sizeLen, QString& hash, int sockType, QString& srcIp) {
-    if (port != listenPort) {
-        char* packet = buf + sizeLen;
-        // first 16 bits = source Port of UDP and TCP
-        qint16* dstPort = static_cast<qint16*>(static_cast<void*>(packet + 2)); // second 16 bits dstPort (or + 2 bytes)
-        *dstPort = ntohs(listenPort); // restore the original client's port
-    }
-
-    con->sendBytes(buf, len, hash, sockType, srcIp);
-}*/
+void ProxyClient::receiveBytes(const char* buf, int len, int sockType, QString& srcIp) {
+    con->sendBytes(buf, len, servermd5, sockType, srcIp);
+}

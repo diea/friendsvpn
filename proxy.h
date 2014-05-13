@@ -113,7 +113,7 @@ protected:
      * @param sockType
      * @param srcIp
      */
-    //virtual void receiveBytes(char *buf, int len, int sizeLen, QString& hash, int sockType, QString& srcIp) = 0;
+    virtual void receiveBytes(const char* buf, int len, int sockType, QString& srcIp) = 0;
 public:
     static QString getDefaultInterface();
 
