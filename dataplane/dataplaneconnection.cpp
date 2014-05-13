@@ -179,11 +179,12 @@ void DataPlaneConnection::readBuffer(const char* buf, int len) {
                     // = md5(hash + srcPort + srcIp)
 
                     prox = new ProxyClient(clientHash, hash, srcIp, sockType, *srcPort, this);
-                    prox->moveToThread(proxyThread);
-                    connect(proxyThread, SIGNAL(started()), prox, SLOT(run()));
-                    connect(proxyThread, SIGNAL(finished()), proxyThread, SLOT(deleteLater()));
+                    //prox->moveToThread(proxyThread);
+                    //connect(proxyThread, SIGNAL(started()), prox, SLOT(run()));
+                    //connect(proxyThread, SIGNAL(finished()), proxyThread, SLOT(deleteLater()));
                     // TODO delete proxy client also on finished() ?
-                    proxyThread->start();
+                    //proxyThread->start();
+                    prox->run();
 
                     free(srcPort);
                 } else {
