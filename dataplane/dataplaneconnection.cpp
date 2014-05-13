@@ -69,6 +69,7 @@ void DataPlaneConnection::readBuffer(const char* buf, int len) {
     while (len > 0) {
         nbLoops--;
         QString packet(buf + bufferPosition); // XXX safe ?
+        qDebug() << packet;
         QStringList list = packet.split("\r\n");
         QString header;
         if (list.at(0) == "DATA") {
@@ -118,6 +119,7 @@ void DataPlaneConnection::readBuffer(const char* buf, int len) {
 
                 // get index of ]
                 int accIndex = 0;
+                qDebug() << packetBuf;
                 while ((packetBuf[++accIndex] != ']') && (accIndex < length)) { }
 
                 if (accIndex == length) {
