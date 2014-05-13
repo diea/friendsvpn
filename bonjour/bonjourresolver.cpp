@@ -219,7 +219,7 @@ void BonjourResolver::hostInfoReady(const QHostInfo &info) {
     // compute record hash
     QString allParams = qSql->getLocalUid() + record->serviceName +
             record->registeredType + record->hostname + QString::number(record->port);
-    QByteArray hash = QCryptographicHash::hash(allParams.toUtf8().data(), QCryptographicHash::Md5);
+    QByteArray hash = QCryptographicHash::hash(allParams.toUtf8().data(), QCryptographicHash::Md5).toHex();
     // add record to hashes list
     BonjourDiscoverer::recordHashes.insert(QString(hash), record);
     //BonjourDiscoverer::recordHashes.insert(QString(allParams), record);
