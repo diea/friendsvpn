@@ -68,7 +68,9 @@ void DataPlaneConnection::readBuffer(const char* buf, int len) {
     qDebug() << "DataPlane buffer length" << len << "and buffer" << buf;
 
     int bufferPosition = 0; // to know where to start reading in the buffer (useful when there are multiple packets)
-    while (len > 0) {
+    int nbLoops = 4;
+    while (len > 0 && nbLoops > 0) {
+        nbLoops--;
         QString packet(buf + bufferPosition);
         qDebug() << "We have LEN " << len << "remaining ";
         qDebug() << "packet is" << packet;
