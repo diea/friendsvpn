@@ -82,4 +82,5 @@ void ProxyServer::sendBytes(const char *buf, int len, QString dstIp) {
 
 void ProxyServer::receiveBytes(const char* buf, int len, int sockType, QString& srcIp) {
     con->sendBytes(buf, len, idHash, sockType, srcIp);
+    qDebug() << "LEN" << len;
 }

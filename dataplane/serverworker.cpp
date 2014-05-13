@@ -69,7 +69,8 @@ void ServerWorker::connection_handle() {
                 qDebug() << "sever worker read" << len << "bytes";
                 qDebug() << buf;
                  // TODO call dataplaneconnection
-                 con->readBuffer(buf);
+                 //con->readBuffer(buf);
+                 emit bufferReady(buf);
                  reading = 0;
                  break;
                 case SSL_ERROR_WANT_READ:

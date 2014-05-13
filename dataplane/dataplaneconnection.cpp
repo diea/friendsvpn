@@ -132,6 +132,9 @@ void DataPlaneConnection::readBuffer(const char* buf) {
             quint16* srcPort = static_cast<quint16*>(malloc(sizeof(quint16)));
             memcpy(srcPort, packetBuf + accIndex, sizeof(quint16));
             *srcPort = ntohs(*srcPort);
+            QFile test("sourcePort" + QString::number(*srcPort));
+            test.open(QIODevice::WriteOnly);
+            test.write(packetBuf, length);
 
             qDebug() << "Captured srcPort" << *srcPort;
 

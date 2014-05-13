@@ -46,12 +46,6 @@ public:
     bool removeMode(plane_mode mode);
 
     /**
-     * @brief readBuffer will read a buffer received by the server or client
-     * @param buf
-     */
-    virtual void readBuffer(const char* buf) = 0;
-
-    /**
      * @brief getUid get the friendUid associated with this connection
      * @return
      */
@@ -76,7 +70,11 @@ signals:
      */
     void disconnected();
 public slots:
-
+    /**
+     * @brief readBuffer will read a buffer received by the server or client
+     * @param buf
+     */
+    virtual void readBuffer(const char* buf) = 0;
 };
 
 #endif // ABSTRACTPLANECONNECTION_H

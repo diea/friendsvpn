@@ -23,12 +23,11 @@ public:
 
     bool addMode(plane_mode, QObject* socket);
 
-    void readBuffer(const char* buf);
-
     void sendBytes(const char* buf, int len, QString& hash, int sockType, QString& srcIp);
 signals:
 
 public slots:
+    void readBuffer(const char* buf);
 
 };
 

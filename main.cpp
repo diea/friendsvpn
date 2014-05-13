@@ -90,6 +90,17 @@ int main(int argc, char *argv[])
     QObject::connect(newProxyThread1, SIGNAL(finished()), newProxyThread1, SLOT(deleteLater()));
     newProxyThread1->start();*/
 
+    /*QFile test("tcpPackeFromPcap");
+    test.open(QIODevice::ReadOnly);
+    char* packetBuf = test.readAll().data();
+    int accIndex = 3;*/
+
+    /*quint16* srcPort = static_cast<quint16*>(malloc(sizeof(quint16)));
+    memcpy(srcPort, packetBuf + accIndex, sizeof(quint16));
+    *srcPort = ntohs(*srcPort);
+
+    qDebug() << *srcPort;*/
+
     return a.exec();
 }
 #endif
