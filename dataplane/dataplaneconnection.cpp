@@ -64,24 +64,12 @@ bool DataPlaneConnection::addMode(plane_mode mode, QObject* socket) {
 }
 
 void DataPlaneConnection::readBuffer(const char* buf, int len) {
-    //mutex.lock();
-    qDebug() << "DataPlane buffer length" << len << "and buffer" << buf;
-
-    QFile viewWhatsup("viewWhatsup" + QString::number(len));
-    viewWhatsup.open(QIODevice::WriteOnly);
-
     int bufferPosition = 0; // to know where to start reading in the buffer (useful when there are multiple packets)
     int nbLoops = 4;
     while (len > 0) {
-        viewWhatsup.write(buf + bufferPosition, len);
-        viewWhatsup.write("\n NEW LOOP \n");
         nbLoops--;
-        QString packet(buf + bufferPosition);
-        qDebug() << "We have LEN " << len << "remaining ";
-
-        /* /!\ buffer can be multiple packets */
+        QString packet = QString::fromLatin1(buf + bufferPosition, 200); // should never exceed 200 bytes of header
         QStringList list = packet.split("\r\n");
-        qDebug() << "packet list " << list;
         QString header;
         if (list.at(0) == "DATA") {
             QString hash;
@@ -167,8 +155,7 @@ void DataPlaneConnection::readBuffer(const char* buf, int len) {
                     qDebug() << raw->readAll();
         #endif
                     qDebug() << "new client proxy thread!";
-                    QThread* proxyThread = new QThread();
-
+                    //QThread* proxyThread = new QThread();
                     // compute the proxyClient's unique hash
                     // = md5(hash + srcPort + srcIp)
 
@@ -193,17 +180,15 @@ void DataPlaneConnection::readBuffer(const char* buf, int len) {
         } else {
             QFile wrongPacket("viewWrongPacket");
             wrongPacket.open(QIODevice::WriteOnly);
-            viewWhatsup.write(buf + bufferPosition, len);
-            viewWhatsup.write("\n PACKET DID NOT START WITH PROXY \n");
+            wrongPacket.write(buf + bufferPosition, len);
+            wrongPacket.write("\n PACKET DID NOT START WITH PROXY \n");
             qDebug() << "PACKET DID NOT START WITH PROXY";
             len--;
         }
     }
-    //mutex.unlock();
 }
 
 void DataPlaneConnection::sendBytes(const char *buf, int len, QString& hash, int sockType, QString& srcIp) {
-    //mutex.lock();
     if (curMode == Closed) {
         qWarning() << "Trying to sendBytes on Closed state for uid" << friendUid;
     }
@@ -243,5 +228,4 @@ void DataPlaneConnection::sendBytes(const char *buf, int len, QString& hash, int
     } else {
         qWarning() << "Should not happen, trying to send bytes in Both mode for uid" << friendUid;
     }
-    //mutex.unlock();
 }

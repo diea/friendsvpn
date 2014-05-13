@@ -109,8 +109,6 @@ void BonjourResolver::hostInfoReady(const QHostInfo &info) {
             QProcess arp;
 
             // TODO make a quick ping before checking arp table
-
-
             qDebug() << "checking arp table";
             arp.start("arp -an");
             arp.waitForReadyRead(200);
@@ -223,8 +221,8 @@ void BonjourResolver::hostInfoReady(const QHostInfo &info) {
             record->registeredType + record->hostname + QString::number(record->port);
     QByteArray hash = QCryptographicHash::hash(allParams.toUtf8().data(), QCryptographicHash::Md5);
     // add record to hashes list
-    //BonjourDiscoverer::recordHashes.insert(QString(hash), record);
-    BonjourDiscoverer::recordHashes.insert(QString(allParams), record);
+    BonjourDiscoverer::recordHashes.insert(QString(hash), record);
+    //BonjourDiscoverer::recordHashes.insert(QString(allParams), record);
 
     QString transProt;
     if (record->registeredType.indexOf("tcp") > -1) {
