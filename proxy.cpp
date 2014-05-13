@@ -46,7 +46,7 @@ Proxy::Proxy(int srcPort, const QString& regType, QString md5) : listenPort(srcP
 QProcess* Proxy::initRaw(QString ipDst, int srcPort) {
     qDebug() << "initRaw";
     // init raw socket to send packets
-    QProcess* sendRaw = new QProcess(this);
+    QProcess* sendRaw = new QProcess();
     QStringList sendRawArgs;
     IpResolver* resolv = IpResolver::getInstance();
     qDebug() << "get mapping for" << ipDst;

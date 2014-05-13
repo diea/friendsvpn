@@ -85,7 +85,7 @@ void DataPlaneConnection::readBuffer(const char* buf) {
                     packetBuf = buf + headerBytes.length();
                 }
             } else {
-                QStringList keyValuePair = list.at(i).split(":");
+                QStringList keyValuePair = list.at(i).split("=");
                 QString key = keyValuePair.at(0);
                 if (key == "Hash") {
                     hash = keyValuePair.at(1);
@@ -199,10 +199,10 @@ void DataPlaneConnection::sendBytes(const char *buf, int len, QString& hash, int
     QString header;
     QString trans = (sockType == SOCK_DGRAM) ? "udp" : "tcp";
     header = header  % "DATA\r\n"
-            % "Hash:" % hash % "\r\n"
-            % "Trans:" % trans % "\r\n"
-            % "Length:" % QString::number(len) % "\r\n"
-            % "SrcIP:" % srcIp % "\r\n"
+            % "Hash=" % hash % "\r\n"
+            % "Trans=" % trans % "\r\n"
+            % "Length=" % QString::number(len) % "\r\n"
+            % "SrcIP=" % srcIp % "\r\n"
             % "\r\n";
     QByteArray headerBytes = header.toUtf8();
     int headerLen = headerBytes.length();
