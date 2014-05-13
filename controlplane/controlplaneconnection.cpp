@@ -95,16 +95,17 @@ void ControlPlaneConnection::readBuffer(const char* buf) {
             }
 
             qDebug() << "Running new proxy!!";
-            QThread* newProxyThread = new QThread();
+            //QThread* newProxyThread = new QThread();
             ProxyServer* newProxy = NULL;
             try {
                 newProxy = new ProxyServer(friendUid, name, type, ".friendsvpn.", hostname, port);
-                connect(newProxyThread, SIGNAL(started()), newProxy, SLOT(run()));
-                connect(newProxyThread, SIGNAL(finished()), newProxyThread, SLOT(deleteLater()));
-                newProxyThread->start();
+                //connect(newProxyThread, SIGNAL(started()), newProxy, SLOT(run()));
+                //connect(newProxyThread, SIGNAL(finished()), newProxyThread, SLOT(deleteLater()));
+                //newProxyThread->start();
+                newProxy->run();
             } catch (int i) {
                 if (i == 1) {
-                    newProxyThread->deleteLater(); // proxy exists
+                    //newProxyThread->deleteLater(); // proxy exists
                 }
             }
         } else {
