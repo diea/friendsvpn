@@ -12,6 +12,7 @@ private:
     BonjourRecord rec;
 
     QString friendUid;
+    QMutex mutex;
 
     /**
      * @brief clients we maintain a list of raw sockets, one per client
@@ -29,6 +30,9 @@ public:
     void receiveBytes(const char* buf, int len, int sockType, QString& srcIp);
 
 signals:
+    void newRaw(QString dstIp, int dstPort);
+private slots:
+    void serverNewRaw(QString dstIp, int dstPort);
 public slots:
     void run();
     void sendBytes(const char *buf, int len, QString srcIp);

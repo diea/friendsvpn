@@ -88,13 +88,6 @@ int main(int argc,const char* argv[]) {
         i++;
     }
 
-    /*header.ether_dhost[0] = 0x33;
-    header.ether_dhost[1] = 0x33;
-    header.ether_dhost[2] = 0x00;
-    header.ether_dhost[3] = 0x00;
-    header.ether_dhost[4] = 0x00;
-    header.ether_dhost[5] = 0x01;*/
-
     printf("ether dhost set!\n");
 
 #ifdef __APPLE__

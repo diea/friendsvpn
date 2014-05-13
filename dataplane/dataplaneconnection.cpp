@@ -68,6 +68,8 @@ void DataPlaneConnection::readBuffer(const char* buf) {
     qDebug() << "DataPlane buffer" << buf;
     QString packet(buf);
 
+    /* /!\ buffer can be multiple packets */
+
     QStringList list = packet.split("\r\n");
     QString header;
     if (list.at(0) == "DATA") {
@@ -175,7 +177,6 @@ void DataPlaneConnection::readBuffer(const char* buf) {
                 free(srcPort);
             }
         }
-
         prox->sendBytes(packetBuf, length, srcIp);
     }
 
