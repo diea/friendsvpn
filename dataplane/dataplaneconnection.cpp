@@ -89,7 +89,7 @@ void DataPlaneConnection::readBuffer(const char* buf, int len) {
             QString srcIp;
             int sockType;
             int length;
-            for (int i = 1; i < list.length() - 1 ; i++) {
+            for (int i = 1; i < list.length(); i++) {
                 QStringList keyValuePair = list.at(i).split("=");
                 QString key = keyValuePair.at(0);
                 if (key == "Hash") {
