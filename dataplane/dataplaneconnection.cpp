@@ -69,17 +69,19 @@ void DataPlaneConnection::readBuffer(const char* buf, int len) {
     while (len > 0) {
         char headLen[20];
         int j = 0;
-        while (buf[j] != 'D') { // get header length
-            headLen[j] = buf[j];
+        while (buf[bufferPosition] != 'D') { // get header length
+            headLen[j] = buf[bufferPosition];
             len--;
+            bufferPosition++;
             j++;
         }
         int headerLength = atoi(headLen);
         qDebug() << "headerLength is" << headerLength;
         len -= headerLength;
-        const char* packetBuf = buf + headerLength; // packet
 
+        const char* packetBuf = buf + bufferPosition + headerLength; // packet
         QString header = QString::fromLatin1(buf + bufferPosition, headerLength);
+
         qDebug() << header;
         QStringList list = header.split("\r\n", QString::SkipEmptyParts);
         if (list.at(0) == "DATA") {
@@ -171,8 +173,8 @@ void DataPlaneConnection::readBuffer(const char* buf, int len) {
             QFile wrongPacket("viewWrongPacket");
             wrongPacket.open(QIODevice::WriteOnly);
             wrongPacket.write(buf + bufferPosition, len);
-            wrongPacket.write("\n PACKET DID NOT START WITH PROXY \n");
-            qDebug() << "PACKET DID NOT START WITH PROXY";
+            wrongPacket.write("\n PACKET DID NOT START WITH dATA \n");
+            qDebug() << "PACKET DID NOT START WITH dATA";
             len--;
         }
     }
