@@ -32,11 +32,15 @@ void sig_handler(int signal) {
 int main(int argc, char** argv) {
     setuid(0);
 
-    if (argc != 5) return 1;
+    if (argc != 5) {
+        printf("Wrong nb of args\n");
+        return 1;
+    }
 
     // create socket and bind for the kernel
     int fd = socket(AF_INET6, atoi(argv[1]), atoi(argv[2]));
     if (fd < 0) {
+        printf("Could not create socket\n");
         return 2;
     }
 
@@ -47,7 +51,7 @@ int main(int argc, char** argv) {
     int server = getaddrinfo(argv[4], atoi(argv[3]), &hints, &res);
     if (server) {
         fprintf(stderr,"ERROR, no such host\n");
-        exit(0);
+        return 5;
     }
     //int portno = atoi(argv[3]); // TODO should be htons ? and maybe not needed but put it in getaddrinfo!
     //((struct sockaddr_in6*) res->ai_addr)->sin6_port = htons(portno);
