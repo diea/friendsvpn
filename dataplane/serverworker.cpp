@@ -62,7 +62,6 @@ void ServerWorker::connection_handle() {
         reading = 1;
         while (reading) {
             len = SSL_read(ssl, buf, sizeof(buf));
-            qDebug() << "server worker reading!";
             switch (SSL_get_error(ssl, len)) {
                 case SSL_ERROR_NONE:
                 qDebug() << "sever worker read" << len << "bytes";
@@ -111,14 +110,10 @@ void ServerWorker::disconnect() {
 }
 
 void ServerWorker::sendBytes(const char* buf, int len) {
-    qDebug() << "Sending bytes in server worker!";
     if (len > 0) {
-        qDebug() << "SSL_write!";
         len = SSL_write(ssl, buf, len);
-        qDebug() << "SSL_write out!";
         switch (SSL_get_error(ssl, len)) {
          case SSL_ERROR_NONE:
-             printf("wrote %d bytes\n", (int) len);
              break;
          case SSL_ERROR_WANT_WRITE:
              /* Can't write because of a renegotiation, so
@@ -141,5 +136,4 @@ void ServerWorker::sendBytes(const char* buf, int len) {
              break;
         }
     }
-    qDebug() << "Got out !";
 }
