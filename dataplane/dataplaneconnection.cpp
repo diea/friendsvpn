@@ -64,6 +64,7 @@ bool DataPlaneConnection::addMode(plane_mode mode, QObject* socket) {
 }
 
 void DataPlaneConnection::readBuffer(const char* buf, int len) {
+    qDebug() << "read buffer";
     int bufferPosition = 0; // to know where to start reading in the buffer (useful when there are multiple packets)
     while (len > 0) {
         char headLen[20];
@@ -74,6 +75,7 @@ void DataPlaneConnection::readBuffer(const char* buf, int len) {
             j++;
         }
         int headerLength = atoi(headLen);
+        qDebug() << "headerLength is" << headerLength;
         len -= headerLength;
         const char* packetBuf = buf + headerLength; // packet
 
