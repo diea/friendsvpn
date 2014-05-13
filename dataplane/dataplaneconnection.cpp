@@ -69,7 +69,7 @@ void DataPlaneConnection::readBuffer(const char* buf, int len) {
 
     int bufferPosition = 0; // to know where to start reading in the buffer (useful when there are multiple packets)
     int nbLoops = 4;
-    while (len > 0 && nbLoops > 0) {
+    while (len > 0) {
         nbLoops--;
         QString packet(buf + bufferPosition);
         qDebug() << "We have LEN " << len << "remaining ";
@@ -201,10 +201,10 @@ void DataPlaneConnection::readBuffer(const char* buf, int len) {
         }
     }
 
-    if (nbLoops < 1) {
+    /*if (nbLoops < 1) {
         qDebug() << "nbLoops is " << nbLoops;
         exit(0);
-    }
+    }*/
     // get client proxy and send data through it
     // TODO
     mutex.unlock();

@@ -3,11 +3,13 @@
 #include "config.h"
 #include <QCryptographicHash>
 #include <string.h>
+#include <QtConcurrent>
 
 QHash<QString, Proxy*> Proxy::proxyHashes;
 IpResolver* Proxy::resolver = IpResolver::getInstance();
-
 QString Proxy::defaultIface = Proxy::getDefaultInterface();
+QStringList Proxy::poolOfIps;
+QMutex Proxy::poolOfIpsMutex;
 
 Proxy::Proxy(int srcPort, int sockType, QString md5)
     : listenPort(srcPort), sockType(sockType)
@@ -76,57 +78,79 @@ QProcess* Proxy::initRaw(QString ipDst, int srcPort) {
     return sendRaw;
 }
 
-QString Proxy::newIP() {
-    bool newIp = true; // the new IP has not been assigned to iface yet or is not a duplicate
-    QString newip;
-    do {
-        // random ULA
-        newip = randomIP();
-        // check it doesn't exist
-        QProcess testIfconfig;
 
-        testIfconfig.start("/sbin/ifconfig", QStringList(defaultIface));
-        testIfconfig.waitForReadyRead();
-        char buf[3000];
-        int length;
-        while ((length = testIfconfig.readLine(buf, 3000))) {
-            QString curLine(buf);
-            QStringList list = curLine.split(" ", QString::SkipEmptyParts);
-            foreach (QString value, list) {
-                if (value.contains(newip)) {
-                    newIp = false;
-                    qDebug() << "local duplicate!";
+QString Proxy::newIP() {
+    poolOfIpsMutex.lock();
+    QString newIp = poolOfIps.first();
+    int length = poolOfIps.length();
+    poolOfIpsMutex.unlock();
+    if (length < 4) {
+        QtConcurrent::run(gennewIP);
+    }
+    return newIp;
+}
+
+void Proxy::gennewIP() {
+    poolOfIpsMutex.lock();
+    int length = poolOfIps.length();
+    poolOfIpsMutex.unlock();
+
+    while (length < 4) {
+        bool newIp = true; // the new IP has not been assigned to iface yet or is not a duplicate
+        QString newip;
+        do {
+            // random ULA
+            newip = randomIP();
+            // check it doesn't exist
+            QProcess testIfconfig;
+
+            testIfconfig.start("/sbin/ifconfig", QStringList(defaultIface));
+            testIfconfig.waitForReadyRead();
+            char buf[3000];
+            int length;
+            while ((length = testIfconfig.readLine(buf, 3000))) {
+                QString curLine(buf);
+                QStringList list = curLine.split(" ", QString::SkipEmptyParts);
+                foreach (QString value, list) {
+                    if (value.contains(newip)) {
+                        newIp = false;
+                        qDebug() << "local duplicate!";
+                    }
                 }
             }
-        }
-        testIfconfig.close();
-    } while (!newIp);
+            testIfconfig.close();
+        } while (!newIp);
 
-    //qDebug() << "add with ifconfig!";
-    // add it with ifconfig
-    QProcess ifconfig;
-    // TODO include in the app bundle to launch from there
-    // TODO check DAD
-    QStringList newipArgs;
-    newipArgs.append(defaultIface);
-    newipArgs.append(newip);
-    ifconfig.start(QString(HELPERPATH) + "ifconfighelp", newipArgs);
-    ifconfig.waitForReadyRead();
-    qDebug() << ifconfig.readAllStandardOutput();
-    qDebug() << ifconfig.readAllStandardError();
-    ifconfig.close();
+        //qDebug() << "add with ifconfig!";
+        // add it with ifconfig
+        QProcess ifconfig;
+        // TODO include in the app bundle to launch from there
+        // TODO check DAD
+        QStringList newipArgs;
+        newipArgs.append(defaultIface);
+        newipArgs.append(newip);
+        ifconfig.start(QString(HELPERPATH) + "ifconfighelp", newipArgs);
+        ifconfig.waitForReadyRead();
+        qDebug() << ifconfig.readAllStandardOutput();
+        qDebug() << ifconfig.readAllStandardError();
+        ifconfig.close();
 
-    newip.truncate(newip.length() - 3); // remove prefix
+        newip.truncate(newip.length() - 3); // remove prefix
 
-    // add to local cache!
-    IpResolver* r = IpResolver::getInstance();
-    // XXX better way of determining local loopback interface ?
-#ifdef __APPLE__
-    r->addMapping(newip, "", "lo0");
-#elif __GNUC__
-    r->addMapping(newip, "", "lo");
-#endif
-    return newip;
+        // add to local cache!
+        IpResolver* r = IpResolver::getInstance();
+        // XXX better way of determining local loopback interface ?
+    #ifdef __APPLE__
+        r->addMapping(newip, "", "lo0");
+    #elif __GNUC__
+        r->addMapping(newip, "", "lo");
+    #endif
+
+        poolOfIpsMutex.lock();
+        poolOfIps.append(newip);
+        poolOfIpsMutex.unlock();
+        length++;
+    }
 }
 
 

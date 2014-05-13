@@ -16,6 +16,7 @@
 #include "ipresolver.h"
 //#include "testextend.h"
 #include <QDebug>
+#include <QtConcurrent>
 
 #if 0
 int main(int argc, char *argv[])
@@ -64,6 +65,8 @@ int main(int argc, char *argv[])
     qDebug() << map.interface;*/
 
     BonjourSQL* qSql = BonjourSQL::getInstance();
+
+    QtConcurrent::run(Proxy::gennewIP); // generate the initial new ips
 
     // discover services
     QThread discovererThread;

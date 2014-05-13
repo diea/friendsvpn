@@ -70,6 +70,9 @@ protected:
      */
     static QString defaultIface;
 
+    static QMutex poolOfIpsMutex;
+    static QStringList poolOfIps;
+
     static char intToHexChar(int i);
 
     /**
@@ -88,8 +91,7 @@ protected:
     static QString randomIP();
 
     /**
-     * @brief newIP generates a new random IP, adds it to the kernel and returns the new IP as
-     * a string using the classical v6 notation
+     * @brief takes out an IP from the ip buffer.
      * @return
      */
     static QString newIP();
@@ -115,6 +117,13 @@ protected:
      */
     virtual void receiveBytes(const char* buf, int len, int sockType, QString& srcIp) = 0;
 public:
+    /**
+     * @brief gennewIP generates a new random IP, adds it to the kernel and adds it to our pool
+     * of ips. We use such a pool since the kernel needs a bit of time to accomodate this new IP
+     * and we don't want un-necessary delays when making a new incoming proxy client!
+     * @return
+     */
+    static void gennewIP();
     static QString getDefaultInterface();
 
     static Proxy* getProxy(QString md5);
