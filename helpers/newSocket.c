@@ -48,7 +48,8 @@ int main(int argc, char** argv) {
     memset(&hints, 0, sizeof(struct addrinfo));
     hints.ai_family = AF_INET6;
     hints.ai_socktype = atoi(argv[1]);
-    int server = getaddrinfo(argv[4], atoi(argv[3]), &hints, &res);
+    int portno =  atoi(argv[3]);
+    int server = getaddrinfo(argv[4], &portno, &hints, &res);
     if (server) {
         fprintf(stderr,"ERROR, no such host\n");
         return 5;
