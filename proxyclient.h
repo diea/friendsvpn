@@ -23,7 +23,7 @@ public:
     ProxyClient(QString md5, QString servermd5, int sockType, int srcPort, DataPlaneConnection* con);
 
     //ProxyClient* getProxyClient(QString md5, int sockType, int srcPort, DataPlaneConnection* con);
-    //void sendBytes(const char* buf, int len);
+    void receiveBytes(const char* buf, int len, int sockType, QString& srcIp);
 
 signals:
 
