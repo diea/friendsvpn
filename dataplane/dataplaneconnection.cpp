@@ -68,7 +68,7 @@ void DataPlaneConnection::readBuffer(const char* buf, int len) {
     int nbLoops = 4;
     while (len > 0) {
         nbLoops--;
-        QString packet = QString::fromLatin1(buf + bufferPosition, 200); // should never exceed 200 bytes of header
+        QString packet(buf + bufferPosition); // XXX safe ?
         QStringList list = packet.split("\r\n");
         QString header;
         if (list.at(0) == "DATA") {
