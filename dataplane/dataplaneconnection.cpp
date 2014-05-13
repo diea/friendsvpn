@@ -73,7 +73,7 @@ void DataPlaneConnection::readBuffer(const char* buf, int len) {
     int bufferPosition = 0; // to know where to start reading in the buffer (useful when there are multiple packets)
     int nbLoops = 4;
     while (len > 0) {
-        viewWhatsup.write(bufferPosition, len);
+        viewWhatsup.write(buf + bufferPosition, len);
         viewWhatsup.write("\n NEW LOOP \n");
         nbLoops--;
         QString packet(buf + bufferPosition);
