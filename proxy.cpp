@@ -46,12 +46,11 @@ Proxy::Proxy(int srcPort, const QString& regType, QString md5) : listenPort(srcP
 }
 
 QProcess* Proxy::initRaw(QString ipDst, int srcPort) {
-    qDebug() << "initRaw";
     // init raw socket to send packets
     QProcess* sendRaw = new QProcess(this);
     QStringList sendRawArgs;
     IpResolver* resolv = IpResolver::getInstance();
-    qDebug() << "get mapping for" << ipDst;
+
     struct ip_mac_mapping map = resolv->getMapping(ipDst);
     sendRawArgs.append(map.interface);
     sendRawArgs.append(listenIp);
@@ -59,8 +58,6 @@ QProcess* Proxy::initRaw(QString ipDst, int srcPort) {
     sendRawArgs.append(QString::number(sockType));
     sendRawArgs.append(QString::number(srcPort));
     //sendRawArgs.append(QString::number(dstPort));
-
-    qDebug() << "sendRawArgs" << sendRawArgs;
 
     if (!map.mac.isEmpty()) {
         sendRawArgs.append(map.mac);
@@ -74,7 +71,6 @@ QProcess* Proxy::initRaw(QString ipDst, int srcPort) {
     u->addQProcess(sendRaw);*/ // TODO
 
     sendRaw->start(QString(HELPERPATH) + "sendRaw", sendRawArgs);
-    qDebug() << "start raw!";
     return sendRaw;
 }
 
@@ -121,7 +117,6 @@ void Proxy::gennewIP() {
             testIfconfig.close();
         } while (!newIp);
 
-        //qDebug() << "add with ifconfig!";
         // add it with ifconfig
         QProcess ifconfig;
         // TODO include in the app bundle to launch from there
@@ -131,16 +126,14 @@ void Proxy::gennewIP() {
         newipArgs.append(newip);
         ifconfig.start(QString(HELPERPATH) + "ifconfighelp", newipArgs);
         ifconfig.waitForReadyRead();
-        qDebug() << ifconfig.readAllStandardOutput();
-        qDebug() << ifconfig.readAllStandardError();
         ifconfig.close();
 
         newip.truncate(newip.length() - 3); // remove prefix
 
         // add to local cache!
         IpResolver* r = IpResolver::getInstance();
-        // XXX better way of determining local loopback interface ?
-    #ifdef __APPLE__
+
+    #ifdef __APPLE__ // XXX better way of determining local loopback interface ?
         r->addMapping(newip, "", "lo0");
     #elif __GNUC__
         r->addMapping(newip, "", "lo");
@@ -168,7 +161,6 @@ QString Proxy::getDefaultInterface() {
             QStringList list = curLine.split(" ", QString::SkipEmptyParts);
             if (list.at(1).contains(":")) {
                 netstat.close();
-                qDebug() << list.at(3);
                 return list.at(3);
             }
         }
@@ -189,7 +181,6 @@ QString Proxy::getDefaultInterface() {
             QStringList list = curLine.split(" ", QString::SkipEmptyParts);
             if (list.at(2) != "::") {
                 route.close();
-                qDebug() << list.at(6);
                 return list.at(6);
             }
         }
@@ -300,7 +291,6 @@ QString Proxy::stripIp(QString ip, int prefix) {
 QString Proxy::randomIP() {
     // get prefix
     struct prefix p = getPrefix();
-    qDebug() << "prefix " <<  p.str;
 
     // generate random IP
     static bool first = true;
@@ -339,7 +329,6 @@ QString Proxy::randomIP() {
 
     toRet = toRet % "/" + QString::number(p.len);
 
-    qDebug() << "new random Ip" << toRet;
     return toRet;
 }
 
@@ -375,7 +364,6 @@ void Proxy::sendRawStandardOutput() {
 void Proxy::readyRead() {
     QProcess* pcap = dynamic_cast<QProcess*> (QObject::sender());
 start: // used to process packets when bytes are available but no signal will be called
-    qDebug() << "Got in readyread";
     char lenBuffer[20];
     if (left == 0) {
         int nbBufferedChars = 0;
@@ -414,17 +402,14 @@ start: // used to process packets when bytes are available but no signal will be
         }
         lenBuffer[nbBufferedChars] = ']';
         lenBuffer[nbBufferedChars + 1] = '\0';
-        qDebug() << "lenbuffer" << lenBuffer;
         char size[20];
         bzero(size, sizeof(size));
         for (int k = 1; k < nbBufferedChars; k++) {
             size[k - 1] = lenBuffer[k];
         }
-        qDebug() << size;
         left = atoi(size);
     }
 
-    qDebug() <<  pcap->bytesAvailable();
     if (pcap->bytesAvailable() < left) {
         qDebug() << "waiting for more bytes";
         return; // wait for more bytes
@@ -442,7 +427,6 @@ start: // used to process packets when bytes are available but no signal will be
     pcap->getChar(&c); // remove the '\n'
     iface[i] = '\0';
     left -= 2; // the '\r\n'
-    qDebug() << iface << "iface!";
 
     char srcIp[40];
     char mac[18];
@@ -470,7 +454,6 @@ start: // used to process packets when bytes are available but no signal will be
         left -= 2; // the '\r\n'
         mac[i] = '\0';
 
-        qDebug() << "Resolver adds mapping " << mac << srcIp;
         // add to IpResolver
         resolver->addMapping(srcIp, mac, pcap->arguments().at(0));
     }
@@ -482,7 +465,7 @@ start: // used to process packets when bytes are available but no signal will be
         // first 16 bits = source Port of UDP and TCP
         quint16* dstPort = static_cast<quint16*>(static_cast<void*>(packet + 2)); // second 16 bits dstPort (or + 2 bytes)
         *dstPort = htons(listenPort); // restore the original port
-        qDebug() << "dst Port!" << ntohs(*dstPort);
+        //qDebug() << "dst Port!" << ntohs(*dstPort);
     }
 
     char packetAndLen[2020];
@@ -495,7 +478,7 @@ start: // used to process packets when bytes are available but no signal will be
     memcpy(srcPort, packetAndLen + sizeOfLen, sizeof(quint16));
     *srcPort = ntohs(*srcPort);
 
-    qDebug() << "source Port!" << *srcPort;
+    //qDebug() << "source Port!" << *srcPort;
 
     // send over DTLS with friendUid
     QFile tcpPacket("tcpPackeFromPcap");
@@ -503,8 +486,6 @@ start: // used to process packets when bytes are available but no signal will be
     tcpPacket.write(packetAndLen, left + sizeOfLen);
     tcpPacket.close();
 
-    qDebug() << "source IP" << srcIp;
-    qDebug() << "source MAC" << mac;
     QString qsrcIp(srcIp);
 
     this->receiveBytes(packetAndLen, left + sizeOfLen, sockType, qsrcIp);
@@ -515,7 +496,6 @@ start: // used to process packets when bytes are available but no signal will be
 
     left = 0;
     if (pcap->bytesAvailable() > 0) {
-        qDebug() << "There are" << pcap->bytesAvailable() << "bytes left";
         goto start;
     }
 }
@@ -539,8 +519,8 @@ void Proxy::run_pcap() {
         bindSocketArgs.append(QString::number(ipProto));
         bindSocketArgs.append(QString::number(port));
         bindSocketArgs.append(listenIp);
-        qDebug() << "bind socket args" << bindSocketArgs;
         bindSocket->start(QString(HELPERPATH) + "newSocket", bindSocketArgs);
+
         if (bindSocket->waitForFinished(400)) { // 200ms should be plenty enough for the process to fail on bind
             if (bindSocket->exitCode() == EADDRNOTAVAIL) {
                 // loop again until IP is available but just sleep a moment

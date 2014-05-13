@@ -28,7 +28,6 @@ SOURCES += main.cpp \
     proxy.cpp \
     bonjour/bonjourregistrar.cpp \
     dataplane/dataplaneclient.cpp \
-    ph2phtp_parser.cpp \
     dataplane/dataplaneserver.cpp \
     dataplane/dataplaneconnection.cpp \
     abstractplaneconnection.cpp \

@@ -9,7 +9,6 @@ ServerWorker::ServerWorker(addrUnion server_addr, addrUnion client_addr, SSL* ss
 }
 
 void ServerWorker::connection_handle() {
-    qDebug() << "handling connection in thread" << QThread::currentThreadId();
     ssize_t len;
     char buf[BUFFER_SIZE];
     char addrbuf[INET6_ADDRSTRLEN];

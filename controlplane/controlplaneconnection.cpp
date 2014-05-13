@@ -51,16 +51,12 @@ bool ControlPlaneConnection::addMode(plane_mode mode, QObject *socket) {
 }
 
 void ControlPlaneConnection::readBuffer(const char* buf, int) {
-    qDebug() << "Reading buffer";
-    qDebug() << buf;
     QString packet(buf);
 
     QStringList list = packet.split("\r\n");
-    qDebug() << "parser list!";
-    qDebug() << list;
 
     if (!list.at(list.length() - 1).isEmpty()) {
-         qDebug() << "ERROR: Did not receive full packet";
+         qDebug() << "ERROR: Did not receive full bonjour packet";
          return;
     }
 
@@ -113,11 +109,9 @@ void ControlPlaneConnection::readBuffer(const char* buf, int) {
             return;
         }
     }
-    qDebug() << "end of reading buffer";
 }
 
 void ControlPlaneConnection::sendBonjour() {
-    qDebug() << "sendBonjour() !";
     static QMutex mutex; // XXX should maybe mutex more than this function (with the mode that can change)
     mutex.lock();
     QSslSocket* toWrite; // the socket on which the bonjour packets are to be sent
@@ -136,9 +130,9 @@ void ControlPlaneConnection::sendBonjour() {
     }
 
     // get bonjour records from db & send them over the connection
-    qDebug() << "fetching records for " << this->friendUid;
+    //qDebug() << "fetching records for " << this->friendUid;
     QList < BonjourRecord* > records = qSql->getRecordsFor(this->friendUid);
-    qDebug() << "Retrieved " << records.length() << " records!";
+    //qDebug() << "Retrieved " << records.length() << " records!";
     foreach (BonjourRecord* rec, records) {
         QString packet;
         packet = packet
@@ -151,10 +145,7 @@ void ControlPlaneConnection::sendBonjour() {
 
         toWrite->write(packet.toUtf8().data());
     }
-
-    //qDebug() << "Unlocking mutex";
     mutex.unlock();
-    //qDebug("Leaving sendBonjour()");
     static bool first = true;
     if (first) {
         QTimer::singleShot(10000, this, SLOT(sendBonjour())); // first call, let the time to the Bonjour discoverer

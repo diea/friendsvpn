@@ -50,14 +50,11 @@ void ControlPlaneClient::sslErrors(const QList<QSslError>& errors) {
 
 void ControlPlaneClient::connectionReady() {
     connect(sslClient, SIGNAL(readyRead()), this, SLOT(sslClientReadyRead()));
-    qDebug() << "Sending a write !!";
     // TODO protocol starts here
     // Send HELLO packet
     QString hello("HELLO\r\nUid:" + init->getMyUid() + "\r\n");
     sslClient->write(hello.toUtf8().constData());
     sslClient->flush();
-    //sslClient->write("TEST TEST TEST2");
-
 }
 
 void ControlPlaneClient::sslClientReadyRead() {
@@ -71,22 +68,18 @@ void ControlPlaneClient::sslClientReadyRead() {
         char buf[300];
         sslClient->readLine(buf, 300);
         QString bufStr(buf);
-        qDebug() << "Buffer str:" << bufStr;
         if (bufStr.startsWith("HELLO")) {
             sslClient->readLine(buf, 300);
             QString uidStr(buf);
             uidStr.chop(2); // drop \r\0
             //qDebug() << uidStr.remove(0, 4);
             // drop the Uid: part with the .remove and get the CPConnection* correspoding to this UID
-            qDebug() << "Going into init";
             ControlPlaneConnection* con =  init->getConnection(uidStr.remove(0, 4));
             con->addMode(Emitting, sslClient); // add server mode
             sslClient->setControlPlaneConnection(con); // associate the sslSock with it
-            qDebug() << "ssl Sock associated";
             mutexx.unlock();
         }
     } else { // socket is associated with controlplaneconnection
-        qDebug() << "Client received data";
         //qDebug() << sslClient->readAll();
         QByteArray bytesBuf = sslClient->readAll();
         sslClient->getControlPlaneConnection()->readBuffer(bytesBuf.data(), bytesBuf.length());

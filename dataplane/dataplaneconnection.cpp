@@ -73,7 +73,6 @@ void DataPlaneConnection::readBuffer(const char* buf, int len) {
         nbLoops--;
         QString packet(buf + bufferPosition);
         qDebug() << "We have LEN " << len << "remaining ";
-        qDebug() << "packet is" << packet;
 
         /* /!\ buffer can be multiple packets */
         QStringList list = packet.split("\r\n");
@@ -115,12 +114,9 @@ void DataPlaneConnection::readBuffer(const char* buf, int len) {
             }
 
             // get server Proxy and send through it!
-            qDebug() << "Try and get proxy on hash";
-            qDebug() << hash;
             Proxy* prox = Proxy::getProxy(hash); // try and get server (hash)
 
             if (!prox) {
-                qDebug() << "No server proxy was found!";
                 // compute client proxy
                 // read tcp or udp header to get src port
                 QFile tcpPacket("packetBuf");
@@ -132,11 +128,10 @@ void DataPlaneConnection::readBuffer(const char* buf, int len) {
                 while ((packetBuf[++accIndex] != ']') && (accIndex < length)) { }
 
                 if (accIndex == length) {
-                    qDebug() << "wrong packet format received";
+                    qDebug() << "dataplane client wrong packet format received";
                     return;
                 }
 
-                qDebug() << "accIndex " << accIndex;
                 // the first 16 bits of UDP or TCP header are the src_port
                 quint16* srcPort = static_cast<quint16*>(malloc(sizeof(quint16)));
                 memcpy(srcPort, packetBuf + accIndex + 1, sizeof(quint16));
@@ -145,16 +140,9 @@ void DataPlaneConnection::readBuffer(const char* buf, int len) {
                 test.open(QIODevice::WriteOnly);
                 test.write(packetBuf, length);
 
-                qDebug() << "Captured srcPort" << *srcPort;
-
                 QByteArray clientHash = QCryptographicHash::hash(QString(hash + srcIp + QString::number(*srcPort)).toUtf8(), QCryptographicHash::Md5);
                 prox = Proxy::getProxy(clientHash);
                 if (!prox) {
-                    // just send the bloody packet
-                    qDebug() << "Printing packet payload:";
-
-                    qDebug() << (char*) (packetBuf + 21);
-                    printf("using printf %s \n", packetBuf + 21);
         #if 0
                     qDebug() << "sending the bloody packet!";
                     QProcess* raw = new QProcess();
@@ -202,13 +190,6 @@ void DataPlaneConnection::readBuffer(const char* buf, int len) {
             len--;
         }
     }
-
-    /*if (nbLoops < 1) {
-        qDebug() << "nbLoops is " << nbLoops;
-        exit(0);
-    }*/
-    // get client proxy and send data through it
-    // TODO
     mutex.unlock();
 }
 
@@ -217,11 +198,6 @@ void DataPlaneConnection::sendBytes(const char *buf, int len, QString& hash, int
     if (curMode == Closed) {
         qWarning() << "Trying to sendBytes on Closed state for uid" << friendUid;
     }
-
-    //qDebug() << (char*) (buf + 21);
-    //printf("using printf %s \n", buf + 21);
-
-    qDebug() << "Dataplane send Bytes !";
 
     // make the DATA header
     QString header;
@@ -240,12 +216,6 @@ void DataPlaneConnection::sendBytes(const char *buf, int len, QString& hash, int
     char* headerC = headerBytes.data();
     strncpy(dataPacket, headerC, headerLen);
     memcpy(dataPacket + headerLen, buf, len);
-
-    //qDebug() << (char*) (dataPacket + 21);
-    //printf("using printf %s \n", dataPacket + 21);
-
-    qDebug() << "datapacket!" << dataPacket;
-    fflush(stdout);
 
     QFile tcpPacket("tcpPacketDTLS");
     tcpPacket.open(QIODevice::WriteOnly);

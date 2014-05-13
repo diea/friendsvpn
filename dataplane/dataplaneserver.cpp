@@ -152,15 +152,6 @@ void DataPlaneServer::start() {
 
         while (DTLSv1_listen(ssl, &client_addr) <= 0);
 
-        /*if (pthread_create( &tid, NULL, connection_handle, info) != 0) {
-            perror("pthread_create");
-            exit(-1);
-        }*/
-
-        /*memcpy(&info->server_addr, &server_addr, sizeof(struct sockaddr_storage));
-        memcpy(&info->client_addr, &client_addr, sizeof(struct sockaddr_storage));
-        info->ssl = ssl;*/
-
         QThread* workerThread = new QThread();
         threads.append(workerThread);
 
@@ -173,7 +164,6 @@ void DataPlaneServer::start() {
 
         // get UID from friend using his IP to create worker thread
         // if IP is not in DB we close the connection
-        // TODO
         char friendIp[INET6_ADDRSTRLEN];
         inet_ntop(AF_INET6, &infClient_addr.s6.sin6_addr, friendIp, INET6_ADDRSTRLEN);
 
@@ -190,7 +180,6 @@ void DataPlaneServer::start() {
             fflush(stdout);
             return;
         }
-        qDebug() << friendUid;
         // associate with dataplaneconnection
         ConnectionInitiator* init = ConnectionInitiator::getInstance();
         DataPlaneConnection* dpc = init->getDpConnection(friendUid);

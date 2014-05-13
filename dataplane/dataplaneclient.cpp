@@ -118,7 +118,6 @@ void DataPlaneClient::run() {
 
     int num_timeouts = 0, max_timeouts = 5;
     size_t len;
-    qDebug() << "CLIENT BEGINS LISTEN UDP";
     while (!(SSL_get_shutdown(ssl) & SSL_RECEIVED_SHUTDOWN)) { // && num_timeouts < max_timeouts) {
         mutex.lock();
         if (!isActive) {
@@ -126,18 +125,12 @@ void DataPlaneClient::run() {
             break;
         }
         mutex.unlock();
-        qDebug() << "reading!";
         reading = 1;
         while (reading) {
             len = SSL_read(ssl, buf, sizeof(buf));
 
             switch (SSL_get_error(ssl, len)) {
                 case SSL_ERROR_NONE:
-                 printf("client read %d bytes\n", (int) len);
-                 //sendBytes(buf, len); // send back to test
-                 //printf("%s \n", buf);
-                 // TODO call dataplaneconnection
-                 //con->readBuffer(buf);
                  emit bufferReady(buf, len);
                  reading = 0;
                  break;
@@ -172,11 +165,9 @@ void DataPlaneClient::run() {
 
 void DataPlaneClient::sendBytes(const char *bytes, socklen_t len) {
     if (!(SSL_get_shutdown(ssl) & SSL_RECEIVED_SHUTDOWN)) {
-        qDebug() << "Calling SSL_Write";
-        SSL_write(ssl, bytes, len); // TODO maybe give a length param
+        SSL_write(ssl, bytes, len);
         switch (SSL_get_error(ssl, len)) {
             case SSL_ERROR_NONE:
-                printf("wrote %d bytes\n", (int) len);
                 break;
             case SSL_ERROR_WANT_WRITE:
                 /* Just try again later */

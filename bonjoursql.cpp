@@ -84,8 +84,6 @@ bool BonjourSQL::insertService(QString name, QString trans_prot) {
     query.bindValue(2, trans_prot);
     query.exec();
     // test query
-    qDebug() << "SQL SERVICE: " << "INSERT INTO Service VALUES(" + name +", "+uid+", "+trans_prot+")";
-    qDebug() << "Insert Service error" << query.lastError();
     db.close();
     qryMut.unlock();
     return true;
@@ -132,8 +130,6 @@ bool BonjourSQL::insertDevice(QString hostname, int port, QString service_name, 
     query.bindValue(5, record_name);
     query.exec();
     // test qry
-    qDebug() << hostname << " " << port << " " << service_name << " " << service_trans_prot << " " << record_name;
-    qDebug() << "Insert device error : " << db.lastError().text();
     db.close();
     qryMut.unlock();
     return true;
@@ -142,7 +138,6 @@ bool BonjourSQL::insertDevice(QString hostname, int port, QString service_name, 
 QString BonjourSQL::fetchXmlRpc() {
     qryMut.lock();
     db.open();
-    //qDebug() << "sql threadid " << QThread::currentThreadId();
     QList<QHostAddress> list = QNetworkInterface::allAddresses();
     QString sqlString;
     bool first = true;
@@ -167,16 +162,13 @@ QString BonjourSQL::fetchXmlRpc() {
         sqlString = sqlString % "\"" % stringAddr % "\"";
         first = false;
     }
-    //qDebug() << sqlString;
     QSqlQuery query = QSqlQuery(QSqlDatabase::database());
     query.prepare("SELECT MIN(id) as id, req, ipv6 FROM XMLRPC WHERE " + sqlString);
     query.exec();
-    //qDebug() << "XMLRPC Query error" << query.lastError();
     if (query.next()) {
         QString ipv6 = query.value(2).toString();
         QString id = query.value(0).toString();
         QString xmlrpcReq = query.value(1).toString();
-        //qDebug() << xmlrpcReq;
 
         query.prepare("DELETE FROM XMLRPC WHERE id = ? AND ipv6 = ?");
         query.bindValue(0, id);
@@ -200,7 +192,7 @@ QList< User* > BonjourSQL::getFriends() {
                   "uid FROM Authorized_user WHERE Record_Service_User_uid = ?)");
     query.bindValue(0, uid);
     query.exec();
-    //qDebug() << "error" << query.lastError();
+
     QList < User* > list;
     while (query.next()) {
         QString* uid = new QString(query.value(0).toString());
@@ -311,10 +303,8 @@ QString BonjourSQL::getUidFromIP(QString IP) {
 QList < BonjourRecord* > BonjourSQL::getRecordsFor(QString friendUid) {
     qryMut.lock();
     db.open();
-    //qDebug() << "qry(db)";
     QList < BonjourRecord * > list;
     QSqlQuery qry(QSqlDatabase::database());
-    //qDebug() << "Preparing query";
 
     if (!qry.prepare("SELECT * FROM Authorized_user WHERE id = ? AND Record_Service_User_uid = ?")) {
         qDebug() << "ERROR SQL " << qry.lastError();
@@ -325,40 +315,23 @@ QList < BonjourRecord* > BonjourSQL::getRecordsFor(QString friendUid) {
         return list;
     }
 
-    //qDebug() << "Biding values " << friendUid << " " << uid;
     qry.bindValue(0, friendUid);
     qry.bindValue(1, uid);
-    //qDebug() << "Executing query";
     qry.exec();
-    //qDebug() << "Query executed";
 
     QList < BonjourRecord * > allActiveRecords = BonjourDiscoverer::getInstance()->getAllActiveRecords();
 
-    //qDebug() << "allActiveRecordsSize: " << allActiveRecords.length();
-    /*foreach (BonjourRecord* rec, allActiveRecords) {
-        qDebug() << "List record: "
-                    << rec->serviceName << " "
-                    << rec->registeredType << " "
-                    << rec->replyDomain;
-    }*/
-
     while (qry.next()) {
-        //qDebug() << "SQL got new record!";
         // used for comparison
         BonjourRecord newRecord(qry.value("Record_name").toString(),
                                 // using the bonjour service name notation
                                 qry.value("Record_Service_name").toString() + "._" + qry.value("Record_Service_Trans_prot").toString() + ".",
                                 "local."); // TODO Do some research here, should store in DB ?
 
-        /*qDebug() << "New record: "
-                    << newRecord.serviceName << " "
-                    << newRecord.registeredType << " "
-                    << newRecord.replyDomain;*/
         foreach (BonjourRecord* rec, allActiveRecords) { // if record found in active record, save it
             if (*rec == newRecord) {
                 if (rec->resolved)
                     list.append(rec);
-                //qDebug() << "yeay appending to list";
             }
         }
     }

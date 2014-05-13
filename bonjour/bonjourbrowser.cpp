@@ -19,7 +19,6 @@ BonjourBrowser::~BonjourBrowser()
 
 void BonjourBrowser::browseForServiceType(const QString &serviceType)
 {
-    //qDebug() << "Browsing " + serviceType + " in more details";
     DNSServiceErrorType err = DNSServiceBrowse(&dnsref, 0, 0, serviceType.toUtf8().constData(), 0,
                                                reply, this);
     if (err != kDNSServiceErr_NoError) {
@@ -29,7 +28,6 @@ void BonjourBrowser::browseForServiceType(const QString &serviceType)
         if (sockfd == -1) {
             emit error(kDNSServiceErr_Invalid);
         } else {
-            //qDebug() << "Connecting bonjourSocket";
             bonjourSocket = new QSocketNotifier(sockfd, QSocketNotifier::Read, this);
             connect(bonjourSocket, SIGNAL(activated(int)), this, SLOT(bonjourSocketReadyRead()));
         }
