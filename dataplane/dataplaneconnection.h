@@ -10,7 +10,7 @@
 struct dpHeader {
     quint8 sockType;
     quint8 length;
-    char md5[32];
+    char md5[33]; // 32 + 1 for '\0'
     char srcIp[INET6_ADDRSTRLEN];
 } __attribute__((__packed__));
 
