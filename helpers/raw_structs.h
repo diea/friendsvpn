@@ -19,10 +19,10 @@
 #define ETHER_ADDR_LEN  6
 
 struct pcapComHeader {
-    int32_t datalink;
+    char dev[10];
     uint32_t len;
     char ipSrcStr[INET6_ADDRSTRLEN];
-    char sourcMacStr[18];
+    char sourceMacStr[18];
 } __attribute__((__packed__));
 
 struct loopbackHeader {

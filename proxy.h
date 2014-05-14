@@ -21,6 +21,18 @@ struct prefix {
 };
 
 /**
+ * @brief The pcapComHeader struct
+ * header for communication with the pcapHelper
+ */
+struct pcapComHeader {
+    char dev[10];
+    uint32_t len;
+    char ipSrcStr[INET6_ADDRSTRLEN];
+    char sourceMacStr[18];
+} __attribute__((__packed__));
+
+
+/**
  * @brief The Proxy class
  * Generates a new IPv6 for this host, then registers an associated bonjour service
  * It will create an IP_SOCKRAW for this service and forward the [TransportHeader|Payload] on
@@ -30,12 +42,6 @@ class Proxy : public QObject
 {
     Q_OBJECT
 private:
-    /**
-     * @brief buffer used to buffer "left" bytes until packet has been read
-     */
-    unsigned int left;
-    QByteArray buffer;
-
     static IpResolver* resolver;
 
 protected:

@@ -143,7 +143,7 @@ void ControlPlaneConnection::sendBonjour() {
     //qDebug() << "fetching records for " << this->friendUid;
     QList < BonjourRecord* > records = qSql->getRecordsFor(this->friendUid);
     //qDebug() << "Retrieved " << records.length() << " records!";
-    foreach (BonjourRecord* rec, records) {
+    foreach (BonjourRecord* rec, records) {  
         QString packet;
         packet = packet
                  % "BONJOUR\r\n"

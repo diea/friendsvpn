@@ -19,33 +19,25 @@
 #include "raw_structs.h"
 
 int datalink; /* stores the datalink used for the capture */
+char *dev = NULL;			/* capture device name */
 
 /**
  * will print the bytes of tcp/udp header + payload so that main app can use those
  */
 void print_packet(const u_char *payload, int len, char* ipSrcStr, char* sourceMacStr) {
-	int printLen = 0;
-	if (datalink == DLT_EN10MB)
-		printLen += 5; // eth\r\n is size 5
-	else
-		printLen += 4;
-	printLen += strlen(ipSrcStr) + 2;
+	struct pcapComHeader pcapHeader;
+	memset(&pcapHeader, 0, sizeof(struct pcapComHeader));
+	strcpy(pcapHeader.dev, dev);
+	pcapHeader.len = len;
+	strcpy(pcapHeader.ipSrcStr, ipSrcStr);
+	strcpy(pcapHeader.sourceMacStr, sourceMacStr);
 
-	if (datalink == DLT_EN10MB)
-		printLen += strlen(sourceMacStr) + 2;
-
-	printLen += len;
-	printf("[%d]", printLen); // print length
-	if (datalink == DLT_EN10MB) {
-		printf("eth\r\n");
-		printf("%s\r\n", ipSrcStr);
-		printf("%s\r\n", sourceMacStr);
-	} else {
-		printf("lo\r\n");
-		printf("%s\r\n", ipSrcStr);
-	}
-	fwrite(payload, 1, len, stdout);
+	void* printBuf = malloc(len + sizeof(struct pcapComHeader));
+	memcpy(printBuf, &pcapHeader, sizeof(struct pcapComHeader));
+	memcpy(printBuf + sizeof(struct pcapComHeader), payload, len);
+	fwrite(printBuf, 1, len + sizeof(struct pcapComHeader), stdout);
 	fflush(stdout);
+	free(printBuf);
 }
 
 void got_packet(u_char* args, const struct pcap_pkthdr *header, const u_char *packet) {
@@ -113,7 +105,6 @@ void got_packet(u_char* args, const struct pcap_pkthdr *header, const u_char *pa
 int main(int argc, char** argv) {
 	setuid(0); // for linux
 
-	char *dev = NULL;			/* capture device name */
 	char errbuf[PCAP_ERRBUF_SIZE];		/* error buffer */
 	pcap_t *handle;				/* packet capture handle */
 

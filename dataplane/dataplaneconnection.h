@@ -7,6 +7,13 @@
 #include "dataplaneserver.h"
 #include "serverworker.h"
 
+struct dpHeader {
+    quint8 sockType;
+    quint8 length;
+    char md5[16];
+    char srcIp[INET6_ADDRSTRLEN];
+} __attribute__((__packed__));
+
 class DataPlaneConnection : public AbstractPlaneConnection
 {
     Q_OBJECT

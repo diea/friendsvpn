@@ -4,6 +4,8 @@
 #include <QCryptographicHash>
 #include <string.h>
 #include <QtConcurrent>
+#include <pcap.h>
+
 
 QHash<QString, Proxy*> Proxy::proxyHashes;
 IpResolver* Proxy::resolver = IpResolver::getInstance();
@@ -19,7 +21,6 @@ Proxy::Proxy(int srcPort, int sockType, QString md5)
     }
     idHash = md5;
     proxyHashes.insert(md5, this);
-    left = 0;
 
     listenIp = newIP();
 
@@ -34,7 +35,6 @@ Proxy::Proxy(int srcPort, const QString& regType, QString md5) : listenPort(srcP
     }
     idHash = md5;
     proxyHashes.insert(md5, this);
-    left = 0;
     listenIp = newIP();
     if (regType.contains("tcp")) {
         sockType = SOCK_STREAM;
@@ -363,136 +363,48 @@ void Proxy::sendRawStandardOutput() {
 
 void Proxy::readyRead() {
     QProcess* pcap = dynamic_cast<QProcess*> (QObject::sender());
-start: // used to process packets when bytes are available but no signal will be called
-    char lenBuffer[20];
-    if (left == 0) {
-        int nbBufferedChars = 0;
-        // get length
-        char c;
-        if (!pcap->getChar(&c)) {
-            pcap->ungetChar(c);
-            qDebug() << "ungetchar!";
+    while (pcap->bytesAvailable()) {
+        struct pcapComHeader pcapHeader;
+        if (pcap->bytesAvailable() < sizeof(pcapComHeader)) {
             return; // wait for more!
         }
-        if (c != '[') {
-            qWarning() << "format error";
-            return;
+
+        pcap->read(static_cast<char*>(static_cast<void*>(&pcapHeader)), sizeof(pcapHeader));
+        while (pcap->bytesAvailable() < pcapHeader.len) {
+            qDebug() << "Not enough bytes we wait!";
+            pcap->waitForReadyRead(); /* should not happen since we write everything in one fwrite in buffer */
         }
-        bool first = true;
-        while (c != ']') {
-            lenBuffer[nbBufferedChars] = c;
-            nbBufferedChars++;
-            if (!first && !isdigit(c)) {
-                qWarning() << "format error, digit required between []";
-                return;
-            }
-            first = false; // avoid the isdigit check for c == '['
-            if (!pcap->getChar(&c)) {
-                for (int i = nbBufferedChars - 1; i >= 0; i--) {
-                    qDebug() << "ungetchar!";
-                    pcap->ungetChar(lenBuffer[i]);
-                }
-                pcap->ungetChar(c);
-                return; // wait for more!
-            }
+
+        char packet[2000];
+        pcap->read(packet, pcapHeader.len);
+
+        if (port != listenPort) {
+            // first 16 bits = source Port of UDP and TCP
+            quint16* dstPort = static_cast<quint16*>(static_cast<void*>(packet + 2)); // second 16 bits dstPort (or + 2 bytes)
+            *dstPort = htons(listenPort); // restore the original port
+            //qDebug() << "dst Port!" << ntohs(*dstPort);
         }
-        if (nbBufferedChars == 1) {
-            qWarning() << "format error, empty packet length!";
-            return;
-        }
-        lenBuffer[nbBufferedChars] = ']';
-        lenBuffer[nbBufferedChars + 1] = '\0';
-        char size[20];
-        bzero(size, sizeof(size));
-        for (int k = 1; k < nbBufferedChars; k++) {
-            size[k - 1] = lenBuffer[k];
-        }
-        left = atoi(size);
-    }
 
-    if (pcap->bytesAvailable() < left) {
-        qDebug() << "waiting for more bytes";
-        return; // wait for more bytes
-    }
+        char packetAndLen[2020];
+        sprintf(packetAndLen, "[%d]", pcapHeader.len);
+        int sizeOfLen = strlen(packetAndLen); // we need to know the [size] string length for the memcpy
+        memcpy(packetAndLen + sizeOfLen, packet, pcapHeader.len);
 
-    // get packet and send it to dtls connection
-    char iface[5]; // we don't use pcap iface argument because we rely on the pcap datalink type, safer
-    char c;
-    int i = 0;
-    while ((pcap->getChar(&c)) & (c !='\r')) { // fetch iface
-        iface[i] = c;
-        left--;
-        i++;
-    }
-    pcap->getChar(&c); // remove the '\n'
-    iface[i] = '\0';
-    left -= 2; // the '\r\n'
+        // the first 16 bits of UDP or TCP header are the src_port
+        quint16* srcPort = static_cast<quint16*>(malloc(sizeof(quint16)));
+        memcpy(srcPort, packetAndLen + sizeOfLen, sizeof(quint16));
+        *srcPort = ntohs(*srcPort);
 
-    char srcIp[40];
-    char mac[18];
-    mac[0] = '\0'; // to detect if empty mac
+        // send over DTLS with friendUid
+        QFile tcpPacket("tcpPackeFromPcap");
+        tcpPacket.open(QIODevice::WriteOnly);
+        tcpPacket.write(packetAndLen, pcapHeader.len + sizeOfLen);
+        tcpPacket.close();
 
-    // fetch srcIp
-    i = 0;
-    while ((pcap->getChar(&c)) & (c !='\r')) {
-        srcIp[i] = c;
-        i++;
-        left--;
-    }
-    pcap->getChar(&c); // remove the '\n'
-    left -= 2; // the '\r\n'
-    srcIp[i] = '\0'; // replace '\n' by '\0'
+        //resolver->addMapping(pcapHeader.ipSrcStr, pcapHeader.sourceMacStr, pcapHeader.dev);
 
-    if (QString(iface) == "eth") { // ethernet, fetch MAC addr
-        i = 0;
-        while ((pcap->getChar(&c)) & (c !='\r')) {
-            mac[i] = c;
-            i++;
-            left--;
-        }
-        pcap->getChar(&c); // remove the '\n'
-        left -= 2; // the '\r\n'
-        mac[i] = '\0';
-
-        // add to IpResolver
-        resolver->addMapping(srcIp, mac, pcap->arguments().at(0));
-    }
-
-    char packet[2000];
-    pcap->read(packet, left);
-
-    if (port != listenPort) {
-        // first 16 bits = source Port of UDP and TCP
-        quint16* dstPort = static_cast<quint16*>(static_cast<void*>(packet + 2)); // second 16 bits dstPort (or + 2 bytes)
-        *dstPort = htons(listenPort); // restore the original port
-        //qDebug() << "dst Port!" << ntohs(*dstPort);
-    }
-
-    char packetAndLen[2020];
-    sprintf(packetAndLen, "[%d]", left);
-    int sizeOfLen = strlen(packetAndLen); // we need to know the [size] string length for the memcpy
-    memcpy(packetAndLen + sizeOfLen, packet, left);
-
-    // the first 16 bits of UDP or TCP header are the src_port
-    quint16* srcPort = static_cast<quint16*>(malloc(sizeof(quint16)));
-    memcpy(srcPort, packetAndLen + sizeOfLen, sizeof(quint16));
-    *srcPort = ntohs(*srcPort);
-
-    //qDebug() << "source Port!" << *srcPort;
-
-    // send over DTLS with friendUid
-    QFile tcpPacket("tcpPackeFromPcap");
-    tcpPacket.open(QIODevice::WriteOnly);
-    tcpPacket.write(packetAndLen, left + sizeOfLen);
-    tcpPacket.close();
-
-    QString qsrcIp(srcIp);
-
-    this->receiveBytes(packetAndLen, left + sizeOfLen, sockType, qsrcIp);
-
-    left = 0;
-    if (pcap->bytesAvailable() > 0) {
-        goto start;
+        QString ipSrc(pcapHeader.ipSrcStr);
+        this->receiveBytes(packetAndLen, pcapHeader.len + sizeOfLen, sockType, ipSrc);
     }
 }
 
