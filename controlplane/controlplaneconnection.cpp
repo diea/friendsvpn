@@ -75,47 +75,44 @@ void ControlPlaneConnection::readBuffer(const char* buf, int len) {
         qDebug() << "new bjr packet" << list;
 
         if (!list.at(list.length() - 1).isEmpty()) {
-             qDebug() << "ERROR: Did not receive full bonjour packet";
+             qDebug() << "ERROR: Did not receive full control plane packet";
              return;
         }
-
-        while (list.length() > 0) {
-            if (list.at(0) == "BONJOUR") {
-                QString hostname;
-                QString name;
-                QString type;
-                int port = 0;
-                int listLength = list.length();
-                for (int i = 0; i < listLength - 1; i++) {
-                    QStringList keyValuePair = list.at(i).split(":");
-                    QString key = keyValuePair.at(0);
-                    if (key == "Hostname") {
-                        hostname = keyValuePair.at(1);
-                    } else if (key == "Name") {
-                        name = keyValuePair.at(1);
-                    } else if (key == "Type") {
-                        type = keyValuePair.at(1);
-                    } else if (key == "Port") {
-                        port = keyValuePair.at(1).toInt();
-                    }
+        if (list.at(0) == "BONJOUR") {
+            QString hostname;
+            QString name;
+            QString type;
+            int port = 0;
+            int listLength = list.length();
+            for (int i = 0; i < listLength - 1; i++) {
+                QStringList keyValuePair = list.at(i).split(":");
+                QString key = keyValuePair.at(0);
+                if (key == "Hostname") {
+                    hostname = keyValuePair.at(1);
+                } else if (key == "Name") {
+                    name = keyValuePair.at(1);
+                } else if (key == "Type") {
+                    type = keyValuePair.at(1);
+                } else if (key == "Port") {
+                    port = keyValuePair.at(1).toInt();
                 }
-
-                if (hostname.isEmpty() || name.isEmpty() || type.isEmpty() || !port) {
-                    qDebug() << "ERROR: Bonjour packet wrong format";
-                    return;
-                }
-
-                qDebug() << "Running new proxy!!";
-                ProxyServer* newProxy = NULL;
-                try {
-                    newProxy = new ProxyServer(friendUid, name, type, ".friendsvpn.", hostname, port);
-                    newProxy->run();
-                } catch (int i) {
-                    // proxy exists
-                }
-            } else {
-                qDebug() << "not starting with BONJOUR";
             }
+
+            if (hostname.isEmpty() || name.isEmpty() || type.isEmpty() || !port) {
+                qDebug() << "ERROR: Bonjour packet wrong format";
+                return;
+            }
+
+            qDebug() << "Running new proxy!!";
+            ProxyServer* newProxy = NULL;
+            try {
+                newProxy = new ProxyServer(friendUid, name, type, ".friendsvpn.", hostname, port);
+                newProxy->run();
+            } catch (int i) {
+                // proxy exists
+            }
+        } else {
+            qDebug() << "not starting with BONJOUR";
         }
     }
 }
