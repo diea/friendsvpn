@@ -189,10 +189,16 @@ ethLoopback:
     // get packet size from stdin
     struct rawComHeader rawHead;
     while (1) {
+        char c;
         memset(&rawHead, 0, sizeof(struct rawComHeader));
-        fread(&rawHead, sizeof(struct rawComHeader), 1, stdin);
 
+        int res = fread(&rawHead, sizeof(struct rawComHeader), 1, stdin);
+        if (!res) {
+            clearerr(stdin);
+            continue;
+        }
         uint32_t packet_send_size = rawHead.len; // tcp + payload length
+
         ip6.ip6_plen = htons((uint16_t) packet_send_size) ; // transport + payload length
 
         int nbBytes = packet_send_size;
@@ -205,7 +211,7 @@ ethLoopback:
         void* packet_send = malloc(checksumBufSize);
         memset(packet_send, 0, checksumBufSize); // set everthing to 0 so padding is done
 
-        fread(packet_send + sizeof(struct ipv6upper), packet_send_size, 1, stdin);
+        fread(packet_send + sizeof(struct ipv6upper), 1, packet_send_size, stdin);
 
         if (sockType == SOCK_DGRAM) { // udp has length field, that is used in pseudo header (RFC 2460)
             udp = (struct sniff_udp*) (packet_send + sizeof(struct ipv6upper));
