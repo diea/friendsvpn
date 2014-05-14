@@ -119,28 +119,22 @@ void Proxy::gennewIP() {
         } while (!newIp);
 
         // add it with ifconfig
-        QProcess ifconfig;
+        QProcess* ifconfig = new QProcess();
+        u->addQProcess(ifconfig);
         // TODO include in the app bundle to launch from there
         // TODO check DAD
         QStringList newipArgs;
         newipArgs.append(defaultIface);
         newipArgs.append(newip);
-
-        u->addIp(newip, defaultIface);
-
-        ifconfig.start(QString(HELPERPATH) + "ifconfighelp", newipArgs);
-        ifconfig.waitForReadyRead();
-        ifconfig.close();
+        ifconfig->start(QString(HELPERPATH) + "ifconfighelp", newipArgs);
 
         newip.truncate(newip.length() - 3); // remove prefix
 
         // add to local cache!
-        IpResolver* r = IpResolver::getInstance();
-
     #ifdef __APPLE__ // XXX better way of determining local loopback interface ?
-        r->addMapping(newip, "", "lo0");
+        resolver->addMapping(newip, "", "lo0");
     #elif __GNUC__
-        r->addMapping(newip, "", "lo");
+        resolver->addMapping(newip, "", "lo");
     #endif
 
         poolOfIpsMutex.lock();
