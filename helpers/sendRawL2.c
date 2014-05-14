@@ -65,7 +65,6 @@ int main(int argc,const char* argv[]) {
     void* linkHeader = NULL;
     size_t linkHeaderSize = 0;
     if (datalink == DLT_EN10MB) {
-        printf("argc: %d\n", argc);
         bool linuxLoopback = false;
         if (argc < 7) {
             #ifdef __APPLE__
@@ -84,7 +83,6 @@ int main(int argc,const char* argv[]) {
         if (linuxLoopback)
             goto ethLoopback;
 
-        printf("reading mac!\n");
         // read mac-addr from argv[6]
         char *token;
         int i = 0;
@@ -93,7 +91,6 @@ int main(int argc,const char* argv[]) {
             printf("%x\n", header.ether_dhost[i]);
             i++;
         }
-        printf("ether dhost set!\n");
 
     #ifdef __APPLE__
         struct ifaddrs *ifap, *ifaptr;
@@ -138,20 +135,15 @@ int main(int argc,const char* argv[]) {
         if (ifr.ifr_hwaddr.sa_family != ARPHRD_ETHER) {
             fprintf(stderr,"not an Ethernet interface\n");
             close(fd);
-            /* On linux ubuntu the loopback is actually an Ethernet interface with the ethernet header
-            zeroed out! */
         }
         const unsigned char* source_mac_addr=(unsigned char*)ifr.ifr_hwaddr.sa_data;
         close(fd);
     #endif
-        printf("memcpy ether s_host\n");
         memcpy(header.ether_shost,source_mac_addr,sizeof(header.ether_shost));
-        printf("memcpy ether s_host out!\n");
 ethLoopback:
         linkHeader = (void*) &header;
         linkHeaderSize = sizeof(struct ether_header);
     } else {
-        printf("Loopback if!\n");
         struct loopbackHeader loopheader;
         loopheader.type = 0x1E; // ipv6 type
         linkHeader = (void*) &loopheader;
@@ -160,7 +152,6 @@ ethLoopback:
 
     // Construct IPv6 Packet
     struct ipv6hdr ip6;
-    printf("sizeof ip6 %d\n", sizeof(ip6));
     memset(&ip6, 0, sizeof(ip6)); // set all to 0
     ip6.ip6_vfc = 6 << 4;
     ip6.ip6_nxt = (atoi(argv[4]) == SOCK_DGRAM) ? SOL_UDP : SOL_TCP;
@@ -183,8 +174,6 @@ ethLoopback:
     }
     ip6.ip6_dst = ((struct sockaddr_in6 *) res->ai_addr)->sin6_addr;
 
-    printf("ipv6 constructed!\n");
-
     // checksum of nreq
     // begin by making pseudo header
     struct ipv6upper pHeader;
@@ -192,8 +181,6 @@ ethLoopback:
     pHeader.ip6_src = ip6.ip6_src;
     pHeader.ip6_dst = ip6.ip6_dst;
     pHeader.nextHeader = ip6.ip6_nxt;
-
-    //nreq.checksum = ~(checksum(bufferChecksum, sizeof(struct ipv6upper) + sizeof(struct neighbor_req)));
 
     int sockType = atoi(argv[4]);
     struct sniff_udp* udp = NULL;
@@ -203,7 +190,6 @@ ethLoopback:
     char nbBuf[20];
     while (1) {
         char c = getchar();
-        fprintf(stderr, "got char! %c\n", c);
         unsigned cnt = 0;
         c = getchar();
         while (c != ']') {
@@ -223,56 +209,46 @@ ethLoopback:
         uint32_t packet_send_size = atoi(nbBuf) ; // tcp + payload length
         ip6.ip6_plen = htons((uint16_t) packet_send_size) ; // transport + payload length
 
-        void* packet_send = malloc(packet_send_size);
-        fprintf(stderr, "going into fread for %d chars\n", packet_send_size);
-        fread(packet_send, packet_send_size, 1, stdin);
+        int nbBytes = packet_send_size;
+        int padding = packet_send_size % 16;
+
+        if (padding) {
+            nbBytes = (packet_send_size / 16) * 16 + 16;
+        }
+        int checksumBufSize = sizeof(struct ipv6upper) + nbBytes;
+        void* packet_send = malloc(checksumBufSize);
+        memset(packet_send, 0, checksumBufSize); // set everthing to 0 so padding is done
+
+        fread(packet_send + sizeof(struct ipv6upper), packet_send_size, 1, stdin);
 
         if (sockType == SOCK_DGRAM) { // udp has length field, that is used in pseudo header (RFC 2460)
-            udp = (struct sniff_udp*) (packet_send);
+            udp = (struct sniff_udp*) (packet_send + sizeof(struct ipv6upper));
             pHeader.payload_len = udp->udp_length;
-
+            memcpy(packet_send, &pHeader, sizeof(struct ipv6upper));
+            
             // change src_port
             udp->sport = htons(atoi(argv[5]));
         } else { // tcp has no length field, so same as ipv6
             pHeader.payload_len = htonl(atoi(nbBuf));
+            memcpy(packet_send, &pHeader, sizeof(struct ipv6upper));
+
             // change src_port
-            tcp = (struct sniff_tcp*) (packet_send);
+            tcp = (struct sniff_tcp*) (packet_send + sizeof(struct ipv6upper));
             tcp->th_sport = htons(atoi(argv[5]));
-
             memset(&(tcp->th_sum), 0, sizeof(u_short)); // checksum field to 0
+            
 
-            int nbBytes = packet_send_size;
-            int padding = packet_send_size % 16;
-
-            printf("Packet send size %d\n", packet_send_size);
-            if (padding) {
-                nbBytes = (packet_send_size / 16) * 16 + 16;
-                printf("Rounded nbBytes %d\n", nbBytes);
-                printf("Need to pad %d bits\n", 16 - padding);
-            }
-
-            int checksumBufSize = sizeof(struct ipv6upper) + nbBytes;
-            void* bufferChecksum = malloc(checksumBufSize);
-            memset(bufferChecksum, 0, checksumBufSize); // set everthing to 0 so padding is done
-            memcpy(bufferChecksum, &pHeader, sizeof(struct ipv6upper));
-            memcpy(bufferChecksum + sizeof(struct ipv6upper), packet_send, packet_send_size);
-
-            tcp->th_sum = ~(checksum(bufferChecksum, sizeof(struct ipv6upper) + nbBytes));
-            printf("checksum: %d\n", tcp->th_sum);
-            free(bufferChecksum);
+            tcp->th_sum = ~(checksum(packet_send, sizeof(struct ipv6upper) + nbBytes));
         }
-
-        printf("packet_send %s\n", (char*)packet_send);
-        fflush(stdout);
-
-        printf("Link header size %d\n", linkHeaderSize);
 
         // Combine the Ethernet header, IP and tcp/udp into a contiguous block.
         unsigned char frame[linkHeaderSize + sizeof(struct ipv6hdr) + packet_send_size];
 
         memcpy(frame, linkHeader, linkHeaderSize);
         memcpy(frame + linkHeaderSize, &ip6 ,sizeof(struct ipv6hdr));
-        memcpy(frame + linkHeaderSize + sizeof(struct ipv6hdr), packet_send, packet_send_size);
+        memcpy(frame + linkHeaderSize + sizeof(struct ipv6hdr), 
+            packet_send + sizeof(struct ipv6upper), /* the packet is after the ipv6 upper */
+            packet_send_size);
 
         // Write the frame to the interface.
         if (pcap_inject(pcap, frame, sizeof(frame)) == -1) {

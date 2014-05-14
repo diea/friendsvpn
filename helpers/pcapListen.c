@@ -130,11 +130,12 @@ int main(int argc, char** argv) {
 	}
 
 	/* open capture device */
-	handle = pcap_open_live(dev, SNAP_LEN, 1, 1000, errbuf);
+	handle = pcap_open_live(dev, SNAP_LEN, 0, 20, errbuf);
 	if (handle == NULL) {
 		fprintf(stderr, "Couldn't open device %s: %s\n", dev, errbuf);
 		return 3;
 	}
+
 	/* make sure we're capturing on an Ethernet device [2] */
 	datalink = pcap_datalink(handle);
 	if (datalink != DLT_EN10MB && datalink != DLT_NULL) { // only ethernet or loopback
