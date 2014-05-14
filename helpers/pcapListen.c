@@ -130,7 +130,7 @@ int main(int argc, char** argv) {
 	}
 
 	/* open capture device */
-	handle = pcap_open_live(dev, SNAP_LEN, 0, 20, errbuf);
+	handle = pcap_open_live(dev, SNAP_LEN, 0, 3, errbuf);
 	if (handle == NULL) {
 		fprintf(stderr, "Couldn't open device %s: %s\n", dev, errbuf);
 		return 3;
