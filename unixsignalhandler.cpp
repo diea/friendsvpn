@@ -57,7 +57,3 @@ void UnixSignalHandler::termSignalHandler(int) {
     }
     exit(0);
 }
-
-void UnixSignalHandler::addIp(QString ip, QString interface) {
-    // TODO
-}

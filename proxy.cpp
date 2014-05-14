@@ -91,6 +91,7 @@ void Proxy::gennewIP() {
     int length = poolOfIps.length();
     poolOfIpsMutex.unlock();
 
+    UnixSignalHandler* u = UnixSignalHandler::getInstance();
     while (length < 4) {
         bool newIp = true; // the new IP has not been assigned to iface yet or is not a duplicate
         QString newip;
@@ -124,6 +125,9 @@ void Proxy::gennewIP() {
         QStringList newipArgs;
         newipArgs.append(defaultIface);
         newipArgs.append(newip);
+
+        u->addIp(newip, defaultIface);
+
         ifconfig.start(QString(HELPERPATH) + "ifconfighelp", newipArgs);
         ifconfig.waitForReadyRead();
         ifconfig.close();
