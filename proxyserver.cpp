@@ -56,7 +56,9 @@ void ProxyServer::sendBytes(const char *buf, int len, QString dstIp) {
         QThread::msleep(200);
         mutex.lock();
     }*/
-
+    if (sendRaw->state() == 0) {
+        qFatal("send Raw is down");
+    }
     QFile serv("serverRcvdPacket");
     serv.open(QIODevice::WriteOnly);
     serv.write(buf, len);

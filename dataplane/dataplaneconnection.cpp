@@ -81,6 +81,7 @@ void DataPlaneConnection::readBuffer(const char* buf, int len) {
                 QFile invalidPacket("invalidPacket");
                 invalidPacket.open(QIODevice::WriteOnly);
                 invalidPacket.write(buf, initLen);
+                invalidPacket.close();
                 exit(42);
                 return;
             }
@@ -94,7 +95,23 @@ void DataPlaneConnection::readBuffer(const char* buf, int len) {
         const char* packetBuf = buf + bufferPosition + headerLength; // packet
 
         QStringList list = header.split("\r\n", QString::SkipEmptyParts);
+        if (list.length() == 0) {
+            qDebug() << "Empty list!";
+            QFile invalidPacket("invalidPacket_emptylist");
+            invalidPacket.open(QIODevice::WriteOnly);
+            invalidPacket.write(buf, initLen);
+            invalidPacket.close();
+            return;
+        }
         if (list.at(0) == "DATA") {
+            if (list.length() < 5) {
+                qDebug() << "Not full data packet";
+                QFile invalidPacket("invalidPacket_notfulldata");
+                invalidPacket.open(QIODevice::WriteOnly);
+                invalidPacket.write(buf, initLen);
+                invalidPacket.close();
+                return;
+            }
             QString hash;
             QString srcIp;
             int sockType;

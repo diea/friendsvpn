@@ -32,6 +32,7 @@ void IpResolver::addMapping(QString ip, QString mac, QString interface) {
 
     mutex.lock();
     mappings.insert(ip, newmap);
+    qDebug() << "insert was done!";
     mutex.unlock();
 }
 
@@ -54,6 +55,7 @@ struct ip_mac_mapping IpResolver::getMapping(QString ip) {
             QStringList list = curLine.split(" ", QString::SkipEmptyParts);
             if (list.at(0) == ip) {
                 this->addMapping(ip, list.at(1), list.at(2));
+                qDebug() << "add mapping was done!";
                 ndp.close();
                 return getMapping(ip);
             }

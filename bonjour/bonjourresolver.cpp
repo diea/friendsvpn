@@ -154,10 +154,14 @@ void BonjourResolver::hostInfoReady(const QHostInfo &info) {
                 QProcess ndp;
         #ifdef __APPLE__
                 ndp.start("ndp -an");
-                ndp.waitForReadyRead();
+                ndp.waitForReadyRead(500);
                 while ((length = ndp.readLine(buf, 3000))) {
                     QString curLine(buf);
                     QStringList list = curLine.split(" ", QString::SkipEmptyParts);
+
+                    if (list.length() < 6)
+                        continue;
+
                     if (list.at(1) == macs.at(i)) {
                         QString ipv6 = list.at(0);
                         if (ipv6.startsWith("fe80")) {
