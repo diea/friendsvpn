@@ -66,10 +66,10 @@ bool DataPlaneConnection::addMode(plane_mode mode, QObject* socket) {
 void DataPlaneConnection::readBuffer(const char* buf, int len) {
     qDebug() << "sending packet of len" << len;
     struct dpHeader *header = (struct dpHeader*) buf;
-    const char* packetBuf = buf + sizeof(struct dpHeader*); // packet
+    const char* packetBuf = buf + sizeof(struct dpHeader); // packet
 
     qDebug() << "header srcIp" << header->srcIp << header->md5;
-
+   // qDebug() << "packetBuf"
     QString hash(header->md5);
     QString srcIp(header->srcIp);
     // get server Proxy and send through it!
