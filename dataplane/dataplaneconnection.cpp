@@ -132,7 +132,7 @@ void DataPlaneConnection::readBuffer(const char* buf, int len) {
                 while ((packetBuf[++accIndex] != ']') && (accIndex < length)) { }
 
                 if (accIndex == length) {
-                    qFatal() << "dataplane client wrong packet format received";
+                    qFatal("dataplane client wrong packet format received");
                     return;
                 }
 
