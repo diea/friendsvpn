@@ -18,6 +18,12 @@
 /* Ethernet addresses are 6 bytes */
 #define ETHER_ADDR_LEN  6
 
+struct pcapComHeader {
+    int32_t datalink;
+    uint32_t len;
+    char ipSrcStr[INET6_ADDRSTRLEN];
+    char sourcMacStr[18];
+} __attribute__((__packed__));
 
 struct loopbackHeader {
     uint32_t type;
