@@ -67,7 +67,7 @@ void ControlPlaneConnection::readBuffer(const char* buf, int len) {
             j++;
         }
         int headerLength = atoi(headLen);
-        len -= headerLength;
+        len -= headerLength + 1; // "+1" is to ignore the character | that is not counted
 
         QString packet = QString::fromLatin1(buf + (++bufferPosition), headerLength); // skip the "|" so ++bufferPosition
         QStringList list = packet.split("\r\n");
