@@ -50,63 +50,72 @@ bool ControlPlaneConnection::addMode(plane_mode mode, QObject *socket) {
     return true;
 }
 
-void ControlPlaneConnection::readBuffer(const char* buf, int) {
-    QString packet(buf);
-
-    QStringList list = packet.split("\r\n");
-
-    if (!list.at(list.length() - 1).isEmpty()) {
-         qDebug() << "ERROR: Did not receive full bonjour packet";
-         return;
-    }
-
-    while (list.length() > 0) {
-        if (list.at(0) == "BONJOUR") {
-            QString hostname;
-            QString name;
-            QString type;
-            int port = 0;
-            list.removeFirst();
-            int listLength = list.length();
-            for (int i = 0; i < listLength - 1; i++) {
-                QStringList keyValuePair = list.at(0).split(":");
-                QString key = keyValuePair.at(0);
-                if (key.isEmpty()) {
-                    break; // end of bonjour packet
-                } else if (key == "Hostname") {
-                    hostname = keyValuePair.at(1);
-                } else if (key == "Name") {
-                    name = keyValuePair.at(1);
-                } else if (key == "Type") {
-                    type = keyValuePair.at(1);
-                } else if (key == "Port") {
-                    port = keyValuePair.at(1).toInt();
-                }
-                list.removeFirst();
-            }
-
-            if (hostname.isEmpty() || name.isEmpty() || type.isEmpty() || !port) {
-                qDebug() << "ERROR: Bonjour packet wrong format";
+void ControlPlaneConnection::readBuffer(const char* buf, int len) {
+    int bufferPosition = 0;
+    while (len > 0) {
+        char headLen[20];
+        int j = 0;
+        while (buf[bufferPosition] != '|') { // get header length, packet starts with "|"
+            headLen[j] = buf[bufferPosition];
+            len--;
+            if (len < 0) {
+                // not a valid packet in buffer
+                qDebug() << "Not a valid packet in buffer";
                 return;
             }
+            bufferPosition++;
+            j++;
+        }
+        int headerLength = atoi(headLen);
+        len -= headerLength;
 
-            qDebug() << "Running new proxy!!";
-            //QThread* newProxyThread = new QThread();
-            ProxyServer* newProxy = NULL;
-            try {
-                newProxy = new ProxyServer(friendUid, name, type, ".friendsvpn.", hostname, port);
-                //connect(newProxyThread, SIGNAL(started()), newProxy, SLOT(run()));
-                //connect(newProxyThread, SIGNAL(finished()), newProxyThread, SLOT(deleteLater()));
-                //newProxyThread->start();
-                newProxy->run();
-            } catch (int i) {
-                if (i == 1) {
-                    //newProxyThread->deleteLater(); // proxy exists
+        QString packet = QString::fromLatin1(buf + (++bufferPosition), headerLength); // skip the "|" so ++bufferPosition
+        QStringList list = packet.split("\r\n");
+
+        qDebug() << "new bjr packet" << list;
+
+        if (!list.at(list.length() - 1).isEmpty()) {
+             qDebug() << "ERROR: Did not receive full bonjour packet";
+             return;
+        }
+
+        while (list.length() > 0) {
+            if (list.at(0) == "BONJOUR") {
+                QString hostname;
+                QString name;
+                QString type;
+                int port = 0;
+                int listLength = list.length();
+                for (int i = 0; i < listLength - 1; i++) {
+                    QStringList keyValuePair = list.at(i).split(":");
+                    QString key = keyValuePair.at(0);
+                    if (key == "Hostname") {
+                        hostname = keyValuePair.at(1);
+                    } else if (key == "Name") {
+                        name = keyValuePair.at(1);
+                    } else if (key == "Type") {
+                        type = keyValuePair.at(1);
+                    } else if (key == "Port") {
+                        port = keyValuePair.at(1).toInt();
+                    }
                 }
+
+                if (hostname.isEmpty() || name.isEmpty() || type.isEmpty() || !port) {
+                    qDebug() << "ERROR: Bonjour packet wrong format";
+                    return;
+                }
+
+                qDebug() << "Running new proxy!!";
+                ProxyServer* newProxy = NULL;
+                try {
+                    newProxy = new ProxyServer(friendUid, name, type, ".friendsvpn.", hostname, port);
+                    newProxy->run();
+                } catch (int i) {
+                    // proxy exists
+                }
+            } else {
+                qDebug() << "not starting with BONJOUR";
             }
-        } else {
-            qDebug() << "not starting with BONJOUR";
-            return;
         }
     }
 }
@@ -142,6 +151,9 @@ void ControlPlaneConnection::sendBonjour() {
                  % "Type:" % rec->registeredType % "\r\n"
                  % "Port:" % QString::number(rec->port) % "\r\n"
                 % "\r\n";
+
+        int nbBytes = packet.toUtf8().length();
+        packet = QString::number(nbBytes) % "|" % packet;
 
         toWrite->write(packet.toUtf8().data());
     }

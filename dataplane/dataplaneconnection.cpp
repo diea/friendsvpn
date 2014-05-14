@@ -71,6 +71,11 @@ void DataPlaneConnection::readBuffer(const char* buf, int len) {
         while (buf[bufferPosition] != 'D') { // get header length
             headLen[j] = buf[bufferPosition];
             len--;
+            if (len < 0) {
+                // not a valid packet in buffer
+                qDebug() << "Not a valid packet in buffer";
+                return;
+            }
             bufferPosition++;
             j++;
         }

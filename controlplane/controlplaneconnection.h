@@ -32,7 +32,7 @@ public:
      * @brief readBuffer will read a buffer received by the server or client
      * @param buf
      */
-    void readBuffer(const char* buf, int);
+    void readBuffer(const char* buf, int len);
 signals:
     /**
      * @brief connected emitted when the connection leaves the Closed plane_mode
