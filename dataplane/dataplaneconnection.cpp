@@ -64,8 +64,11 @@ bool DataPlaneConnection::addMode(plane_mode mode, QObject* socket) {
 }
 
 void DataPlaneConnection::readBuffer(const char* buf, int len) {
+    qDebug() << "sending packet of len" << len;
     struct dpHeader *header = (struct dpHeader*) buf;
     const char* packetBuf = buf + sizeof(struct dpHeader*); // packet
+
+    qDebug() << "header srcIp" << header->srcIp << header->md5;
 
     QString hash(header->md5);
     QString srcIp(header->srcIp);
@@ -119,12 +122,16 @@ void DataPlaneConnection::sendBytes(const char *buf, int len, QString& hash, int
     memcpy(packet, &header, sizeof(struct dpHeader));
     memcpy(packet + sizeof(struct dpHeader), buf, len);
 
+    qDebug() << "sending packet of len" << len;
+
     if (curMode == Emitting) {
         qDebug() << "Send bytes as dataplane client";
         client->sendBytes(packet, len + sizeof(struct dpHeader));
+        // TODO Free packet in sendBytes
     } else if (curMode == Receiving) {
         qDebug() << "Send bytes as dataplane server";
         server->sendBytes(packet, len + sizeof(struct dpHeader));
+        // TODO Free packet in sendBytes
     } else {
         qWarning() << "Should not happen, trying to send bytes in Both mode for uid" << friendUid;
     }
