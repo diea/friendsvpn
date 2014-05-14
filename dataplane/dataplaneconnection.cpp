@@ -65,6 +65,7 @@ bool DataPlaneConnection::addMode(plane_mode mode, QObject* socket) {
 
 void DataPlaneConnection::readBuffer(const char* buf, int len) {
     int bufferPosition = 0; // to know where to start reading in the buffer (useful when there are multiple packets)
+    qDebug() << "Initial length" << len;
     while (len > 0) {
         char headLen[20];
         int j = 0;
@@ -76,7 +77,7 @@ void DataPlaneConnection::readBuffer(const char* buf, int len) {
                 qDebug() << headLen;
                 // not a valid packet in buffer
                 qDebug() << "Not a valid packet in buffer";
-                exit(0);
+                exit(42);
                 return;
             }
             bufferPosition++;
@@ -101,6 +102,7 @@ void DataPlaneConnection::readBuffer(const char* buf, int len) {
                     hash = keyValuePair.at(1);
                 } else if (key == "Length") {
                     length = keyValuePair.at(1).toInt();
+                    qDebug() << "Packet length" << length << "Header Length" << headerLength;
                 } else if (key == "Trans") {
                     if (keyValuePair.at(1) == "tcp") {
                         sockType = SOCK_STREAM;
@@ -109,6 +111,8 @@ void DataPlaneConnection::readBuffer(const char* buf, int len) {
                     }
                 } else if (key == "SrcIP") {
                     srcIp = keyValuePair.at(1);
+                } else {
+                    qDebug() << "Wrong bonjour packet, not supported fields!";
                 }
             }
 
