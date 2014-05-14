@@ -113,6 +113,7 @@ void DataPlaneConnection::readBuffer(const char* buf, int len) {
                     srcIp = keyValuePair.at(1);
                 } else {
                     qDebug() << "Wrong bonjour packet, not supported fields!";
+                    exit(43);
                 }
             }
 
@@ -131,7 +132,7 @@ void DataPlaneConnection::readBuffer(const char* buf, int len) {
                 while ((packetBuf[++accIndex] != ']') && (accIndex < length)) { }
 
                 if (accIndex == length) {
-                    qDebug() << "dataplane client wrong packet format received";
+                    qFatal() << "dataplane client wrong packet format received";
                     return;
                 }
 
@@ -176,7 +177,7 @@ void DataPlaneConnection::readBuffer(const char* buf, int len) {
             // we read the packet, remove from len
             len -= length;
             qDebug() << "We had LEN" << len << "and length" << length;
-            bufferPosition += length;
+            bufferPosition += headerLength + length;
         } else {
             QFile wrongPacket("viewWrongPacket");
             wrongPacket.open(QIODevice::WriteOnly);
