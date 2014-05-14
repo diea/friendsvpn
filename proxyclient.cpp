@@ -8,6 +8,10 @@ ProxyClient::ProxyClient(QString md5, QString servermd5,  QString serversrcIp, i
     this->con = con;
     this->servermd5 = servermd5;
     this->serversrcIp = serversrcIp;
+
+    qDebug() << "servermd5" << servermd5;
+    qDebug() << BonjourDiscoverer::recordHashes;
+
     serverRecord = BonjourDiscoverer::recordHashes.value(servermd5);
     if (!serverRecord) {
         // no more available

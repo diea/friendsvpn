@@ -69,7 +69,7 @@ void DataPlaneConnection::readBuffer(const char* buf, int len) {
     const char* packetBuf = buf + sizeof(struct dpHeader); // packet
 
     qDebug() << "header srcIp" << header->srcIp << header->md5;
-   // qDebug() << "packetBuf"
+    // qDebug() << "packetBuf"
     QString hash(header->md5);
     QString srcIp(header->srcIp);
     // get server Proxy and send through it!
