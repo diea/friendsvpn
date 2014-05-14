@@ -215,7 +215,7 @@ ethLoopback:
             // change src_port
             udp->sport = htons(atoi(argv[5]));
         } else { // tcp has no length field, so same as ipv6
-            pHeader.payload_len = htonl(atoi(nbBuf));
+            pHeader.payload_len = htonl(packet_send_size);
             memcpy(packet_send, &pHeader, sizeof(struct ipv6upper));
 
             // change src_port

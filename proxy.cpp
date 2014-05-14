@@ -392,21 +392,8 @@ void Proxy::readyRead() {
             //qDebug() << "dst Port!" << ntohs(*dstPort);
         }
 
-        // the first 16 bits of UDP or TCP header are the src_port
-        quint16* srcPort = static_cast<quint16*>(malloc(sizeof(quint16)));
-        memcpy(srcPort, packetAndLen + sizeOfLen, sizeof(quint16));
-        *srcPort = ntohs(*srcPort);
-
-        // send over DTLS with friendUid
-        QFile tcpPacket("tcpPackeFromPcap");
-        tcpPacket.open(QIODevice::WriteOnly);
-        tcpPacket.write(packetAndLen, pcapHeader.len + sizeOfLen);
-        tcpPacket.close();
-
-        //resolver->addMapping(pcapHeader.ipSrcStr, pcapHeader.sourceMacStr, pcapHeader.dev);
-
         QString ipSrc(pcapHeader.ipSrcStr);
-        this->receiveBytes(packetAndLen, pcapHeader.len + sizeOfLen, sockType, ipSrc);
+        this->receiveBytes(packetAndRawCtrl, pcapHeader.len + sizeof(rawComHeader), sockType, ipSrc);
     }
 }
 
