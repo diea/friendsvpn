@@ -53,6 +53,7 @@ bool ControlPlaneConnection::addMode(plane_mode mode, QObject *socket) {
 void ControlPlaneConnection::readBuffer(const char* buf, int len) {
     int bufferPosition = 0;
     while (len > 0) {
+        qDebug() << "len is" << len;
         char headLen[20];
         int j = 0;
         while (buf[bufferPosition] != '|') { // get header length, packet starts with "|"
