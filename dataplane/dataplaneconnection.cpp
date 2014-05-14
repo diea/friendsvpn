@@ -67,6 +67,8 @@ void DataPlaneConnection::readBuffer(const char* buf, int len) {
     struct dpHeader *header = (struct dpHeader*) buf;
     const char* packetBuf = buf + sizeof(struct dpHeader*); // packet
 
+    QString hash(header->md5);
+    QString srcIp(header->srcIp);
     // get server Proxy and send through it!
     Proxy* prox = Proxy::getProxy(hash); // try and get server (hash)
 
@@ -76,9 +78,9 @@ void DataPlaneConnection::readBuffer(const char* buf, int len) {
 
         // get index of ]
         int accIndex = 0;
-        while ((packetBuf[++accIndex] != ']') && (accIndex < length)) { }
+        while ((packetBuf[++accIndex] != ']') && (accIndex < header->length)) { }
 
-        if (accIndex == length) {
+        if (accIndex == header->length) {
             qFatal("dataplane client wrong packet format received");
             return;
         }
@@ -87,23 +89,18 @@ void DataPlaneConnection::readBuffer(const char* buf, int len) {
         quint16* srcPort = static_cast<quint16*>(malloc(sizeof(quint16)));
         memcpy(srcPort, packetBuf + accIndex + 1, sizeof(quint16));
         *srcPort = ntohs(*srcPort);
-        QFile test("sourcePort" + QString::number(*srcPort));
-        test.open(QIODevice::WriteOnly);
-        test.write(packetBuf, length);
 
-        QString hash(header->md5);
-        QString srcIp(header->srcIp);
         QByteArray clientHash = QCryptographicHash::hash(QString(hash + srcIp + QString::number(*srcPort)).toUtf8(), QCryptographicHash::Md5);
         prox = Proxy::getProxy(clientHash);
         if (!prox) {
-            prox = new ProxyClient(clientHash, hash, srcIp, sockType, *srcPort, this);
+            prox = new ProxyClient(clientHash, hash, srcIp, header->sockType, *srcPort, this);
             prox->run();
             free(srcPort);
         } else {
             qDebug() << "Found the client proxy ! :)";
         }
     }
-    prox->sendBytes(packetBuf, length, srcIp);
+    prox->sendBytes(packetBuf, header->length, srcIp);
 }
 
 void DataPlaneConnection::sendBytes(const char *buf, int len, QString& hash, int sockType, QString& srcIp) {
@@ -115,10 +112,10 @@ void DataPlaneConnection::sendBytes(const char *buf, int len, QString& hash, int
     struct dpHeader header;
     header.sockType = sockType;
     header.length = len;
-    header.md5 = hash.toUtf8().data();
-    header.srcIp = srcIp.toUtf8().data();
+    strcpy(header.md5, hash.toUtf8().data());
+    strcpy(header.srcIp, srcIp.toUtf8().data());
 
-    void* packet = malloc(len + sizeof(struct dpHeader));
+    char* packet = static_cast<char*>(malloc(len + sizeof(struct dpHeader)));
     memcpy(packet, &header, sizeof(struct dpHeader));
     memcpy(packet + sizeof(struct dpHeader), buf, len);
 
