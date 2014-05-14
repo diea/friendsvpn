@@ -187,26 +187,12 @@ ethLoopback:
     struct sniff_tcp* tcp = NULL;
 
     // get packet size from stdin
-    char nbBuf[20];
+    struct rawComHeader rawHead;
     while (1) {
-        char c = getchar();
-        unsigned cnt = 0;
-        c = getchar();
-        while (c != ']') {
-            if (!isdigit(c)) {
-                fprintf(stderr, "format error, digit required between []\n");
-                return 3;
-            }
-            if (cnt == 19) { 
-                fprintf(stderr, "we only have a buffer of 19bytes for packet length, sorry...\n"); 
-                return 3; 
-            }
-            nbBuf[cnt] = c;
-            c = getchar();
-            cnt++;
-        }
-        nbBuf[cnt] = '\0';
-        uint32_t packet_send_size = atoi(nbBuf) ; // tcp + payload length
+        memset(&rawHead, 0, sizeof(struct rawComHeader));
+        fread(&rawHead, sizeof(struct rawComHeader), 1, stdin);
+
+        uint32_t packet_send_size = rawHead.len; // tcp + payload length
         ip6.ip6_plen = htons((uint16_t) packet_send_size) ; // transport + payload length
 
         int nbBytes = packet_send_size;

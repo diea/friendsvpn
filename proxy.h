@@ -31,6 +31,9 @@ struct pcapComHeader {
     char sourceMacStr[18];
 } __attribute__((__packed__));
 
+struct rawComHeader { /* used to communicate with main Qt app */
+    uint32_t len;
+} __attribute__((__packed__));
 
 /**
  * @brief The Proxy class

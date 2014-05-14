@@ -375,20 +375,22 @@ void Proxy::readyRead() {
             pcap->waitForReadyRead(); /* should not happen since we write everything in one fwrite in buffer */
         }
 
-        char packet[2000];
-        pcap->read(packet, pcapHeader.len);
+        //char packet[pcapHeader.len];
+        //pcap->read(packet, pcapHeader.len);
 
+        struct rawComHeader rawHeader;
+        rawHeader.len = pcapHeader.len;
+        char packetAndRawCtrl[pcapHeader.len + sizeof(rawComHeader)];
+        memcpy(packetAndRawCtrl, &rawHeader, sizeof(rawComHeader));
+
+        char* packet = packetAndRawCtrl + sizeof(rawComHeader);
+        pcap->read(packet, pcapHeader.len);
         if (port != listenPort) {
             // first 16 bits = source Port of UDP and TCP
             quint16* dstPort = static_cast<quint16*>(static_cast<void*>(packet + 2)); // second 16 bits dstPort (or + 2 bytes)
             *dstPort = htons(listenPort); // restore the original port
             //qDebug() << "dst Port!" << ntohs(*dstPort);
         }
-
-        char packetAndLen[2020];
-        sprintf(packetAndLen, "[%d]", pcapHeader.len);
-        int sizeOfLen = strlen(packetAndLen); // we need to know the [size] string length for the memcpy
-        memcpy(packetAndLen + sizeOfLen, packet, pcapHeader.len);
 
         // the first 16 bits of UDP or TCP header are the src_port
         quint16* srcPort = static_cast<quint16*>(malloc(sizeof(quint16)));
