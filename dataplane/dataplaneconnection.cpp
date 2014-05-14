@@ -66,6 +66,7 @@ bool DataPlaneConnection::addMode(plane_mode mode, QObject* socket) {
 void DataPlaneConnection::readBuffer(const char* buf, int len) {
     int bufferPosition = 0; // to know where to start reading in the buffer (useful when there are multiple packets)
     qDebug() << "Initial length" << len;
+    int initLen = len;
     while (len > 0) {
         char headLen[20];
         int j = 0;
@@ -77,6 +78,9 @@ void DataPlaneConnection::readBuffer(const char* buf, int len) {
                 qDebug() << headLen;
                 // not a valid packet in buffer
                 qDebug() << "Not a valid packet in buffer";
+                QFile invalidPacket("invalidPacket");
+                invalidPacket.open(QIODevice::WriteOnly);
+                invalidPacket.write(buf, initLen);
                 exit(42);
                 return;
             }
