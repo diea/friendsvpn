@@ -79,18 +79,9 @@ void DataPlaneConnection::readBuffer(const char* buf, int len) {
         // compute client proxy
         // read tcp or udp header to get src port
 
-        // get index of ]
-        int accIndex = 0;
-        while ((packetBuf[++accIndex] != ']') && (accIndex < header->length)) { }
-
-        if (accIndex == header->length) {
-            qFatal("dataplane client wrong packet format received");
-            return;
-        }
-
         // the first 16 bits of UDP or TCP header are the src_port
         quint16* srcPort = static_cast<quint16*>(malloc(sizeof(quint16)));
-        memcpy(srcPort, packetBuf + accIndex + 1, sizeof(quint16));
+        memcpy(srcPort, packetBuf + sizeof(rawComHeader), sizeof(quint16));
         *srcPort = ntohs(*srcPort);
 
         QByteArray clientHash = QCryptographicHash::hash(QString(hash + srcIp + QString::number(*srcPort)).toUtf8(), QCryptographicHash::Md5);
