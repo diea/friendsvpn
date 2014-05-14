@@ -68,12 +68,15 @@ void DataPlaneConnection::readBuffer(const char* buf, int len) {
     while (len > 0) {
         char headLen[20];
         int j = 0;
+        qDebug() << bufferPosition;
         while (buf[bufferPosition] != 'D') { // get header length
             headLen[j] = buf[bufferPosition];
             len--;
-            if (len < 0) {
+            if ((len < 0) || (j > 19)) {
+                qDebug() << headLen;
                 // not a valid packet in buffer
                 qDebug() << "Not a valid packet in buffer";
+                exit(0);
                 return;
             }
             bufferPosition++;
@@ -82,8 +85,8 @@ void DataPlaneConnection::readBuffer(const char* buf, int len) {
         int headerLength = atoi(headLen);
         len -= headerLength;
 
-        const char* packetBuf = buf + bufferPosition + headerLength; // packet
         QString header = QString::fromLatin1(buf + bufferPosition, headerLength);
+        const char* packetBuf = buf + bufferPosition + headerLength; // packet
 
         QStringList list = header.split("\r\n", QString::SkipEmptyParts);
         if (list.at(0) == "DATA") {
