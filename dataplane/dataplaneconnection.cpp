@@ -115,6 +115,7 @@ void DataPlaneConnection::sendBytes(const char *buf, int len, QString& hash, int
     struct dpHeader header;
     header.sockType = sockType;
     header.length = len;
+    qDebug() << "hash length" << hash.length();
     strcpy(header.md5, hash.toUtf8().data());
     strcpy(header.srcIp, srcIp.toUtf8().data());
 
