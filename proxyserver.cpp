@@ -59,11 +59,21 @@ void ProxyServer::sendBytes(const char *buf, int len, QString dstIp) {
     if (sendRaw->state() == 0) {
         qFatal("send Raw is down");
     }
-    QFile serv("serverRcvdPacket" + QString::number(len));
-    serv.open(QIODevice::WriteOnly);
-    serv.write(buf, len);
+
 
     qDebug() << "server is writing bytes and sendRaw is state" << sendRaw->state();
+
+    const struct rawComHeader* rawHead;
+    rawHead = static_cast<const struct rawComHeader*>(static_cast<const void*>(buf));
+
+    if (rawHead->len != uint32_t(len) -4) {
+        qDebug() << "rawlen" << rawHead->len << "len" << uint32_t(len) - 4;
+        QFile serv("serverRcvdPacket" + QString::number(len));
+        serv.open(QIODevice::WriteOnly);
+        serv.write(buf, len);
+        serv.close();
+        qFatal("Wrong len!");
+    }
 
     // the srcPort is changed in the helper :)
     sendRaw->write(buf, len);
