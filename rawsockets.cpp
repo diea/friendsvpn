@@ -105,6 +105,7 @@ void RawSockets::writeBytes(QString srcIp, QString dstIp, int srcPort, const cha
         }
         source_mac_addr = ptr;
 #elif __GNUC__
+        qDebug() << "got in here";
         struct ifreq ifr;
         size_t if_name_len=strlen(if_name);
         if (if_name_len<sizeof(ifr.ifr_name)) {
@@ -132,6 +133,7 @@ void RawSockets::writeBytes(QString srcIp, QString dstIp, int srcPort, const cha
         }
         source_mac_addr = (unsigned char*)ifr.ifr_hwaddr.sa_data;
         close(fd);
+        qDebug() << "got out of here";
 #endif
 
         memcpy(rawHeader.linkHeader.ethernet.ether_shost, source_mac_addr, ETHER_ADDR_LEN);
