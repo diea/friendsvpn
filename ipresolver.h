@@ -12,7 +12,7 @@
 
 struct ip_mac_mapping {
     QString ip;
-    QString mac; // mac will be "NULL" if loopback interface or no available mac
+    QString mac; // mac will be empty if loopback interface or no available mac
     QString interface;
 };
 

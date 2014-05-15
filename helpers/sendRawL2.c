@@ -185,8 +185,7 @@ ethLoopback:
     }
     ip6.ip6_dst = ((struct sockaddr_in6 *) res->ai_addr)->sin6_addr;
 
-    // checksum of nreq
-    // begin by making pseudo header
+    // pseudo header
     struct ipv6upper pHeader;
     memset(&pHeader, 0, sizeof(struct ipv6upper));
     pHeader.ip6_src = ip6.ip6_src;

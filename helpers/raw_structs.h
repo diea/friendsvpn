@@ -1,3 +1,20 @@
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+#include <pcap.h>
+#include <arpa/inet.h>
+#include <net/if.h>
+#include <sys/ioctl.h>
+#include <unistd.h>
+#include <netdb.h>
+#include <ctype.h>
+#include <stdbool.h>
+
+#ifdef __APPLE__
+#include <ifaddrs.h>
+#include <net/if_dl.h>
+#endif /* __APPLE__ */
+
 #define ETH_IPV6 0x86dd
 
 #define SOL_TCP         6
@@ -18,10 +35,6 @@
 /* Ethernet addresses are 6 bytes */
 #define ETHER_ADDR_LEN  6
 
-struct rawComHeader { /* used to communicate with main Qt app */
-    uint32_t len;
-} __attribute__((__packed__));
-
 struct pcapComHeader { /* used to communicate with main Qt app */
     char dev[10];
     uint32_t len;
@@ -29,6 +42,11 @@ struct pcapComHeader { /* used to communicate with main Qt app */
     char sourceMacStr[18];
 } __attribute__((__packed__));
 
+struct	ether_header {
+    u_char	ether_dhost[ETHER_ADDR_LEN];
+    u_char	ether_shost[ETHER_ADDR_LEN];
+    u_short	ether_type;
+};
 struct loopbackHeader {
     uint32_t type;
 } __attribute__((__packed__));
@@ -57,7 +75,7 @@ struct ipv6hdr { /* as defined on OSX */
     } ip6_ctlun;
     struct in6_addr ip6_src;    /* source address */
     struct in6_addr ip6_dst;    /* destination address */
-} __attribute__((__packed__));  
+} __attribute__((__packed__));
 #define ip6_vfc     ip6_ctlun.ip6_un2_vfc
 #define ip6_flow    ip6_ctlun.ip6_un1.ip6_un1_flow
 #define ip6_plen    ip6_ctlun.ip6_un1.ip6_un1_plen
@@ -122,7 +140,7 @@ struct sniff_tcp {
         u_short th_win;                 /* window */
         u_short th_sum;                 /* checksum */
         u_short th_urp;                 /* urgent pointer */
-} __attribute__((__packed__)); 
+} __attribute__((__packed__));
 
 /* UDP header */
 struct sniff_udp {
@@ -130,37 +148,20 @@ struct sniff_udp {
     uint16_t        dport;      /* destination port */
     uint16_t        udp_length;
     uint16_t        udp_sum;    /* checksum */
-} __attribute__((__packed__)); 
+} __attribute__((__packed__));
 
-/*uint16_t checksum (void* buffer, int bytes) {
-
-}*/
+struct rawComHeader { /* used to communicate with main Qt app */
+    union {
+        struct loopbackHeader loopback;
+        struct ether_header ethernet;
+    } linkHeader;
+    struct ipv6hdr ip6;
+    uint32_t payload_len;
+} __attribute__((__packed__));
 
 /**
  * Compute tcp/udp checksum from buffer (usually pseudoheader + ...)
  *
  * This function's code is from http://stackoverflow.com/questions/14936518/calculating-checksum-of-icmpv6-packet-in-c
  */
-uint16_t checksum (void * buffer, int bytes) {
-   uint32_t   total;
-   uint16_t * ptr;
-   int        words;
-
-   total = 0;
-   ptr   = (uint16_t *) buffer;
-   words = (bytes + 1) / 2; // +1 & truncation on / handles any odd byte at end
-
-   /*
-    *   As we're using a 32 bit int to calculate 16 bit checksum
-    *   we can accumulate carries in top half of DWORD and fold them in later
-    */
-   while (words--) total += *ptr++;
-
-   /*
-    *   Fold in any carries
-    *   - the addition may cause another carry so we loop
-    */
-   while (total & 0xffff0000) total = (total >> 16) + (total & 0xffff);
-
-   return (uint16_t) total;
-}
+uint16_t checksum (void * buffer, int bytes);

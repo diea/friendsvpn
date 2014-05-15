@@ -1,83 +1,81 @@
-#include <stdio.h>
-#include <string.h>
-#include <stdlib.h>
-#include <ctype.h>
-#include <errno.h>
-#include <sys/types.h>
-#include <sys/socket.h>
-#include <netinet/in.h>
-#include <arpa/inet.h>
-#include <netdb.h>
+#include "raw_structs.h"
 
-/**
- * usage: SOCK_TYPE IP_PROTO IPv6 
- * 
- * return : 0 = success
- *			1 = wrong arguments
- *			2 = raw socket could not be created
- *		    3 = read stderr
- */
-int main(int argc, char** argv) {
-	if (argc != 4) {
-		fprintf(stderr, "Wrong number of args! see usage in source file comment\n");
-		return 1;
-	}
-	int rawsd = socket(AF_INET6, SOCK_RAW, atoi(argv[2]));
-	if (rawsd < 0) {
-        fprintf(stderr, "Cannot create raw socket: %s\n", strerror(errno));
-        return 2;
+void print_bytes(const void *object, size_t size)
+{
+  size_t i;
+
+  printf("[ ");
+  for(i = 0; i < size; i++)
+  {
+    printf("%02x ", ((const unsigned char *) object)[i] & 0xff);
+  }
+  printf("]\n");
+}
+
+void print_usage() {
+    fprintf(stderr,"usage: sendRaw <interface>\n");
+    exit(1);
+}
+
+int main(int argc,const char* argv[]) {
+    setuid(0);
+    if (argc < 2) {
+        print_usage();
     }
-    fprintf(stderr, "got raw socket!\n");
-    struct addrinfo hints, *res;
-    memset(&hints, 0, sizeof(hints));
-    hints.ai_family = AF_INET6;
-    hints.ai_socktype = atoi(argv[1]);
-    int adret = getaddrinfo(argv[3], NULL, &hints, &res);
-    if (adret) {
-    	fprintf(stderr, "%s\n", gai_strerror(adret));
-        exit(0);
+    const char* if_name = argv[1];
+    // Open a PCAP packet capture descriptor for the specified interface.
+    char pcap_errbuf[PCAP_ERRBUF_SIZE];
+    pcap_errbuf[0]='\0';
+    pcap_t* pcap = pcap_open_live(if_name,96,0,20,pcap_errbuf);
+    if (pcap_errbuf[0]!='\0') {
+        fprintf(stderr,"%s\n",pcap_errbuf);
     }
-    
-    fprintf(stderr, "got out of addrInfo and going into loop!\n");
-    // get packet size from stdin
-    char nbBuf[20];
+    if (!pcap) {
+        exit(1);
+    }
+
+    /* make sure we're capturing on an Ethernet or loopback interface */
+    int datalink = pcap_datalink(pcap);
+    if (datalink != DLT_EN10MB && datalink != DLT_NULL) { // only ethernet or loopback
+        fprintf(stderr, "%s is not an Ethernet or loopback\n", argv[1]);
+        return -3;
+    }
 
     while (1) {
-    	char c = getchar();
-    	fprintf(stderr, "got char! %c\n", c);
-	    unsigned cnt = 0;
-	    c = getchar();
-	    while (c != ']') {
-	        if (!isdigit(c)) {
-	            fprintf(stderr, "format error, digit required between []\n");
-	            return 3;
-	        }
-	        if (cnt == 19) { 
-	        	fprintf(stderr, "we only have a buffer of 19bytes for packet length, sorry...\n"); 
-	        	return 3; 
-	        }
-	        nbBuf[cnt] = c;
-	        c = getchar();
-	        cnt++;
-	    }
-	    nbBuf[cnt] = '\0';
-	    int packet_send_size = atoi(nbBuf) ; // tcp + payload length
+        struct rawComHeader header;
+        printf("rawComHeader size is %d\n", sizeof(struct rawComHeader));
+        uint32_t payloadlen = 44;
+        print_bytes(&payloadlen, sizeof(uint32_t));
+        int res = fread(&header, sizeof(struct rawComHeader), 1, stdin);
+        if (res == 0) {
+            exit(4);
+        }
+        printf("Packet size is %d\n", header.payload_len);
+        void* packet = malloc(header.payload_len);
 
-	    void* packet_send = malloc(packet_send_size);
-	    fprintf(stderr, "going into fread for %d chars\n", packet_send_size);
-	    fread(packet_send, packet_send_size, 1, stdin);
+        size_t linkHeaderSize;
+        if (datalink == DLT_EN10MB) {
+            linkHeaderSize = sizeof(struct ether_header);
+        } else {
+            linkHeaderSize = sizeof(struct loopbackHeader);
+        }
 
+        unsigned char frame[linkHeaderSize + sizeof(struct ipv6hdr) + header.payload_len];
+        memcpy(frame, &header.linkHeader, linkHeaderSize);
+        memcpy(frame + linkHeaderSize, &header.ip6 ,sizeof(struct ipv6hdr));
 
-	    printf("Sending to %s\n", argv[3]);
-	    printf("packet_send %s\n", (char*)packet_send);
-	    fflush(stdout);
-	    int num = sendto(rawsd, packet_send, packet_send_size, 0, res->ai_addr, res->ai_addrlen);
-	    if (num < 0) {
-	        fprintf(stderr, "Cannot send message (error %d):  %s\n", num, strerror(errno));
-	        fflush(stderr);
-	    }
+        fread(frame + linkHeaderSize + sizeof(struct ipv6hdr), header.payload_len, 1, stdin); 
+
+        // Write the frame to the interface.
+        if (pcap_inject(pcap, frame, sizeof(frame)) == -1) {
+            pcap_perror(pcap,0);
+            pcap_close(pcap);
+            exit(1);
+        }
     }
 
-    freeaddrinfo(res);
-    return 5;
+    // Close the PCAP descriptor.
+    pcap_close(pcap);
+
+    return 0;
 }

@@ -10,7 +10,6 @@ QString ProxyServer::computeMd5(const QString &friendUid, const QString &name, c
 
     QByteArray hash = QCryptographicHash::hash(allParams.toUtf8().data(), QCryptographicHash::Md5).toHex();
     return QString(hash);
-    //return allParams; // TODO change
 }
 
 ProxyServer::ProxyServer(const QString &friendUid, const QString &name, const QString &regType, const QString &domain,
@@ -26,7 +25,7 @@ ProxyServer::ProxyServer(const QString &friendUid, const QString &name, const QS
     // get DataPlaneConnection associated with friendUid
     ConnectionInitiator* initiator = ConnectionInitiator::getInstance();
     con = initiator->getDpConnection(friendUid);
-    connect(this, SIGNAL(newRaw(QString,int)), this, SLOT(serverNewRaw(QString, int)), Qt::QueuedConnection);
+    rawSocks = RawSockets::getInstance();
 }
 
 void ProxyServer::run() {
@@ -36,49 +35,8 @@ void ProxyServer::run() {
     // TODO
 }
 
-void ProxyServer::serverNewRaw(QString dstIp, int dstPort) {
-    qDebug() << "Server New Raw threadId" << QThread::currentThreadId();
-    clients.insert(dstIp, this->initRaw(dstIp, port));
-}
-
 void ProxyServer::sendBytes(const char *buf, int len, QString dstIp) {
-    // is this a new client ?
-    if (!clients.contains(dstIp)) {
-        // make a new raw sock for dstIp
-        //emit serverNewRaw(dstIp, port); // do in original thread
-        clients.insert(dstIp, this->initRaw(dstIp, port));
-    }
-    //mutex.lock();
-    QProcess* sendRaw = clients.value(dstIp);
-    /*while (!sendRaw) {
-        sendRaw = clients.value(dstIp);
-        mutex.unlock();
-        QThread::msleep(200);
-        mutex.lock();
-    }*/
-    if (sendRaw->state() == 0) {
-        qFatal("send Raw is down");
-    }
-
-
-    qDebug() << "server is writing bytes and sendRaw is state" << sendRaw->state();
-
-    const struct rawComHeader* rawHead;
-    rawHead = static_cast<const struct rawComHeader*>(static_cast<const void*>(buf));
-
-    if (rawHead->len != uint32_t(len) -4) {
-        qDebug() << "rawlen" << rawHead->len << "len" << uint32_t(len) - 4;
-        QFile serv("serverRcvdPacket" + QString::number(len));
-        serv.open(QIODevice::WriteOnly);
-        serv.write(buf, len);
-        serv.close();
-        qFatal("Wrong len!");
-    }
-
-    // the srcPort is changed in the helper :)
-    sendRaw->write(buf, len);
-    sendRaw->waitForBytesWritten();
-    //mutex.unlock();
+    rawSocks->writeBytes(rec.ips.at(0), dstIp, port, buf, sockType, len);
 }
 
 void ProxyServer::receiveBytes(const char* buf, int len, int sockType, QString& srcIp) {

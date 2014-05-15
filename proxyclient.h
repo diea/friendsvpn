@@ -11,11 +11,10 @@ private:
      * @brief serverRecord will be the server record for which this proxy client will proxy to
      */
     BonjourRecord* serverRecord;
-    QProcess* sendRaw;
     QMutex mutex;
     QString servermd5;
     QString serversrcIp; /* the ip that the server will have to fwd (the real client of the server) */
-
+    RawSockets* rawSocks;
     int origSrcPort;
 
     //void receiveBytes(char *buf, int len, int sizeLen, QString& hash, int sockType, QString& srcIp);

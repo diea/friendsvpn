@@ -35,7 +35,9 @@ SOURCES += main.cpp \
     unixsignalhandler.cpp \
     proxyserver.cpp \
     proxyclient.cpp \
-    ipresolver.cpp
+    ipresolver.cpp \
+    rawsockets.cpp \
+    helpers/raw_structs.cpp
 
 HEADERS  += \
     graphic/systray.h \
@@ -64,7 +66,9 @@ HEADERS  += \
     unixsignalhandler.h \
     proxyserver.h \
     proxyclient.h \
-    ipresolver.h
+    ipresolver.h \
+    helpers/raw_structs.h \
+    rawsockets.h
 
 FORMS    +=
 

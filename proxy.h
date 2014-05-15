@@ -14,26 +14,12 @@
 #include "dataplane/dataplaneconnection.h"
 #include "ph2phtp_parser.h"
 #include "ipresolver.h"
+#include "rawsockets.h"
 
 struct prefix {
     QString str;
     int len;
 };
-
-/**
- * @brief The pcapComHeader struct
- * header for communication with the pcapHelper
- */
-struct pcapComHeader {
-    char dev[10];
-    uint32_t len;
-    char ipSrcStr[INET6_ADDRSTRLEN];
-    char sourceMacStr[18];
-} __attribute__((__packed__));
-
-struct rawComHeader { /* used to communicate with main Qt app */
-    uint32_t len;
-} __attribute__((__packed__));
 
 /**
  * @brief The Proxy class
@@ -46,6 +32,7 @@ class Proxy : public QObject
     Q_OBJECT
 private:
     static IpResolver* resolver;
+    static RawSockets* rawSockets;
 
 protected:
     QString listenIp;
@@ -111,11 +98,6 @@ protected:
     void run_pcap();
 
     /**
-     * @brief initRaw initializes the raw socket to inject packets
-     * @param if dstPort and srcPort must not be changed, leave these parameters at 0
-     */
-    QProcess* initRaw(QString ipDst, int srcPort = 0);
-    /**
      * @brief receiveBytes
      * @param buf
      * @param len = sizeLen + length of packet
@@ -138,7 +120,6 @@ public:
     static Proxy* getProxy(QString md5);
 private slots:
     void sendRawFinish(int);
-
     void sendRawStandardError();
     void sendRawStandardOutput();
 protected slots:

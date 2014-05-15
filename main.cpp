@@ -71,7 +71,7 @@ int main(int argc, char *argv[])
     QtConcurrent::run(Proxy::gennewIP); // generate the initial new ips
 
     // discover services
-    QThread discovererThread;
+    /*QThread discovererThread;
     BonjourDiscoverer* disco = BonjourDiscoverer::getInstance();
     disco->moveToThread(&discovererThread);
     QObject::connect(&discovererThread, SIGNAL(started()), disco, SLOT(discoverServices()));
@@ -79,14 +79,11 @@ int main(int argc, char *argv[])
     //disco->discoverServices();
 
     ConnectionInitiator* con = ConnectionInitiator::getInstance();
-    con->run();
+    con->run();*/
 
-    /*QThread* newProxyThread1 = new QThread();
     ProxyServer* newProxy1 = new ProxyServer("100008078109463", "diea-VirtualBox-3", "_http._tcp.", ".friendsvpn.", "diea-VirtualBox-3.local", 45940);
+    newProxy1->run();
     // no move to thread ?
-    QObject::connect(newProxyThread1, SIGNAL(started()), newProxy1, SLOT(run()));
-    QObject::connect(newProxyThread1, SIGNAL(finished()), newProxyThread1, SLOT(deleteLater()));
-    newProxyThread1->start();*/
 
     /*QThread* newProxyThread = new QThread();
     ProxyServer* newProxy = new ProxyServer("100008078109463", "diea-VirtualBox-3", "_http._tcp.", ".friendsvpn.", "diea-VirtualBox-3.local", 80);

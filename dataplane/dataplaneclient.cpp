@@ -2,7 +2,7 @@
 #include "dataplaneconnection.h"
 
 DataPlaneClient::DataPlaneClient(QHostAddress ip, DataPlaneConnection* con, QObject *parent) :
-    ip(ip), con(con), QObject(parent), reading(0)
+    QObject(parent), reading(0), ip(ip), con(con)
 {
     memset((void *) &remote_addr, 0, sizeof(struct sockaddr_storage));
     memset((void *) &local_addr, 0, sizeof(struct sockaddr_storage));

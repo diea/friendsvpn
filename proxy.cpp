@@ -6,9 +6,9 @@
 #include <QtConcurrent>
 #include <pcap.h>
 
-
 QHash<QString, Proxy*> Proxy::proxyHashes;
 IpResolver* Proxy::resolver = IpResolver::getInstance();
+RawSockets* Proxy::rawSockets = RawSockets::getInstance();
 QString Proxy::defaultIface = Proxy::getDefaultInterface();
 QStringList Proxy::poolOfIps;
 QMutex Proxy::poolOfIpsMutex;
@@ -44,36 +44,6 @@ Proxy::Proxy(int srcPort, const QString& regType, QString md5) : listenPort(srcP
         ipProto = IPPROTO_UDP;
     }
 }
-
-QProcess* Proxy::initRaw(QString ipDst, int srcPort) {
-    // init raw socket to send packets
-    QProcess* sendRaw = new QProcess(this);
-    QStringList sendRawArgs;
-    IpResolver* resolv = IpResolver::getInstance();
-
-    struct ip_mac_mapping map = resolv->getMapping(ipDst);
-    sendRawArgs.append(map.interface);
-    sendRawArgs.append(listenIp);
-    sendRawArgs.append(ipDst);
-    sendRawArgs.append(QString::number(sockType));
-    sendRawArgs.append(QString::number(srcPort));
-    //sendRawArgs.append(QString::number(dstPort));
-
-    if (!map.mac.isEmpty()) {
-        sendRawArgs.append(map.mac);
-    }
-
-    connect(sendRaw, SIGNAL(finished(int)), this, SLOT(sendRawFinish(int)));
-    connect(sendRaw, SIGNAL(readyReadStandardError()), this, SLOT(sendRawStandardError()));
-    connect(sendRaw, SIGNAL(readyReadStandardOutput()), this, SLOT(sendRawStandardOutput()));
-
-    /*UnixSignalHandler* u = UnixSignalHandler::getInstance();
-    u->addQProcess(sendRaw);*/ // TODO
-
-    sendRaw->start(QString(HELPERPATH) + "sendRaw", sendRawArgs);
-    return sendRaw;
-}
-
 
 QString Proxy::newIP() {
     poolOfIpsMutex.lock();
@@ -380,19 +350,9 @@ void Proxy::readyRead() {
             pcap->waitForReadyRead(); /* should not happen since we write everything in one fwrite in buffer */
         }
 
-        //char packet[pcapHeader.len];
-        //pcap->read(packet, pcapHeader.len);
-
-        struct rawComHeader rawHeader;
-        memset(&rawHeader, 0, sizeof(rawHeader));
-        rawHeader.len = pcapHeader.len;
-        qDebug() << "ran header len is " << rawHeader.len;
-
-        char packetAndRawCtrl[pcapHeader.len + sizeof(rawComHeader)];
-        memcpy(packetAndRawCtrl, &rawHeader, sizeof(rawComHeader)); // put rawHeader
-
-        char* packet = packetAndRawCtrl + sizeof(rawComHeader);
+        char packet[pcapHeader.len];
         pcap->read(packet, pcapHeader.len);
+
         if (port != listenPort) {
             // first 16 bits = source Port of UDP and TCP
             quint16* dstPort = static_cast<quint16*>(static_cast<void*>(packet + 2)); // second 16 bits dstPort (or + 2 bytes)
@@ -402,11 +362,7 @@ void Proxy::readyRead() {
 
         QString ipSrc(pcapHeader.ipSrcStr);
 
-        /*QFile testRawHeader("testRawHeader");
-        testRawHeader.open(QIODevice::WriteOnly);
-        testRawHeader.write(packetAndRawCtrl, pcapHeader.len + sizeof(rawComHeader));
-        testRawHeader.close();*/
-        this->receiveBytes(packetAndRawCtrl, pcapHeader.len + sizeof(rawComHeader), sockType, ipSrc);
+        this->receiveBytes(packet, pcapHeader.len, sockType, ipSrc);
     }
 }
 
