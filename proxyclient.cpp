@@ -32,9 +32,9 @@ void ProxyClient::run() {
 void ProxyClient::sendBytes(const char *buf, int len, QString) {
     // dstIp argument is unused by client, it's for the server to know to which client to send
 
-    qDebug() << "Client sending bytes to " << serversrcIp;
+    qDebug() << "Client sending bytes to " << serverRecord->ips.at(0);
     // the srcPort is changed in the helper :)
-    rawSocks->writeBytes(listenIp, serversrcIp, port, buf, sockType, len);
+    rawSocks->writeBytes(listenIp, serverRecord->ips.at(0), port, buf, sockType, len);
 }
 
 void ProxyClient::receiveBytes(const char* buf, int len, int sockType, QString& srcIp) {
