@@ -54,7 +54,6 @@ RawSockets::RawSockets(QObject *parent) :
     struct ifreq ifr;
     struct ifconf ifc;
     char buf[1024];
-    int success = 0;
 
     int sock = socket(AF_INET, SOCK_DGRAM, IPPROTO_IP);
     if (sock == -1) { /* handle error*/ };
@@ -73,7 +72,7 @@ RawSockets::RawSockets(QObject *parent) :
         strcpy(ifr.ifr_name, it->ifr_name);
         if (ioctl(sock, SIOCGIFFLAGS, &ifr) == 0) {
             if (! (ifr.ifr_flags & IFF_LOOPBACK)) { // don't count loopback
-                if ((ioctl(sock, SIOCGIFHWADDR, &ifr) == 0) && (!strncmp(ifr.ifrn_name, "eth", 3))) {
+                if ((ioctl(sock, SIOCGIFHWADDR, &ifr) == 0) && (!strncmp(ifr.ifr_ifrn.ifrn_name, "eth", 3))) {
                     struct rawProcess* r = static_cast<struct rawProcess*>(malloc(sizeof(struct rawProcess)));
                     memset(r, 0, sizeof(struct rawProcess));
                     r->linkType = DLT_EN10MB;
@@ -81,12 +80,12 @@ RawSockets::RawSockets(QObject *parent) :
 
                     r->process = new QProcess(); // can always connect signals in each Proxy's constructor.
                     QStringList arguments;
-                    arguments.append(ifr.ifrn_name);
+                    arguments.append(ifr.ifr_ifrn.ifrn_name);
                     r->process->start(QString(HELPERPATH) + "sendRaw", arguments);
                     qDebug() << "waiting for new raw socket start";
                     r->process->waitForStarted();
                     qDebug() << "insert!";
-                    rawHelpers.insert(ifr.ifrn_name, r);
+                    rawHelpers.insert(ifr.ifr_ifrn.ifrn_name, r);
                 }
             }
         }
