@@ -63,9 +63,11 @@ void RawSockets::writeBytes(QString srcIp, QString dstIp, int srcPort, const cha
     IpResolver* r = IpResolver::getInstance();
     qDebug() << "got here";
     struct ip_mac_mapping map = r->getMapping(dstIp);
-
+    qDebug() << "got here";
     struct rawProcess* p = rawHelpers.value(map.interface);
+    qDebug() << "got here";
     QProcess* raw = p->process;
+    qDebug() << "got here";
     if (!raw || raw->state() != 2) {
         qDebug() << "raw state is " << raw->state() << "and interface " << map.interface;
         qFatal("No raw helper");
