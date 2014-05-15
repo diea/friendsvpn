@@ -3,6 +3,7 @@
 
 #include <QObject>
 #include <QProcess>
+#include <QMutex>
 /**
  * @brief The UnixSignalHandler class will handle the SIGTERM and SIGINT signals to clearup things
  * that the app must clean before exiting.

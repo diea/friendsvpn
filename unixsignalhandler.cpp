@@ -1,6 +1,5 @@
 #include "unixsignalhandler.h"
 #include <signal.h>
-#include <QMutex>
 #include <QDebug>
 
 
