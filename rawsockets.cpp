@@ -193,11 +193,12 @@ void RawSockets::writeBytes(QString srcIp, QString dstIp, int srcPort, const cha
             close(fd);
             exit(1);
         }
-        /*if (ifr.ifr_hwaddr.sa_family != ARPHRD_ETHER) {
+        if (ifr.ifr_hwaddr.sa_family != ARPHRD_ETHER) {
             fprintf(stderr,"not an Ethernet interface\n");
-            close(fd);
-        }*/
-        source_mac_addr = (unsigned char*)ifr.ifr_hwaddr.sa_data;
+            memset(source_mac_addr, 0, ETHER_ADDR_LEN);
+        } else {
+            source_mac_addr = (unsigned char*)ifr.ifr_hwaddr.sa_data;
+        }
         close(fd);
         qDebug() << "got out of here";
 #endif
@@ -209,6 +210,8 @@ void RawSockets::writeBytes(QString srcIp, QString dstIp, int srcPort, const cha
         if (map.mac.isEmpty()) { // "00:00:00:00:00:00"
             memset(dstMac, 0, ETHER_ADDR_LEN);
         }
+        qDebug() << "got here";
+
         char* token = static_cast<char*>(malloc(sizeof(char)));
         int i = 0;
         while (((token = strsep(&dstMac, ":")) != NULL) && (i < 6)) {
@@ -217,9 +220,12 @@ void RawSockets::writeBytes(QString srcIp, QString dstIp, int srcPort, const cha
             i++;
         }
         free(token);
+        qDebug() << "got here";
+
     } else { // DLT_NULL
         rawHeader.linkHeader.loopback.type = 0x1E;
     }
+    qDebug() << "got here";
 
     // Construct v6 header
     rawHeader.ip6.ip6_vfc = 6 << 4;
@@ -260,6 +266,7 @@ void RawSockets::writeBytes(QString srcIp, QString dstIp, int srcPort, const cha
     }
     int checksumBufSize = sizeof(struct ipv6upper) + nbBytes;
     char* checksumPacket = static_cast<char*>(malloc(checksumBufSize));
+    qDebug() << "got here";
 
     if (sockType == SOCK_DGRAM) {
         udp = static_cast<struct sniff_udp*>(static_cast<void*>(packet_send));
@@ -281,6 +288,7 @@ void RawSockets::writeBytes(QString srcIp, QString dstIp, int srcPort, const cha
         tcp->th_sum = ~(checksum(checksumPacket, sizeof(struct ipv6upper) + packet_send_size));
         free(checksumPacket);
     }
+    qDebug() << "got here";
 
     // combine the rawHeader and packet in one contiguous block
     memcpy(buffer, &rawHeader, sizeof(struct rawComHeader));
