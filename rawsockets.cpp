@@ -203,24 +203,22 @@ void RawSockets::writeBytes(QString srcIp, QString dstIp, int srcPort, const cha
 #endif
 
         memcpy(rawHeader.linkHeader.ethernet.ether_shost, source_mac_addr, ETHER_ADDR_LEN);
-
+        qDebug() << "got here";
         // set dst mac
         char* dstMac = map.mac.toUtf8().data();
-        if (map.mac.isEmpty()) { // "00:00:00:00:00:00"
-            memset(dstMac, 0, ETHER_ADDR_LEN);
+        if (!map.mac.isEmpty()) {
+            char* token = static_cast<char*>(malloc(sizeof(char)));
+            int i = 0;
+            while (((token = strsep(&dstMac, ":")) != NULL) && (i < 6)) {
+                rawHeader.linkHeader.ethernet.ether_dhost[i] = strtoul(token, NULL, 16);
+                //printf("%x\n", header.ether_dhost[i]);
+                i++;
+            }
+            free(token);
+        } else { // linux loopback dest is 00:00...
+            memset(rawHeader.linkHeader.ethernet.ether_dhost, 0, ETHER_ADDR_LEN);
         }
         qDebug() << "got here";
-
-        char* token = static_cast<char*>(malloc(sizeof(char)));
-        int i = 0;
-        while (((token = strsep(&dstMac, ":")) != NULL) && (i < 6)) {
-            rawHeader.linkHeader.ethernet.ether_dhost[i] = strtoul(token, NULL, 16);
-            //printf("%x\n", header.ether_dhost[i]);
-            i++;
-        }
-        free(token);
-        qDebug() << "got here";
-
     } else { // DLT_NULL
         rawHeader.linkHeader.loopback.type = 0x1E;
     }
