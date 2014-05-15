@@ -61,6 +61,7 @@ RawSockets* RawSockets::getInstance() {
 
 void RawSockets::writeBytes(QString srcIp, QString dstIp, int srcPort, const char *transAndPayload, int sockType, int packet_send_size) {
     IpResolver* r = IpResolver::getInstance();
+    qDebug() << "got here";
     struct ip_mac_mapping map = r->getMapping(dstIp);
 
     struct rawProcess* p = rawHelpers.value(map.interface);
@@ -69,6 +70,7 @@ void RawSockets::writeBytes(QString srcIp, QString dstIp, int srcPort, const cha
         qDebug() << "raw state is " << raw->state() << "and interface " << map.interface;
         qFatal("No raw helper");
     }
+    qDebug() << "got here";
 
     int linkLayerType = DLT_EN10MB;
 #ifdef __APPLE__
@@ -76,6 +78,7 @@ void RawSockets::writeBytes(QString srcIp, QString dstIp, int srcPort, const cha
         linkLayerType = DLT_NULL;
     }
 #endif
+    qDebug() << "got here";
 
     char* buffer = static_cast<char*>(malloc(packet_send_size + sizeof(struct rawComHeader)));
     memcpy(buffer + sizeof(struct rawComHeader), transAndPayload, packet_send_size);
@@ -85,6 +88,7 @@ void RawSockets::writeBytes(QString srcIp, QString dstIp, int srcPort, const cha
     struct rawComHeader rawHeader;
     memset(&rawHeader, 0, sizeof(struct rawComHeader));
     rawHeader.payload_len = packet_send_size;
+    qDebug() << "got here";
 
     if (linkLayerType == DLT_EN10MB) {
         rawHeader.linkHeader.ethernet.ether_type = htons(ETH_IPV6);
