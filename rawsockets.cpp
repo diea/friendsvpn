@@ -228,7 +228,7 @@ void RawSockets::writeBytes(QString srcIp, QString dstIp, int srcPort, const cha
     rawHeader.ip6.ip6_vfc = 6 << 4;
     rawHeader.ip6.ip6_nxt = (sockType == SOCK_DGRAM) ? SOL_UDP : SOL_TCP;
     rawHeader.ip6.ip6_hlim = TTL;
-    rawHeader.ip6.ip6_plen = packet_send_size;
+    rawHeader.ip6.ip6_plen = htons(packet_send_size);
 
     struct addrinfo hints, *res;
     memset(&hints, 0, sizeof(hints));
