@@ -3,11 +3,17 @@
 #include <QMutex>
 #include <QFile>
 
+#ifndef __APPLE__
+#include <ifaddrs.h>
+#include <linux/if_link.h>
+#endif
+
 RawSockets* RawSockets::instance = NULL;
 
 RawSockets::RawSockets(QObject *parent) :
     QObject(parent)
 {
+#ifdef __APPLE__
     struct ifaddrs *ifap, *ifaptr;
     unsigned char *ptr;
     if (getifaddrs(&ifap) == 0) {
@@ -31,7 +37,8 @@ RawSockets::RawSockets(QObject *parent) :
         }
         freeifaddrs(ifap);
     }
-#ifdef __APPLE__
+
+    // set loopback
     struct rawProcess* r = static_cast<struct rawProcess*>(malloc(sizeof(struct rawProcess)));
     memset(r, 0, sizeof(struct rawProcess));
     r->linkType = DLT_NULL;
@@ -43,6 +50,63 @@ RawSockets::RawSockets(QObject *parent) :
     qDebug() << "waiting for new raw socket start";
     r->process->waitForStarted();
     rawHelpers.insert("lo0", r);
+#elif __GNUC__ /* inspired by http://stackoverflow.com/questions/1779715/how-to-get-mac-address-of-your-machine-using-a-c-program */
+    struct ifreq ifr;
+    struct ifconf ifc;
+    char buf[1024];
+    int success = 0;
+
+    int sock = socket(AF_INET, SOCK_DGRAM, IPPROTO_IP);
+    if (sock == -1) { /* handle error*/ };
+
+    ifc.ifc_len = sizeof(buf);
+    ifc.ifc_buf = buf;
+    if (ioctl(sock, SIOCGIFCONF, &ifc) == -1) {
+        /* handle error */
+        qFatal("ioctl error while getting interfaces");
+    }
+
+    struct ifreq* it = ifc.ifc_req;
+    const struct ifreq* const end = it + (ifc.ifc_len / sizeof(struct ifreq));
+
+    for (; it != end; ++it) {
+        strcpy(ifr.ifr_name, it->ifr_name);
+        if (ioctl(sock, SIOCGIFFLAGS, &ifr) == 0) {
+            if (! (ifr.ifr_flags & IFF_LOOPBACK)) { // don't count loopback
+                if ((ioctl(sock, SIOCGIFHWADDR, &ifr) == 0) && (!strncmp(ifr->ifrn_name, "eth", 3))) {
+                    struct rawProcess* r = static_cast<struct rawProcess*>(malloc(sizeof(struct rawProcess)));
+                    memset(r, 0, sizeof(struct rawProcess));
+                    r->linkType = DLT_EN10MB;
+                    memcpy(&r->mac, ifr.ifr_hwaddr.sa_data, ETHER_ADDR_LEN);
+
+                    r->process = new QProcess(); // can always connect signals in each Proxy's constructor.
+                    QStringList arguments;
+                    arguments.append(ifr->ifrn_name);
+                    r->process->start(QString(HELPERPATH) + "sendRaw", arguments);
+                    qDebug() << "waiting for new raw socket start";
+                    r->process->waitForStarted();
+                    qDebug() << "insert!";
+                    rawHelpers.insert(ifr->ifrn_name, r);
+                }
+            }
+        }
+        else {
+            /* handle error */
+            qFatal("ioctl error while getting interfaces");
+        }
+    }
+
+    // set loopback
+    struct rawProcess* r = static_cast<struct rawProcess*>(malloc(sizeof(struct rawProcess)));
+    memset(r, 0, sizeof(struct rawProcess));
+    r->linkType = DLT_EN10MB; /* loopback is Ethernet on linux */
+    r->process = new QProcess();
+    QStringList arguments;
+    arguments.append("lo");
+    r->process->start(QString(HELPERPATH) + "sendRaw", arguments);
+    qDebug() << "waiting for new raw socket start";
+    r->process->waitForStarted();
+    rawHelpers.insert("lo", r);
 #endif
 }
 
