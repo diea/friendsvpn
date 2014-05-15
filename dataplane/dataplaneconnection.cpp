@@ -81,7 +81,7 @@ void DataPlaneConnection::readBuffer(const char* buf, int len) {
 
         // the first 16 bits of UDP or TCP header are the src_port
         quint16* srcPort = static_cast<quint16*>(malloc(sizeof(quint16)));
-        memcpy(srcPort, packetBuf + sizeof(rawComHeader), sizeof(quint16));
+        memcpy(srcPort, packetBuf, sizeof(quint16));
         *srcPort = ntohs(*srcPort);
 
         QByteArray clientHash = QCryptographicHash::hash(QString(hash + srcIp + QString::number(*srcPort)).toUtf8(), QCryptographicHash::Md5);
