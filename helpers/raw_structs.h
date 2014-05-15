@@ -35,6 +35,8 @@
 /* Ethernet addresses are 6 bytes */
 #define ETHER_ADDR_LEN  6
 
+#define ARPHRD_ETHER 1
+
 struct pcapComHeader { /* used to communicate with main Qt app */
     char dev[10];
     uint32_t len;
