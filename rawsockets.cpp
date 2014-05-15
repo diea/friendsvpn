@@ -8,7 +8,6 @@ RawSockets* RawSockets::instance = NULL;
 RawSockets::RawSockets(QObject *parent) :
     QObject(parent)
 {
-#ifdef __APPLE__
     struct ifaddrs *ifap, *ifaptr;
     unsigned char *ptr;
     if (getifaddrs(&ifap) == 0) {
@@ -32,7 +31,7 @@ RawSockets::RawSockets(QObject *parent) :
         }
         freeifaddrs(ifap);
     }
-
+#ifdef __APPLE__
     struct rawProcess* r = static_cast<struct rawProcess*>(malloc(sizeof(struct rawProcess)));
     memset(r, 0, sizeof(struct rawProcess));
     r->linkType = DLT_NULL;
@@ -44,8 +43,6 @@ RawSockets::RawSockets(QObject *parent) :
     qDebug() << "waiting for new raw socket start";
     r->process->waitForStarted();
     rawHelpers.insert("lo0", r);
-#elif __GNUC__
-    // TODO
 #endif
 }
 
