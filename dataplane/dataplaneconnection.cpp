@@ -94,7 +94,7 @@ void DataPlaneConnection::readBuffer(const char* buf, int len) {
             qDebug() << "Found the client proxy ! :)";
         }
     }
-    prox->sendBytes(packetBuf, header->length, srcIp);
+    prox->sendBytes(packetBuf, header->len, srcIp);
 }
 
 void DataPlaneConnection::sendBytes(const char *buf, int len, QString& hash, int sockType, QString& srcIp) {
@@ -105,7 +105,9 @@ void DataPlaneConnection::sendBytes(const char *buf, int len, QString& hash, int
     // make the DATA header
     struct dpHeader header;
     header.sockType = sockType;
-    header.length = len;
+    qDebug() << "length" << len;
+    header.len = qint16(len);
+    qDebug() << "header contains length in 16bit" << header.len;
     qDebug() << "hash length" << hash.length();
     strcpy(header.md5, hash.toUtf8().data());
     strcpy(header.srcIp, srcIp.toUtf8().data());

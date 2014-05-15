@@ -445,7 +445,7 @@ void Proxy::run_pcap() {
                 }
                 if (port >= 65535)
                     qFatal("Port escalation higher than 65535");
-                qDebug() << "Could not bind on port " << listenPort << "gonna use " << QString::number(port);
+                qDebug() << "Could not bind on port " << listenPort << "gonna use " << 45940; // TODO QString::number(port);
                 bindSocket->deleteLater();
             } else {
                 qFatal("Error with the bind helper process");

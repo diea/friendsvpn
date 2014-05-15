@@ -209,7 +209,11 @@ ethLoopback:
             fprintf(stderr, "Error %d feof %d on fread!\n", ferror(stdin), feof(stdin));
             exit(4);
         }
-
+        printf("packet size %d\n", rawHead.len);
+        print_bytes(&rawHead.len, sizeof(uint32_t));
+        uint32_t n324 = 324;
+        print_bytes(&n324, sizeof(uint32_t));
+        fflush(stdout);
         uint32_t packet_send_size = rawHead.len; //rawHead.len; // tcp + payload length
         ip6.ip6_plen = htons((uint16_t) packet_send_size) ; // transport + payload length
 
