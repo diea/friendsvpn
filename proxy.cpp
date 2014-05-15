@@ -77,6 +77,13 @@ QProcess* Proxy::initRaw(QString ipDst, int srcPort) {
 
 QString Proxy::newIP() {
     poolOfIpsMutex.lock();
+    while (poolOfIps.length() < 1) {
+        qWarning() << "No ipv6 available!";
+        poolOfIpsMutex.unlock();
+        QtConcurrent::run(gennewIP);
+        QThread::sleep(1);
+        poolOfIpsMutex.lock();
+    }
     QString newIp = poolOfIps.first();
     int length = poolOfIps.length();
     poolOfIpsMutex.unlock();
@@ -363,7 +370,7 @@ void Proxy::readyRead() {
     QProcess* pcap = dynamic_cast<QProcess*> (QObject::sender());
     while (pcap->bytesAvailable()) {
         struct pcapComHeader pcapHeader;
-        if (pcap->bytesAvailable() < sizeof(pcapComHeader)) {
+        if (pcap->bytesAvailable() < qint64(sizeof(pcapComHeader))) {
             return; // wait for more!
         }
 
@@ -377,9 +384,12 @@ void Proxy::readyRead() {
         //pcap->read(packet, pcapHeader.len);
 
         struct rawComHeader rawHeader;
+        memset(&rawHeader, 0, sizeof(rawHeader));
         rawHeader.len = pcapHeader.len;
+        qDebug() << "ran header len is " << rawHeader.len;
+
         char packetAndRawCtrl[pcapHeader.len + sizeof(rawComHeader)];
-        memcpy(packetAndRawCtrl, &rawHeader, sizeof(rawComHeader));
+        memcpy(packetAndRawCtrl, &rawHeader, sizeof(rawComHeader)); // put rawHeader
 
         char* packet = packetAndRawCtrl + sizeof(rawComHeader);
         pcap->read(packet, pcapHeader.len);
@@ -391,6 +401,11 @@ void Proxy::readyRead() {
         }
 
         QString ipSrc(pcapHeader.ipSrcStr);
+
+        /*QFile testRawHeader("testRawHeader");
+        testRawHeader.open(QIODevice::WriteOnly);
+        testRawHeader.write(packetAndRawCtrl, pcapHeader.len + sizeof(rawComHeader));
+        testRawHeader.close();*/
         this->receiveBytes(packetAndRawCtrl, pcapHeader.len + sizeof(rawComHeader), sockType, ipSrc);
     }
 }

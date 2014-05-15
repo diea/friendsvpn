@@ -59,9 +59,11 @@ void ProxyServer::sendBytes(const char *buf, int len, QString dstIp) {
     if (sendRaw->state() == 0) {
         qFatal("send Raw is down");
     }
-    QFile serv("serverRcvdPacket");
+    QFile serv("serverRcvdPacket" + QString::number(len));
     serv.open(QIODevice::WriteOnly);
     serv.write(buf, len);
+
+    qDebug() << "server is writing bytes and sendRaw is state" << sendRaw->state();
 
     // the srcPort is changed in the helper :)
     sendRaw->write(buf, len);

@@ -20,6 +20,7 @@ private:
      */
     static int setup_unix_signal_handlers();
 
+    static QMutex mutex;
     QList<QProcess*> listOfProcessToKill;
     explicit UnixSignalHandler(QObject *parent = 0);
 

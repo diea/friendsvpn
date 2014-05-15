@@ -65,7 +65,7 @@ void ServerWorker::connection_handle() {
             switch (SSL_get_error(ssl, len)) {
                 case SSL_ERROR_NONE:
                 qDebug() << "sever worker read" << len << "bytes";
-                qDebug() << buf;
+                //qDebug() << buf;
                  // TODO call dataplaneconnection
                  //con->readBuffer(buf);
                  emit bufferReady(buf, len);

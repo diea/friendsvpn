@@ -55,6 +55,7 @@ void ControlPlaneConnection::readBuffer(const char* buf, int len) {
     while (len > 0) {
         qDebug() << "len is" << len;
         char headLen[20];
+        memset(&headLen, 0, sizeof(headLen));
         int j = 0;
         while (buf[bufferPosition] != '|') { // get header length, packet starts with "|"
             headLen[j] = buf[bufferPosition];
@@ -70,6 +71,7 @@ void ControlPlaneConnection::readBuffer(const char* buf, int len) {
         int headerLength = atoi(headLen);
         len -= headerLength + 1; // "+1" is to ignore the character | that is not counted
 
+        qDebug() << "headerlength is " << headerLength;
         QString packet = QString::fromLatin1(buf + (++bufferPosition), headerLength); // skip the "|" so ++bufferPosition
         bufferPosition += headerLength; // skip to the next packet
 

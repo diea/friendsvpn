@@ -29,6 +29,18 @@
 
 #include "raw_structs.h"
 
+void print_bytes(const void *object, size_t size)
+{
+  size_t i;
+
+  printf("[ ");
+  for(i = 0; i < size; i++)
+  {
+    printf("%02x ", ((const unsigned char *) object)[i] & 0xff);
+  }
+  printf("]\n");
+}
+
 void print_usage() {
     fprintf(stderr,"usage: sendRaw <interface> <ipv6-src> <ipv6-dst> <sockType> <port-src> [<mac-dst>] \n");
     fprintf(stderr,"    mac-dst must be used if Ethernet interface\n");
@@ -47,7 +59,7 @@ int main(int argc,const char* argv[]) {
     // Open a PCAP packet capture descriptor for the specified interface.
     char pcap_errbuf[PCAP_ERRBUF_SIZE];
     pcap_errbuf[0]='\0';
-    pcap_t* pcap = pcap_open_live(if_name,96,0,0,pcap_errbuf);
+    pcap_t* pcap = pcap_open_live(if_name,96,0,20,pcap_errbuf);
     if (pcap_errbuf[0]!='\0') {
         fprintf(stderr,"%s\n",pcap_errbuf);
     }
@@ -160,7 +172,6 @@ ethLoopback:
     struct addrinfo hints, *res;
     memset(&hints, 0, sizeof(hints));
     hints.ai_family = AF_INET6;
-    //hints.ai_socktype = atoi(argv[1]);
     int adret = getaddrinfo(argv[2], NULL, &hints, &res);
     if (adret) {
         fprintf(stderr, "%s\n", gai_strerror(adret));
@@ -186,19 +197,20 @@ ethLoopback:
     struct sniff_udp* udp = NULL;
     struct sniff_tcp* tcp = NULL;
 
-    // get packet size from stdin
     struct rawComHeader rawHead;
+    void* packet_send;
     while (1) {
-        char c;
         memset(&rawHead, 0, sizeof(struct rawComHeader));
 
-        int res = fread(&rawHead, sizeof(struct rawComHeader), 1, stdin);
+        int res = fread(&rawHead.len, 4, 1, stdin);
         if (!res) {
             clearerr(stdin);
-            continue;
+            fflush(stdout);
+            fprintf(stderr, "Error %d feof %d on fread!\n", ferror(stdin), feof(stdin));
+            exit(4);
         }
-        uint32_t packet_send_size = rawHead.len; // tcp + payload length
 
+        uint32_t packet_send_size = rawHead.len; //rawHead.len; // tcp + payload length
         ip6.ip6_plen = htons((uint16_t) packet_send_size) ; // transport + payload length
 
         int nbBytes = packet_send_size;
@@ -208,11 +220,10 @@ ethLoopback:
             nbBytes = (packet_send_size / 16) * 16 + 16;
         }
         int checksumBufSize = sizeof(struct ipv6upper) + nbBytes;
-        void* packet_send = malloc(checksumBufSize);
+        packet_send = malloc(checksumBufSize);
         memset(packet_send, 0, checksumBufSize); // set everthing to 0 so padding is done
 
-        fread(packet_send + sizeof(struct ipv6upper), 1, packet_send_size, stdin);
-
+        res = fread(packet_send + sizeof(struct ipv6upper), packet_send_size, 1, stdin);
         if (sockType == SOCK_DGRAM) { // udp has length field, that is used in pseudo header (RFC 2460)
             udp = (struct sniff_udp*) (packet_send + sizeof(struct ipv6upper));
             pHeader.payload_len = udp->udp_length;
@@ -241,6 +252,8 @@ ethLoopback:
         memcpy(frame + linkHeaderSize + sizeof(struct ipv6hdr), 
             packet_send + sizeof(struct ipv6upper), /* the packet is after the ipv6 upper */
             packet_send_size);
+        
+        free(packet_send);
 
         // Write the frame to the interface.
         if (pcap_inject(pcap, frame, sizeof(frame)) == -1) {
@@ -248,7 +261,6 @@ ethLoopback:
             pcap_close(pcap);
             exit(1);
         }
-        free(packet_send);
     }
 
     // Close the PCAP descriptor.

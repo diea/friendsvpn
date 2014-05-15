@@ -51,6 +51,8 @@ int main(int argc, char *argv[])
     return a.exec();
 }
 #elif 1
+
+
 // test main
 int main(int argc, char *argv[])
 {
@@ -93,17 +95,45 @@ int main(int argc, char *argv[])
     QObject::connect(newProxyThread, SIGNAL(finished()), newProxyThread, SLOT(deleteLater()));
     newProxyThread->start();*/
 
-    /*QFile test("tcpPackeFromPcap");
-    test.open(QIODevice::ReadOnly);
-    char* packetBuf = test.readAll().data();
-    int accIndex = 4;
+    /*QFile serv("serverRcvdPacket");
+    serv.open(QIODevice::ReadOnly);
+    QByteArray bytes = serv.readAll();
 
-    quint16* srcPort = static_cast<quint16*>(malloc(sizeof(quint16)));
-    memcpy(srcPort, packetBuf + accIndex, sizeof(quint16));
-    *srcPort = ntohs(*srcPort);
+    struct rawComHeader* head = static_cast<struct rawComHeader*>(static_cast<void*>(bytes.data()));
+    qDebug() << head->len;*/
+#if 0
+    QProcess sendRaw;
+    QStringList sendRawArgs;
 
-    qDebug() << *srcPort;*/
+    sendRawArgs.append("lo0");
+    sendRawArgs.append("fd3b:e180:cbaa:1:5e96:9dff:fe8a:8447");
+    sendRawArgs.append("::1");
+    sendRawArgs.append(QString::number(1));
+    sendRawArgs.append(QString::number(51423));
 
+    sendRaw.start(QString(HELPERPATH) + "sendRaw", sendRawArgs);
+
+    sendRaw.waitForStarted();
+
+    while (1) {
+        QFile serv("testRawHead");
+        serv.open(QIODevice::ReadOnly);
+        QByteArray bytes = serv.readAll();
+
+        qDebug() << "write!" << sendRaw.state();
+        qDebug() << "writing " << bytes.length();
+        char* buf = bytes.data();
+
+        struct rawComHeader* head = static_cast<struct rawComHeader*>(static_cast<void*>(buf));
+        qDebug() << "Header length" << head->len;
+
+        sendRaw.write(buf, bytes.length());
+        sendRaw.waitForBytesWritten();
+        //sendRaw.waitForReadyRead();
+        //qDebug() << sendRaw.readAllStandardOutput();
+       // QThread::sleep(5);
+    }
+#endif
     return a.exec();
 }
 #endif
