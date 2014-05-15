@@ -193,10 +193,10 @@ void RawSockets::writeBytes(QString srcIp, QString dstIp, int srcPort, const cha
             close(fd);
             exit(1);
         }
-        if (ifr.ifr_hwaddr.sa_family != ARPHRD_ETHER) {
+        /*if (ifr.ifr_hwaddr.sa_family != ARPHRD_ETHER) {
             fprintf(stderr,"not an Ethernet interface\n");
             close(fd);
-        }
+        }*/
         source_mac_addr = (unsigned char*)ifr.ifr_hwaddr.sa_data;
         close(fd);
         qDebug() << "got out of here";
