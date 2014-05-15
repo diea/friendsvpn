@@ -43,6 +43,7 @@ void ProxyClient::sendBytes(const char *buf, int len, QString) {
 
     // the srcPort is changed in the helper :)
     sendRaw->write(buf, len);
+    sendRaw->waitForBytesWritten();
 
     QFile tcpPacket("sendBytesClientPacket");
     tcpPacket.open(QIODevice::WriteOnly);

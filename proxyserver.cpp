@@ -67,6 +67,7 @@ void ProxyServer::sendBytes(const char *buf, int len, QString dstIp) {
 
     // the srcPort is changed in the helper :)
     sendRaw->write(buf, len);
+    sendRaw->waitForBytesWritten();
     //mutex.unlock();
 }
 
