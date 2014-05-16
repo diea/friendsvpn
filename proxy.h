@@ -34,6 +34,8 @@ private:
     static IpResolver* resolver;
     static RawSockets* rawSockets;
 
+    QStack<QProcess*> processes;
+
 protected:
     QString listenIp;
     int listenPort; // the prefered listen port
@@ -108,6 +110,7 @@ protected:
      */
     virtual void receiveBytes(const char* buf, int len, int sockType, QString& srcIp) = 0;
 public:
+    ~Proxy();
     /**
      * @brief gennewIP generates a new random IP, adds it to the kernel and adds it to our pool
      * of ips. We use such a pool since the kernel needs a bit of time to accomodate this new IP

@@ -5,8 +5,8 @@
 #include <QMutex>
 #include "user.h"
 #include "bonjoursql.h"
-#include "controlplane/controlplaneconnection.h"
 
+class ControlPlaneConnection;
 class DataPlaneConnection;
 class DataPlaneServer;
 class DataPlaneClient;

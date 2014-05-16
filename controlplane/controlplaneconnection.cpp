@@ -119,6 +119,7 @@ void ControlPlaneConnection::readBuffer(const char* buf, int len) {
             ProxyServer* newProxy = NULL;
             try {
                 newProxy = new ProxyServer(friendUid, name, type, ".friendsvpn.", hostname, port);
+                proxyServers.push(newProxy);
                 newProxy->run();
             } catch (int i) {
                 // proxy exists
@@ -181,9 +182,13 @@ void ControlPlaneConnection::wasDisconnected() {
     qDebug() << "Removing myself from the list";
     init->removeConnection(this);
 
+    while (!proxyServers.isEmpty()) {
+        Proxy* p = proxyServers.pop();
+        delete p;
+    }
+
     DataPlaneConnection* dp = init->getDpConnection(friendUid);
     if (dp) {
         dp->disconnect(); // we disconnect the dataplane for this same client!
     }
-    qDebug () << "emitting disconnected";
 }

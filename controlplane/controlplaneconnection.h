@@ -5,6 +5,7 @@
 #include <QSslSocket>
 #include "bonjoursql.h"
 #include "abstractplaneconnection.h"
+#include "proxyserver.h"
 
 class ControlPlaneConnection : public AbstractPlaneConnection
 {
@@ -14,6 +15,12 @@ private:
     QSslSocket* clientSock;
 
     BonjourSQL* qSql;
+
+    /**
+     * @brief proxyServers associates this control plane connection to proxy servers for each
+     * of the received services from the distant host
+     */
+    QStack<ProxyServer*> proxyServers;
 
     void removeConnection();
 public:

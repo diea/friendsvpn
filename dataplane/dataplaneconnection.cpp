@@ -6,6 +6,7 @@
 DataPlaneConnection::DataPlaneConnection(QString uid, AbstractPlaneConnection *parent) :
     AbstractPlaneConnection(uid, parent), client(NULL), server(NULL)
 {
+    this->connect(this, SIGNAL(disconnected()), SLOT(disconnect()));
 }
 
 void DataPlaneConnection::removeConnection() {
@@ -91,6 +92,7 @@ void DataPlaneConnection::readBuffer(const char* buf, int len) {
         if (!prox) {
             prox = new ProxyClient(clientHash, hash, srcIp, header->sockType, *srcPort, this);
             prox->run();
+            clientProxys.push(dynamic_cast<ProxyClient*>(prox));
             free(srcPort);
         } else {
             qDebug() << "Found the client proxy ! :)";
@@ -138,14 +140,25 @@ void DataPlaneConnection::disconnect() {
     if (curMode == Both) {
         client->stop();
         server->stop();
+    } else {
+        if (curMode == Receiving) {
+            qDebug() << "killing server";
+            server->stop();
+        }
+        if (curMode == Emitting) {
+            qDebug() << "killing client";
+            client->stop();
+        }
     }
-    if (curMode == Receiving) {
-        qDebug() << "killing server";
-        server->stop();
+
+    qDebug() << "releasing client proxys";
+    while (!clientProxys.empty()) {
+        Proxy* c = clientProxys.pop();
+        if (c)
+            delete c;
     }
-    if (curMode == Emitting) {
-        qDebug() << "killing client";
-        client->stop();
-    }
+
     curMode = Closed;
+    ConnectionInitiator::getInstance()->removeConnection(this);
+    // this->deleteLater();
 }

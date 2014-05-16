@@ -1,6 +1,7 @@
 #include "proxyclient.h"
 #include "unixsignalhandler.h"
 #include "bonjour/bonjourdiscoverer.h"
+#include "rawsockets.h"
 
 ProxyClient::ProxyClient(QString md5, QString servermd5,  QString serversrcIp, int sockType, int srcPort, DataPlaneConnection* con) :
     Proxy(srcPort, sockType, md5)

@@ -1,5 +1,6 @@
 #include "dataplaneserver.h"
 #include "dataplaneconnection.h"
+#include "controlplane/controlplaneconnection.h"
 #include <sys/types.h>
 #include <sys/socket.h>
 #include <QtConcurrent>

@@ -13,6 +13,16 @@ QString Proxy::defaultIface = Proxy::getDefaultInterface();
 QQueue<QString> Proxy::poolOfIps;
 QMutex Proxy::poolOfIpsMutex;
 
+Proxy::~Proxy() {
+    while (!processes.empty()) {
+        qDebug() << "Deleting processes associated with proxy";
+        QProcess* p = processes.pop();
+        p->close();
+        delete p;
+        p = NULL;
+    }
+}
+
 Proxy::Proxy(int srcPort, int sockType, QString md5)
     : listenPort(srcPort), sockType(sockType)
 {
@@ -410,6 +420,7 @@ void Proxy::run_pcap() {
             }
         } else {
             bound = true;
+            processes.push(bindSocket);
             u->addQProcess(bindSocket);
         }
     }
@@ -430,6 +441,7 @@ void Proxy::run_pcap() {
         connect(pcap, SIGNAL(readyReadStandardOutput()), this, SLOT(readyRead()));
         qDebug() << args;
 
+        processes.push(pcap);
         u->addQProcess(pcap); // add pcap to be killed when main is killed
 
         pcap->start(QString(HELPERPATH) + "pcapListen", args);

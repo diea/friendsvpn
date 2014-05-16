@@ -1,7 +1,9 @@
 #ifndef PROXYCLIENT_H
 #define PROXYCLIENT_H
-#include "proxy.h"
 #include "bonjour/bonjourrecord.h"
+#include "proxy.h"
+
+class RawSockets;
 
 class ProxyClient : public Proxy
 {
@@ -15,8 +17,6 @@ private:
     QString serversrcIp; /* the ip that the server will have to fwd (the real client of the server) */
     RawSockets* rawSocks;
     int origSrcPort;
-
-    //void receiveBytes(char *buf, int len, int sizeLen, QString& hash, int sockType, QString& srcIp);
 
 public:
     ProxyClient(QString md5, QString servermd5, QString serversrcIp, int sockType, int srcPort, DataPlaneConnection* con);

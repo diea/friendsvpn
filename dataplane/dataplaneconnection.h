@@ -7,6 +7,8 @@
 #include "dataplaneserver.h"
 #include "serverworker.h"
 
+class ProxyClient;
+
 struct dpHeader {
     quint8 sockType;
     quint8 empty;
@@ -22,8 +24,12 @@ private:
     //QString friendUid; // connection associated with friendUid
     DataPlaneClient* client;
     ServerWorker* server;
-
     QMutex mutex;
+
+    /**
+     * @brief clientProxys contains the list of pointers of proxy clients for this connection
+     */
+    QStack<ProxyClient*> clientProxys;
 
     void removeConnection();
 public:

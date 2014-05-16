@@ -1,6 +1,8 @@
 #include "connectioninitiator.h"
 #include "controlplane/controlplaneclient.h"
 #include "controlplane/controlplaneserver.h"
+#include "controlplane/controlplaneconnection.h"
+
 #include "dataplane/dataplaneserver.h"
 #include "dataplane/dataplaneclient.h"
 #include "dataplane/dataplaneconnection.h"
@@ -61,6 +63,7 @@ void ConnectionInitiator::startClients() {
         connect(dcThread, SIGNAL(started()), dc, SLOT(run()));
         connect(dcThread, SIGNAL(finished()), dcThread, SLOT(deleteLater()));
         connect(dc, SIGNAL(bufferReady(const char*, int)), con, SLOT(readBuffer(const char*, int)));
+        //connect(dc, SIGNAL(disconnected()), dcThread, SLOT())
 
         dc->moveToThread(dcThread);
 
