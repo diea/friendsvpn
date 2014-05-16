@@ -106,8 +106,8 @@ void ServerWorker::stop() {
     ERR_remove_state(0);
     printf("done, server worker connection closed.\n");
     fflush(stdout);
+    this->deleteLater();
     QThread::currentThread()->exit(0); // stop any activity in the thread
-    //this->deleteLater();
 }
 
 void ServerWorker::sendBytes(const char* buf, int len) {

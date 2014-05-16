@@ -196,6 +196,8 @@ void DataPlaneClient::stop() {
     ERR_remove_state(0);
     qDebug() << "dataplane client stopped";
     this->deleteLater();
+    QThread::currentThread()->exit(0); // stop any activity in the thread
+
 }
 
 DataPlaneClient::~DataPlaneClient() {
