@@ -4,7 +4,7 @@
 #include <QCryptographicHash>
 
 DataPlaneConnection::DataPlaneConnection(QString uid, AbstractPlaneConnection *parent) :
-    AbstractPlaneConnection(uid, parent), friendUid(uid)
+    AbstractPlaneConnection(uid, parent)
 {
 }
 
@@ -128,4 +128,8 @@ void DataPlaneConnection::sendBytes(const char *buf, int len, QString& hash, int
     } else {
         qWarning() << "Should not happen, trying to send bytes in Both mode for uid" << friendUid;
     }
+}
+
+void DataPlaneConnection::disconnect() {
+
 }

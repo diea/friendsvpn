@@ -174,5 +174,10 @@ void ControlPlaneConnection::wasDisconnected() {
     ConnectionInitiator* init = ConnectionInitiator::getInstance();
     qDebug() << "Removing myself from the list";
     init->removeConnection(this);
+
+    DataPlaneConnection* dp = init->getDpConnection(friendUid);
+    if (dp) {
+        dp->disconnect(); // we disconnect the dataplane for this same client!
+    }
     qDebug () << "emitting disconnected";
 }

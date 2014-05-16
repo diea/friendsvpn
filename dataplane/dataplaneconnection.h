@@ -19,7 +19,7 @@ class DataPlaneConnection : public AbstractPlaneConnection
 {
     Q_OBJECT
 private:
-    QString friendUid; // connection associated with friendUid
+    //QString friendUid; // connection associated with friendUid
     DataPlaneClient* client;
     ServerWorker* server;
 
@@ -36,6 +36,8 @@ signals:
 
 public slots:
     void readBuffer(const char* buf, int len);
+
+    void disconnect();
 
 };
 

@@ -63,7 +63,11 @@ void ConnectionInitiator::startClients() {
         connect(dc, SIGNAL(bufferReady(const char*, int)), con, SLOT(readBuffer(const char*, int)));
 
         dc->moveToThread(dcThread);
-        dcThread->start();
+
+        /* we start the thread when the control plane connection is connected! */
+        ControlPlaneConnection* controlPlane = this->getConnection(QString(*(frien_d->uid)));
+        connect(controlPlane, SIGNAL(connected()), dcThread, SLOT(start()));
+        //dcThread->start();
 
         //con->addMode(Emitting, dc);
 

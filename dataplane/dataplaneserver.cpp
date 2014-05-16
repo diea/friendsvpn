@@ -167,9 +167,12 @@ void DataPlaneServer::start() {
         char friendIp[INET6_ADDRSTRLEN];
         inet_ntop(AF_INET6, &infClient_addr.s6.sin6_addr, friendIp, INET6_ADDRSTRLEN);
 
+        ConnectionInitiator* init = ConnectionInitiator::getInstance();
+
         QString friendUid = qSql->getUidFromIP(friendIp);
-        if (friendUid == "NULL") {
-            qDebug() << "friendUId NOT in DB";
+        ControlPlaneConnection* cp = init->getConnection(friendUid);
+        if (friendUid == "NULL" || cp->getMode() == Closed) {
+            qDebug() << "friendUId NOT in DB or no control plane connection!";
             SSL_shutdown(ssl);
 
             close(fd);
@@ -180,8 +183,7 @@ void DataPlaneServer::start() {
             fflush(stdout);
             return;
         }
-        // associate with dataplaneconnection
-        ConnectionInitiator* init = ConnectionInitiator::getInstance();
+        // associate with dataplaneconnection        
         DataPlaneConnection* dpc = init->getDpConnection(friendUid);
 
         ServerWorker* worker = new ServerWorker(infServer_addr, infClient_addr, ssl, dpc);
