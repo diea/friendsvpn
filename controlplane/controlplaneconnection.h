@@ -44,6 +44,4 @@ public slots:
     void sendBonjour();
 };
 
-
-
 #endif // CONTROLPLANECONNECTION_H

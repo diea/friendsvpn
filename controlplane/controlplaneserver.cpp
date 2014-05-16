@@ -82,7 +82,6 @@ void ControlPlaneServer::sslSockReadyRead() {
             sslSock->readLine(buf, 300);
             QString uidStr(buf);
             uidStr.chop(2); // drop \r\0
-            //qDebug() << uidStr.remove(0, 4);
             // drop the Uid: part with the .remove and get the CPConnection* correspoding to this UID
             ControlPlaneConnection* con = init->getConnection(uidStr.remove(0, 4));
             con->addMode(Receiving, sslSock); // add server mode

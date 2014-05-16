@@ -18,10 +18,10 @@ void DataPlaneConnection::removeConnection() {
         client = NULL;
         curMode = Receiving;
     } else {
-        if (server)
+        /*if (server)
             server->stop();
         server = NULL;
-        curMode = Emitting;
+        curMode = Emitting;*/
     }
     qDebug() << "Connection removed!";
 }

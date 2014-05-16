@@ -20,11 +20,17 @@ void ControlPlaneConnection::removeConnection() {
     if (friendUid < qSql->getLocalUid()) { // friend is smaller, I am server
         clientSock->disconnect();
         clientSock = NULL;
-        curMode = Receiving;
+        if (curMode == Both)
+            curMode = Receiving;
+        else
+            curMode = Closed;
     } else {
         serverSock->disconnect();
         serverSock = NULL;
-        curMode = Emitting;
+        if (curMode == Both)
+            curMode = Emitting;
+        else
+            curMode = Closed;
     }
 }
 
