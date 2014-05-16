@@ -118,7 +118,7 @@ void DataPlaneClient::run() {
     }
 
     notif = new QSocketNotifier(fd, QSocketNotifier::Read);
-    connect(notif, SIGNAL(activated(int)), this, SLOT(readReady(int)));
+    connect(notif, SIGNAL(activated(int)), this, SLOT(readyRead(int)));
 }
 
 void DataPlaneClient::readyRead(int fd) {
