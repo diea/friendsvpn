@@ -13,14 +13,17 @@ void DataPlaneConnection::removeConnection() {
 
     qDebug() << "Removing connection!";
     if (friendUid.toInt() < qSql->getLocalUid().toInt()) { // friend is smaller, I am server
-        client->stop();
+        if (client)
+            client->stop();
         client = NULL;
         curMode = Receiving;
     } else {
-        server->stop();
+        if (server)
+            server->stop();
         server = NULL;
         curMode = Emitting;
     }
+    qDebug() << "Connection removed!";
 }
 
 bool DataPlaneConnection::addMode(plane_mode mode, QObject* socket) {
@@ -131,12 +134,13 @@ void DataPlaneConnection::sendBytes(const char *buf, int len, QString& hash, int
 }
 
 void DataPlaneConnection::disconnect() {
-    // TODO!
+    qDebug() << "Disconnect dataplane!";
     if (client) {
         qDebug() << "killing client";
         client->stop();
     }
     if (server) {
+        qDebug() << "killing server";
         server->stop();
     }
     curMode = Closed;

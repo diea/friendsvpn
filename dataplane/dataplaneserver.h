@@ -13,12 +13,6 @@ class DataPlaneServer : public QObject
 private:
     QList<QThread*> threads;
     BonjourSQL* qSql;
-    /*SSL *ssl;
-    union {
-        struct sockaddr_storage ss;
-        struct sockaddr_in6 s6;
-        struct sockaddr_in s4;
-    } server_addr, client_addr;*/
 
     static int cookie_initialized;
     static unsigned char* cookie_secret;
@@ -32,15 +26,6 @@ private:
 public:
     static DataPlaneServer* getInstance(QObject *parent = 0);
 
-    /**
-     * @brief sendBytes will send the bytes to ip:DATAPLANEPORT over DTLS
-     * @param bytes
-     * @param ip
-     */
-    //void sendBytes(const char* bytes, QString ip);
-
-signals:
-private slots:
 public slots:
     void start();
 
