@@ -21,12 +21,10 @@ ProxyClient::ProxyClient(QString md5, QString servermd5,  QString serversrcIp, i
 }
 
 void ProxyClient::run() {
-    mutex.lock();
     run_pcap();
     // I am a client so I know the dstIp is the server
     // I change the dstPort to the one from the server
     // I use listenPort which may be different than original port if bind has failed
-    mutex.unlock();
 }
 
 void ProxyClient::sendBytes(const char *buf, int len, QString) {
