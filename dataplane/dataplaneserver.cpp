@@ -189,7 +189,7 @@ void DataPlaneServer::start() {
         ServerWorker* worker = new ServerWorker(infServer_addr, infClient_addr, ssl, dpc);
         worker->moveToThread(workerThread);
         connect(workerThread, SIGNAL(started()), worker, SLOT(connection_handle()));
-        connect(workerThread, SIGNAL(finished()), worker, SLOT(deleteLater()));
+        connect(workerThread, SIGNAL(finished()), workerThread, SLOT(deleteLater()));
         connect(worker, SIGNAL(bufferReady(const char*, int)), dpc, SLOT(readBuffer(const char*, int)));
         workerThread->start();
 
