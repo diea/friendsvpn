@@ -35,14 +35,6 @@ public:
     void readBuffer(const char* buf, int len);
 signals:
     /**
-     * @brief connected emitted when the connection leaves the Closed plane_mode
-     */
-    void connected();
-    /**
-     * @brief disconnected emitted when the connection enters the Closed plane_mode
-     */
-    void disconnected();
-    /**
      * @brief uid_received emitted when the connection leaves the Wait_uid plane_state
      */
     void uid_received();
