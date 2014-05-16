@@ -39,8 +39,7 @@ private:
 
     DataPlaneConnection* con;
 
-    QMutex mutex; // protectes atomic use of isActive
-    bool isActive; // will be set to false if this connection has to die
+    QSocketNotifier* notif;
 
 public:
     /**
@@ -49,6 +48,7 @@ public:
      *             ONLY First IP in Qlist will be used!
      * @param parent
      */
+    ~DataPlaneClient();
     explicit DataPlaneClient(QHostAddress ip, DataPlaneConnection* con, QObject *parent = 0);
 
     void sendBytes(const char* bytes, socklen_t len);
@@ -56,6 +56,8 @@ public:
     void stop();
 signals:
     void bufferReady(const char* buf, int len);
+private slots:
+    void readyRead(int fd);
 public slots:
     void run();
 };

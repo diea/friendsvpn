@@ -6,7 +6,7 @@ DataPlaneClient::DataPlaneClient(QHostAddress ip, DataPlaneConnection* con, QObj
 {
     memset((void *) &remote_addr, 0, sizeof(struct sockaddr_storage));
     memset((void *) &local_addr, 0, sizeof(struct sockaddr_storage));
-    isActive = true;
+    notif = NULL;
 }
 
 void DataPlaneClient::run() {
@@ -99,6 +99,7 @@ void DataPlaneClient::run() {
     }
 
     /* Set and activate timeouts */
+    struct timeval timeout;
     timeout.tv_sec = 3;
     timeout.tv_usec = 0;
     BIO_ctrl(bio, BIO_CTRL_DGRAM_SET_RECV_TIMEOUT, 0, &timeout);
@@ -116,49 +117,42 @@ void DataPlaneClient::run() {
         printf ("\n------------------------------------------------------------\n\n");
     }
 
-    int num_timeouts = 0, max_timeouts = 5;
-    size_t len;
-    while (!(SSL_get_shutdown(ssl) & SSL_RECEIVED_SHUTDOWN)) { // && num_timeouts < max_timeouts) {
-        mutex.lock();
-        if (!isActive) {
-            mutex.unlock();
-            break;
-        }
-        mutex.unlock();
-        reading = 1;
-        while (reading) {
-            len = SSL_read(ssl, buf, sizeof(buf));
+    notif = new QSocketNotifier(fd, QSocketNotifier::Read);
+    connect(notif, SIGNAL(activated(int)), this, SLOT(readReady(int)));
+}
 
-            switch (SSL_get_error(ssl, len)) {
-                case SSL_ERROR_NONE:
-                 emit bufferReady(buf, len);
-                 reading = 0;
-                 break;
-                case SSL_ERROR_WANT_READ:
-                 /* Handle socket timeouts */
-                 if (BIO_ctrl(SSL_get_rbio(ssl), BIO_CTRL_DGRAM_GET_RECV_TIMER_EXP, 0, NULL)) {
-                     num_timeouts++;
-                     reading = 0;
-                 }
-                 /* Just try again */
-                 break;
-                case SSL_ERROR_ZERO_RETURN:
-                 reading = 0;
-                 break;
-                case SSL_ERROR_SYSCALL:
-                 printf("Socket read error: ");
-                 //if (!handle_socket_error()) goto cleanup;
-                 reading = 0;
-                 //exit(-1);
-                 break;
-                case SSL_ERROR_SSL:
-                 printf("SSL read error: ");
-                 printf("%s (%d)\n", ERR_error_string(ERR_get_error(), buf), SSL_get_error(ssl, len));
-                 break;
-                default:
-                 printf("Unexpected error while reading!\n");
-                 break;
-            }
+void DataPlaneClient::readyRead(int fd) {
+    size_t len;
+    if (!(SSL_get_shutdown(ssl) & SSL_RECEIVED_SHUTDOWN)) {
+        len = SSL_read(ssl, buf, sizeof(buf));
+
+        switch (SSL_get_error(ssl, len)) {
+            case SSL_ERROR_NONE:
+             emit bufferReady(buf, len);
+             break;
+            case SSL_ERROR_WANT_READ:
+             /* Handle socket timeouts */
+             if (BIO_ctrl(SSL_get_rbio(ssl), BIO_CTRL_DGRAM_GET_RECV_TIMER_EXP, 0, NULL)) {
+                 //num_timeouts++;
+             }
+             /* Just try again */
+             break;
+            case SSL_ERROR_ZERO_RETURN:
+             reading = 0;
+             break;
+            case SSL_ERROR_SYSCALL:
+             printf("Socket read error");
+             //if (!handle_socket_error()) goto cleanup;
+             reading = 0;
+             //exit(-1);
+             break;
+            case SSL_ERROR_SSL:
+             printf("SSL read error: ");
+             printf("%s (%d)\n", ERR_error_string(ERR_get_error(), buf), SSL_get_error(ssl, len));
+             break;
+            default:
+             printf("Unexpected error while reading!\n");
+             break;
         }
     }
 }
@@ -194,7 +188,10 @@ void DataPlaneClient::sendBytes(const char *bytes, socklen_t len) {
 }
 
 void DataPlaneClient::stop() {
-    mutex.lock();
-    isActive = false;
-    mutex.unlock();
+    // TODO
+}
+
+DataPlaneClient::~DataPlaneClient() {
+    if (notif)
+        delete notif;
 }

@@ -6,17 +6,15 @@
 ServerWorker::ServerWorker(addrUnion server_addr, addrUnion client_addr, SSL* ssl, DataPlaneConnection* con, QObject *parent) :
     server_addr(server_addr), client_addr(client_addr), ssl(ssl), con(con), QObject(parent)
 {
+    notif = NULL;
 }
 
 void ServerWorker::connection_handle() {
-    ssize_t len;
     char buf[BUFFER_SIZE];
-    char addrbuf[INET6_ADDRSTRLEN];
 
-    int reading = 0, ret;
+    int ret;
     const int on = 1, off = 0;
-    struct timeval timeout;
-    int num_timeouts = 0, max_timeouts = 5;
+
     //fprintf(stderr, "ss_family client %d and server %d\n", client_addr.ss.ss_family, server_addr.ss.ss_family);
     OPENSSL_assert(client_addr.ss.ss_family == server_addr.ss.ss_family);
     fd = socket(client_addr.ss.ss_family, SOCK_DGRAM, 0);
@@ -45,7 +43,7 @@ void ServerWorker::connection_handle() {
         perror("SSL_accept");
         printf("%s\n", ERR_error_string(ERR_get_error(), buf));
     }
-
+    struct timeval timeout;
     /* Set and activate timeouts */
     timeout.tv_sec = 5;
     timeout.tv_usec = 0;
@@ -58,44 +56,44 @@ void ServerWorker::connection_handle() {
     printf("\n\n Cipher: %s", SSL_CIPHER_get_name(SSL_get_current_cipher(ssl)));
     printf ("\n------------------------------------------------------------\n\n");
 
-    while (!(SSL_get_shutdown(ssl) & SSL_RECEIVED_SHUTDOWN)) { // && num_timeouts < max_timeouts) {
-        reading = 1;
-        while (reading) {
-            len = SSL_read(ssl, buf, sizeof(buf));
-            switch (SSL_get_error(ssl, len)) {
-                case SSL_ERROR_NONE:
-                qDebug() << "sever worker read" << len << "bytes";
-                //qDebug() << buf;
-                 // TODO call dataplaneconnection
-                 //con->readBuffer(buf);
-                 emit bufferReady(buf, len);
-                 reading = 0;
-                 break;
-                case SSL_ERROR_WANT_READ:
-                 /* Handle socket timeouts */
-                 if (BIO_ctrl(SSL_get_rbio(ssl), BIO_CTRL_DGRAM_GET_RECV_TIMER_EXP, 0, NULL)) {
-                     num_timeouts++;
-                     reading = 0;
-                 }
-                 /* Just try again */
-                 break;
-                case SSL_ERROR_ZERO_RETURN:
-                 reading = 0;
-                 break;
-                case SSL_ERROR_SYSCALL:
-                 printf("Socket read error: ");
-                 //if (!handle_socket_error()) goto cleanup;
-                 reading = 0;
-                 //exit(-1);
-                 break;
-                case SSL_ERROR_SSL:
-                 printf("SSL read error: ");
-                 printf("%s (%d)\n", ERR_error_string(ERR_get_error(), buf), SSL_get_error(ssl, len));
-                 break;
-                default:
-                 printf("Unexpected error while reading!\n");
-                 break;
-            }
+    notif = new QSocketNotifier(fd, QSocketNotifier::Read);
+    connect(notif, SIGNAL(activated(int)), this, SLOT(readReady(int)));
+}
+
+void ServerWorker::readReady(int) {
+    ssize_t len;
+    char buf[BUFFER_SIZE];
+    if (!(SSL_get_shutdown(ssl) & SSL_RECEIVED_SHUTDOWN)) {
+        int len = SSL_read(ssl, buf, sizeof(buf));
+        switch (SSL_get_error(ssl, len)) {
+            case SSL_ERROR_NONE:
+            qDebug() << "sever worker read" << len << "bytes";
+            //qDebug() << buf;
+             // TODO call dataplaneconnection
+             //con->readBuffer(buf);
+             emit bufferReady(buf, len);
+             break;
+            case SSL_ERROR_WANT_READ:
+             /* Handle socket timeouts */
+             if (BIO_ctrl(SSL_get_rbio(ssl), BIO_CTRL_DGRAM_GET_RECV_TIMER_EXP, 0, NULL)) {
+                 //num_timeouts++;
+             }
+             /* Just try again */
+             break;
+            case SSL_ERROR_ZERO_RETURN:
+             break;
+            case SSL_ERROR_SYSCALL:
+             printf("Socket read error: ");
+             //if (!handle_socket_error()) goto cleanup;
+             //exit(-1);
+             break;
+            case SSL_ERROR_SSL:
+             printf("SSL read error: ");
+             printf("%s (%d)\n", ERR_error_string(ERR_get_error(), buf), SSL_get_error(ssl, len));
+             break;
+            default:
+             printf("Unexpected error while reading!\n");
+             break;
         }
     }
 }
@@ -136,4 +134,10 @@ void ServerWorker::sendBytes(const char* buf, int len) {
              break;
         }
     }
+}
+
+ServerWorker::~ServerWorker()
+{
+    if (notif)
+        delete notif;
 }
