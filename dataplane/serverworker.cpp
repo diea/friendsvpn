@@ -57,10 +57,11 @@ void ServerWorker::connection_handle() {
     printf ("\n------------------------------------------------------------\n\n");
 
     notif = new QSocketNotifier(fd, QSocketNotifier::Read);
-    connect(notif, SIGNAL(activated(int)), this, SLOT(readReady(int)));
+    connect(notif, SIGNAL(activated(int)), this, SLOT(readyRead(int)));
 }
 
-void ServerWorker::readReady(int) {
+void ServerWorker::readyRead(int) {
+    qDebug() << "Ready read!"
     ssize_t len;
     char buf[BUFFER_SIZE];
     if (!(SSL_get_shutdown(ssl) & SSL_RECEIVED_SHUTDOWN)) {

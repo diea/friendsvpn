@@ -25,7 +25,7 @@ public:
 signals:
     void bufferReady(const char* buf, int len);
 private slots:
-    void readReady(int fd);
+    void readyRead(int fd);
 public slots:
     void connection_handle();
 };

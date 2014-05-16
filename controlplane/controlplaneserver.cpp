@@ -65,7 +65,6 @@ void ControlPlaneServer::sslSockError(const QList<QSslError>& errors) {
     qDebug() << errors;
 }
 
-
 void ControlPlaneServer::sslSockReadyRead() {
     SslSocket* sslSock = qobject_cast<SslSocket*>(sender());
     static QMutex mutexx;
@@ -82,6 +81,7 @@ void ControlPlaneServer::sslSockReadyRead() {
             sslSock->readLine(buf, 300);
             QString uidStr(buf);
             uidStr.chop(2); // drop \r\0
+            // TODO double check UID is friend
             // drop the Uid: part with the .remove and get the CPConnection* correspoding to this UID
             ControlPlaneConnection* con = init->getConnection(uidStr.remove(0, 4));
             con->addMode(Receiving, sslSock); // add server mode

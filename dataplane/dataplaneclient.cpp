@@ -123,6 +123,7 @@ void DataPlaneClient::run() {
 }
 
 void DataPlaneClient::readyRead(int fd) {
+    qDebug() << "ready read client";
     size_t len;
     if (!(SSL_get_shutdown(ssl) & SSL_RECEIVED_SHUTDOWN)) {
         len = SSL_read(ssl, buf, sizeof(buf));
