@@ -61,7 +61,7 @@ void ServerWorker::connection_handle() {
 }
 
 void ServerWorker::readyRead(int) {
-    qDebug() << "Ready read!"
+    qDebug() << "Ready read!";
     ssize_t len;
     char buf[BUFFER_SIZE];
     if (!(SSL_get_shutdown(ssl) & SSL_RECEIVED_SHUTDOWN)) {
