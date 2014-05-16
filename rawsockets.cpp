@@ -121,18 +121,13 @@ RawSockets* RawSockets::getInstance() {
 
 void RawSockets::writeBytes(QString srcIp, QString dstIp, int srcPort, const char *transAndPayload, int sockType, int packet_send_size) {
     IpResolver* r = IpResolver::getInstance();
-    qDebug() << "got here";
     struct ip_mac_mapping map = r->getMapping(dstIp);
-    qDebug() << "got here";
     struct rawProcess* p = rawHelpers.value(map.interface);
-    qDebug() << "got here";
     QProcess* raw = p->process;
-    qDebug() << "got here";
     if (!raw || raw->state() != 2) {
         qDebug() << "raw state is " << raw->state() << "and interface " << map.interface;
         qFatal("No raw helper");
     }
-    qDebug() << "got here";
 
     int linkLayerType = DLT_EN10MB;
 #ifdef __APPLE__
@@ -140,7 +135,6 @@ void RawSockets::writeBytes(QString srcIp, QString dstIp, int srcPort, const cha
         linkLayerType = DLT_NULL;
     }
 #endif
-    qDebug() << "got here";
 
     char* buffer = static_cast<char*>(malloc(packet_send_size + sizeof(struct rawComHeader)));
     memcpy(buffer + sizeof(struct rawComHeader), transAndPayload, packet_send_size);
@@ -150,7 +144,6 @@ void RawSockets::writeBytes(QString srcIp, QString dstIp, int srcPort, const cha
     struct rawComHeader rawHeader;
     memset(&rawHeader, 0, sizeof(struct rawComHeader));
     rawHeader.payload_len = packet_send_size;
-    qDebug() << "got here";
 
     if (linkLayerType == DLT_EN10MB) {
         rawHeader.linkHeader.ethernet.ether_type = htons(ETH_IPV6);
@@ -203,7 +196,6 @@ void RawSockets::writeBytes(QString srcIp, QString dstIp, int srcPort, const cha
 #endif
 
         memcpy(rawHeader.linkHeader.ethernet.ether_shost, source_mac_addr, ETHER_ADDR_LEN);
-        qDebug() << "got here";
         // set dst mac
         char* dstMac = map.mac.toUtf8().data();
         if (!map.mac.isEmpty()) {
@@ -218,11 +210,9 @@ void RawSockets::writeBytes(QString srcIp, QString dstIp, int srcPort, const cha
         } else { // linux loopback dest is 00:00...
             memset(rawHeader.linkHeader.ethernet.ether_dhost, 0, ETHER_ADDR_LEN);
         }
-        qDebug() << "got here";
     } else { // DLT_NULL
         rawHeader.linkHeader.loopback.type = 0x1E;
     }
-    qDebug() << "got here";
 
     // Construct v6 header
     rawHeader.ip6.ip6_vfc = 6 << 4;
@@ -263,7 +253,6 @@ void RawSockets::writeBytes(QString srcIp, QString dstIp, int srcPort, const cha
     }
     int checksumBufSize = sizeof(struct ipv6upper) + nbBytes;
     char* checksumPacket = static_cast<char*>(malloc(checksumBufSize));
-    qDebug() << "got here";
 
     if (sockType == SOCK_DGRAM) {
         udp = static_cast<struct sniff_udp*>(static_cast<void*>(packet_send));
@@ -285,7 +274,6 @@ void RawSockets::writeBytes(QString srcIp, QString dstIp, int srcPort, const cha
         tcp->th_sum = ~(checksum(checksumPacket, sizeof(struct ipv6upper) + packet_send_size));
         free(checksumPacket);
     }
-    qDebug() << "got here";
 
     // combine the rawHeader and packet in one contiguous block
     memcpy(buffer, &rawHeader, sizeof(struct rawComHeader));
