@@ -4,7 +4,7 @@
 #include <QCryptographicHash>
 
 DataPlaneConnection::DataPlaneConnection(QString uid, AbstractPlaneConnection *parent) :
-    AbstractPlaneConnection(uid, parent)
+    AbstractPlaneConnection(uid, parent), client(NULL), server(NULL)
 {
 }
 
@@ -132,4 +132,12 @@ void DataPlaneConnection::sendBytes(const char *buf, int len, QString& hash, int
 
 void DataPlaneConnection::disconnect() {
     // TODO!
+    if (client) {
+        qDebug() << "killing client";
+        client->stop();
+    }
+    if (server) {
+        server->stop();
+    }
+    curMode = Closed;
 }
