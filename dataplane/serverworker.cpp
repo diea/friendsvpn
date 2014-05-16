@@ -103,7 +103,7 @@ void ServerWorker::stop() {
     close(fd);
     SSL_free(ssl);
     ERR_remove_state(0);
-    printf("done, connection closed.\n");
+    printf("done, server worker connection closed.\n");
     fflush(stdout);
     this->deleteLater();
 }
