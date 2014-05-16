@@ -10,7 +10,7 @@ QHash<QString, Proxy*> Proxy::proxyHashes;
 IpResolver* Proxy::resolver = IpResolver::getInstance();
 RawSockets* Proxy::rawSockets = RawSockets::getInstance();
 QString Proxy::defaultIface = Proxy::getDefaultInterface();
-QStringList Proxy::poolOfIps;
+QQueue<QString> Proxy::poolOfIps;
 QMutex Proxy::poolOfIpsMutex;
 
 Proxy::Proxy(int srcPort, int sockType, QString md5)
@@ -54,7 +54,7 @@ QString Proxy::newIP() {
         QThread::sleep(1);
         poolOfIpsMutex.lock();
     }
-    QString newIp = poolOfIps.first();
+    QString newIp = poolOfIps.dequeue();
     int length = poolOfIps.length();
     poolOfIpsMutex.unlock();
     if (length < 4) {
@@ -115,7 +115,7 @@ void Proxy::gennewIP() {
     #endif
 
         poolOfIpsMutex.lock();
-        poolOfIps.append(newip);
+        poolOfIps.enqueue(newip);
         poolOfIpsMutex.unlock();
         length++;
     }

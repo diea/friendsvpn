@@ -67,7 +67,7 @@ protected:
     static QString defaultIface;
 
     static QMutex poolOfIpsMutex;
-    static QStringList poolOfIps;
+    static QQueue<QString> poolOfIps;
 
     static char intToHexChar(int i);
 
