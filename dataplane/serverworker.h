@@ -20,7 +20,7 @@ private:
 public:
     ~ServerWorker();
     explicit ServerWorker(addrUnion server_addr, addrUnion client_addr, SSL* ssl, DataPlaneConnection* con, QObject *parent = 0);
-    void disconnect();
+    void stop();
     void sendBytes(const char* buf, int len);
 signals:
     void bufferReady(const char* buf, int len);

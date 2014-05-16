@@ -98,13 +98,14 @@ void ServerWorker::readReady(int) {
     }
 }
 
-void ServerWorker::disconnect() {
+void ServerWorker::stop() {
     SSL_shutdown(ssl);
     close(fd);
     SSL_free(ssl);
     ERR_remove_state(0);
     printf("done, connection closed.\n");
     fflush(stdout);
+    this->deleteLater();
 }
 
 void ServerWorker::sendBytes(const char* buf, int len) {

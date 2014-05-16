@@ -188,7 +188,11 @@ void DataPlaneClient::sendBytes(const char *bytes, socklen_t len) {
 }
 
 void DataPlaneClient::stop() {
-    // TODO
+    SSL_shutdown(ssl);
+    close(fd);
+    SSL_free(ssl);
+    ERR_remove_state(0);
+    this->deleteLater();
 }
 
 DataPlaneClient::~DataPlaneClient() {
