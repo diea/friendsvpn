@@ -63,6 +63,7 @@ bool DataPlaneConnection::addMode(plane_mode mode, QObject* socket) {
         this->removeConnection();
 
     mutex.unlock();
+    qDebug() << "returing from addMode!";
     return true;
 }
 
