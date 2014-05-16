@@ -1,5 +1,5 @@
 #include "abstractplaneconnection.h"
-
+#include <QDebug>
 AbstractPlaneConnection::AbstractPlaneConnection(QString uid, QObject *parent) :
     QObject(parent), friendUid(uid)
 {
@@ -20,17 +20,21 @@ plane_mode AbstractPlaneConnection::getMode() {
 
 bool AbstractPlaneConnection::removeMode(plane_mode mode) {
     if (curMode == Closed) return false;
-    if ((curMode != Both) && (curMode != mode)) return false;
+    if ((curMode != Both) && (curMode != mode)) {
+        qDebug() << "remove mode fail since curMode is " << curMode
+                    << "and plane mode is " << mode;
+        return false;
+    }
 
     if (curMode == Both) {
         if (mode == Receiving) {
             curMode = Emitting;
-            //serverSock = NULL;
         } else {
             curMode = Receiving;
-            //clientSock = NULL;
         }
     } else {
+        curMode = Closed;
+        qDebug() << "Abstract plane connection disconnected!";
         emit disconnected();
     }
     return true;

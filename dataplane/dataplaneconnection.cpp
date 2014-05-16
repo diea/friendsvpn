@@ -135,13 +135,17 @@ void DataPlaneConnection::sendBytes(const char *buf, int len, QString& hash, int
 
 void DataPlaneConnection::disconnect() {
     qDebug() << "Disconnect dataplane!";
-    if (client) {
-        qDebug() << "killing client";
+    if (curMode == Both) {
         client->stop();
+        server->stop();
     }
-    if (server) {
+    if (curMode == Receiving) {
         qDebug() << "killing server";
         server->stop();
+    }
+    if (curMode == Emitting) {
+        qDebug() << "killing client";
+        client->stop();
     }
     curMode = Closed;
 }
