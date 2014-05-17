@@ -10,7 +10,7 @@
 QHash<QString, Proxy*> Proxy::proxyHashes;
 IpResolver* Proxy::resolver = IpResolver::getInstance();
 RawSockets* Proxy::rawSockets = RawSockets::getInstance();
-QString Proxy::defaultIface = Proxy::getDefaultInterface();
+QString Proxy::defaultIface = IpResolver::getDefaultInterface();
 QQueue<QString> Proxy::poolOfIps;
 QMutex Proxy::poolOfIpsMutex;
 
@@ -145,50 +145,6 @@ void Proxy::gennewIP() {
     }
 }
 
-
-QString Proxy::getDefaultInterface() {
-#ifdef __APPLE__
-    QProcess netstat;
-    netstat.start("netstat -nr");
-    netstat.waitForReadyRead();
-    char buf[3000];
-    int length;
-    while ((length = netstat.readLine(buf, 3000))) {
-        buf[length - 1] = '\0'; // remove "\n"
-        QString curLine(buf);
-        if (curLine.startsWith("default")) {
-            QStringList list = curLine.split(" ", QString::SkipEmptyParts);
-            if (list.at(1).contains(":")) {
-                netstat.close();
-                return list.at(3);
-            }
-        }
-    }
-    netstat.close();
-    qWarning() << "The host has no IPv6 default route!";
-    exit(-1);
-#elif __GNUC__
-    QProcess route;
-    route.start("route -n6");
-    route.waitForReadyRead();
-    char buf[3000];
-    int length;
-    while ((length = route.readLine(buf, 3000))) {
-        buf[length - 1] = '\0'; // remove "\n"
-        QString curLine(buf);
-        if (curLine.startsWith("::/0")) {
-            QStringList list = curLine.split(" ", QString::SkipEmptyParts);
-            if (list.at(2) != "::") {
-                route.close();
-                return list.at(6);
-            }
-        }
-    }
-    route.close();
-    qWarning() << "The host has no IPv6 default route!";
-    exit(-1);
-#endif
-}
 
 /**
  * undefined if i >= 16
@@ -438,14 +394,14 @@ void Proxy::run_pcap() {
             u->addQProcess(bindSocket);
         }
     }
+
+    QStack<QString> listenInterfaces = resolver->getActiveInterfaces();
+    while (!listenInterfaces.empty()) {
         // listen for packets with pcap, forward on the secure UDP link
         QStringList args;
-    #ifdef __APPLE__
-        args.append("lo0"); // TODO get default iface AND listen also on lo !
-    #elif __GNUC__
-        args.append("lo"); // TODO get default iface AND listen also on lo !
-        //args.append("eth0"); // TODO get default iface AND listen also on lo !
-    #endif
+        QString ifa = listenInterfaces.pop();
+        qDebug() << "iface : " << ifa;
+        args.append(ifa);
         QString transportStr;
         sockType == SOCK_DGRAM ? transportStr = "udp" : transportStr = "tcp";
         args.append("ip6 dst host " + listenIp + " and " + transportStr + " and dst port " + QString::number(port));
@@ -461,6 +417,7 @@ void Proxy::run_pcap() {
         qDebug() << "THREAD ADDING PCAP" << QThread::currentThreadId();
         pcap->start(QString(HELPERPATH) + "pcapListen", args);
         pcap->waitForStarted();
+    }
 }
 
 

@@ -116,7 +116,7 @@ void ControlPlaneConnection::readBuffer(const char* buf, int len) {
     int bufferPosition = 0;
     lastRcvdTimestamp = time(NULL); // we received a packet, update time
     while (len > 0) {
-        const char* found = my_strnstr(buf + bufferPosition, "\r\n\r\n", len - bufferPosition);
+        const char* found = my_strnstr(buf + bufferPosition, "\r\n\r\n", len);
         int headerLength = 0;
         if (found) {
             headerLength = found - (buf + bufferPosition);

@@ -38,6 +38,20 @@ public:
      */
     struct ip_mac_mapping getMapping(QString ip);
 
+    /**
+     * @brief getActiveInterfaces gives a list of active interfaces. This would be used by pcap
+     * to known on which interfaces to capture
+     * @return
+     */
+    QStack<QString> getActiveInterfaces();
+
+    /**
+     * @brief getDefaultInterface gets the default interface (the active interface for a user
+     * that is NOT multihomed)
+     * @return
+     */
+    static QString getDefaultInterface();
+
 signals:
 
 public slots:
