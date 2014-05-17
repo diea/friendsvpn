@@ -3,8 +3,28 @@
 #include "ph2phtp_parser.h"
 #include "proxyserver.h"
 #include <time.h>
-#include <string.h>
 #include <QDebug>
+
+char * my_strnstr(const char *s, const char *find, size_t slen) {
+    /* from http://www.opensource.apple.com/source/Libc/Libc-320/string/FreeBSD/strnstr.c */
+    char c, sc;
+    size_t len;
+
+    if ((c = *find++) != '\0') {
+        len = strlen(find);
+        do {
+            do {
+                if ((sc = *s++) == '\0' || slen-- < 1)
+                    return (NULL);
+            } while (sc != c);
+            if (len > slen)
+                return (NULL);
+        } while (strncmp(s, find, len) != 0);
+        s--;
+    }
+    return ((char *)s);
+}
+
 ControlPlaneConnection::ControlPlaneConnection(QString uid, AbstractPlaneConnection *parent) :
     AbstractPlaneConnection(uid, parent), lastRcvdTimestamp(time(NULL))
 {
@@ -96,14 +116,7 @@ void ControlPlaneConnection::readBuffer(const char* buf, int len) {
     int bufferPosition = 0;
     lastRcvdTimestamp = time(NULL); // we received a packet, update time
     while (len > 0) {
-        qDebug() << "len is " << len << "and strlen is " << strlen(buf);
-        if (len != strlen(buf)) {
-            qDebug() << "buffer was not 0 terminated";
-            qDebug() << buf;
-            return;
-        }
-
-        const char* found = strstr(buf + bufferPosition, "\r\n\r\n");
+        const char* found = my_strnstr(buf + bufferPosition, "\r\n\r\n", len - bufferPosition);
         int headerLength = 0;
         if (found) {
             headerLength = found - (buf + bufferPosition);
