@@ -128,6 +128,7 @@ void ControlPlaneConnection::readBuffer(const char* buf, int len) {
         if (!headerLength) {
             qDebug() << "this is packet when header 0";
             qDebug() << buf + bufferPosition;
+            return;
         }
 
         len -= headerLength + 4; // 4 count for the \r\n\r\n
