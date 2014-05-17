@@ -80,11 +80,6 @@ void ControlPlaneConnection::readBuffer(const char* buf, int len) {
         QStringList list = packet.split("\r\n");
 
         qDebug() << "new bjr packet" << list;
-
-        if (!list.at(list.length() - 1).isEmpty()) {
-             qDebug() << "ERROR: Did not receive full control plane packet";
-             return;
-        }
         if (list.at(0) == "BONJOUR") {
             QString hostname;
             QString name;
