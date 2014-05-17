@@ -75,7 +75,7 @@ void ControlPlaneConnection::readBuffer(const char* buf, int len) {
             return;
         }
 
-        len -= headerLength - 4; // 4 count for the \r\n\r\n
+        len -= headerLength + 4; // 4 count for the \r\n\r\n
 
         qDebug() << "headerlength is " << headerLength;
         QString packet = QString::fromLatin1(buf + bufferPosition, headerLength);
