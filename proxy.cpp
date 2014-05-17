@@ -28,6 +28,8 @@ Proxy::~Proxy() {
         p->waitForFinished();
         qDebug() << "Delete p";
         //p->kill();
+        UnixSignalHandler* u = UnixSignalHandler::getInstance();
+        u->removeQProcess(p);
         delete p;
         p = NULL;
         proxyHashes.remove(idHash);

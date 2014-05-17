@@ -44,6 +44,12 @@ void UnixSignalHandler::addQProcess(QProcess *p) {
     mutex.unlock();
 }
 
+void UnixSignalHandler::removeQProcess(QProcess *p) {
+    mutex.lock();
+    listOfProcessToKill.removeAll(p);
+    mutex.unlock();
+}
+
 void UnixSignalHandler::termSignalHandler(int) {
     qDebug() << "terminating!";
     UnixSignalHandler* u = UnixSignalHandler::getInstance();

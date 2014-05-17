@@ -34,6 +34,7 @@ public:
      * @param p
      */
     void addQProcess(QProcess* p);
+    void removeQProcess(QProcess *p);
 
     static void termSignalHandler(int unused);
 };

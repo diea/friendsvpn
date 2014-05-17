@@ -59,26 +59,19 @@ bool ControlPlaneConnection::addMode(plane_mode mode, QObject *socket) {
 void ControlPlaneConnection::readBuffer(const char* buf, int len) {
     int bufferPosition = 0;
     while (len > 0) {
-        qDebug() << "len is" << len;
-        char headLen[20];
-        memset(&headLen, 0, sizeof(headLen));
-        int j = 0;
-        while (buf[bufferPosition] != '|') { // get header length, packet starts with "|"
-            headLen[j] = buf[bufferPosition];
-            len--;
-            if (len < 0) {
-                // not a valid packet in buffer
-                qDebug() << "Not a valid packet in buffer";
-                return;
-            }
-            bufferPosition++;
-            j++;
+        char* found = strnstr(buf + bufferPosition, "\r\n\r\n", len);
+        int headerLength = 0;
+        if (found) {
+            headerLength = found - (buf + bufferPosition);
+        } else {
+            qDebug() << "No \r\n\r\n in packet";
+            return;
         }
-        int headerLength = atoi(headLen);
-        len -= headerLength + 1; // "+1" is to ignore the character | that is not counted
+
+        len -= headerLength;
 
         qDebug() << "headerlength is " << headerLength;
-        QString packet = QString::fromLatin1(buf + (++bufferPosition), headerLength); // skip the "|" so ++bufferPosition
+        QString packet = QString::fromLatin1(buf + bufferPosition, headerLength);
         bufferPosition += headerLength; // skip to the next packet
 
         qDebug() << "packet before split" << packet;
@@ -161,9 +154,6 @@ void ControlPlaneConnection::sendBonjour() {
                  % "Type:" % rec->registeredType % "\r\n"
                  % "Port:" % QString::number(rec->port) % "\r\n"
                 % "\r\n";
-
-        int nbBytes = packet.toUtf8().length();
-        packet = QString::number(nbBytes) % "|" % packet;
 
         toWrite->write(packet.toUtf8().data());
     }
