@@ -30,6 +30,7 @@ Proxy::~Proxy() {
         //p->kill();
         delete p;
         p = NULL;
+        proxyHashes.remove(idHash);
     }
     qDebug() << "Got out of proxy!";
 }

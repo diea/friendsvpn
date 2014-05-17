@@ -51,12 +51,15 @@ void UnixSignalHandler::termSignalHandler(int) {
     qDebug() << "got instance";
     foreach (QProcess* p, u->listOfProcessToKill) {
         qDebug() << "Going once more in loop";
-        if (p && (p->state() != QProcess::NotRunning)) {
-            qDebug() << p->state();
-            qDebug() << "closing";
-            p->terminate();
+        if (p) {
+            if ((p->state() != QProcess::NotRunning)) {
+                qDebug() << p->state();
+                qDebug() << "closing";
+                p->terminate();
+            }
         }
     }
     mutex.unlock();
+    qDebug() << "exit!";
     exit(0);
 }
