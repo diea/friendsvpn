@@ -86,7 +86,7 @@ void ControlPlaneConnection::readBuffer(const char* buf, int len) {
             QString type;
             int port = 0;
             int listLength = list.length();
-            for (int i = 0; i < listLength - 1; i++) {
+            for (int i = 0; i < listLength; i++) {
                 QStringList keyValuePair = list.at(i).split(":");
                 QString key = keyValuePair.at(0);
                 if (key == "Hostname") {
