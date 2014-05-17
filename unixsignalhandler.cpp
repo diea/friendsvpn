@@ -52,11 +52,11 @@ void UnixSignalHandler::termSignalHandler(int) {
     foreach (QProcess* p, u->listOfProcessToKill) {
         qDebug() << "Going once more in loop";
         if (p && (p->state() != QProcess::NotRunning)) {
+            qDebug() << p->state();
             qDebug() << "closing";
-            //p->close(); // close process => Hangs on linux so use kill
-            p->kill();
-            qDebug() << "closed!";
+            p->terminate();
         }
     }
+    mutex.unlock();
     exit(0);
 }

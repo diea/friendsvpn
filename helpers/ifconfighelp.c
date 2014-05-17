@@ -23,11 +23,13 @@ void sig_handler(int signal) {
 #elif __GNUC__
     strcat(delCommand, " inet6 del ");
 #endif
-    strcat(delCommand, ip);
 
-    printf("%s \n", delCommand);
+    char* found = strstr(ip, "/");
+    *found = '\0'; // terminate the IP, don't bother the prefix for deletion
+    strcat(delCommand, ip);
     
     system(delCommand);
+
     exit(0);
 }
 
@@ -49,8 +51,12 @@ int main(int argc, char** argv) {
     sa.sa_handler = &sig_handler;
     sa.sa_flags = SA_RESTART;
     sigfillset(&sa.sa_mask);
-    if ((sigaction(SIGINT, &sa, NULL) == -1) || (sigaction(SIGTERM, &sa, NULL) == -1)) {
-        fprintf(stderr, "Cannot handle SIGINT or SIGTERM!\n");
+    if ((sigaction(SIGINT, &sa, NULL)) == -1) {
+        fprintf(stderr, "Cannot handle SIGINT!\n");
+        return 4;
+    }
+    if ((sigaction(SIGTERM, &sa, NULL)) == -1) {
+        fprintf(stderr, "Cannot handle SIGTERM!\n");
         return 4;
     }
 
@@ -90,8 +96,9 @@ int main(int argc, char** argv) {
   	/* close */
   	pclose(fp);
 #endif
-
   getchar(); // wait before leaving!
+  // got char, exit!
+  sig_handler(SIGTERM);
 
 	return 0;
 }

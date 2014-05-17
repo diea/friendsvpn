@@ -110,6 +110,7 @@ void DataPlaneClient::run() {
 
     con->addMode(Emitting, this);
 
+    qDebug() << "should not happen since we have xited";
     if (SSL_get_peer_certificate(ssl)) {
         printf ("------------------------------------------------------------\n");
         X509_NAME_print_ex_fp(stdout, X509_get_subject_name(SSL_get_peer_certificate(ssl)),

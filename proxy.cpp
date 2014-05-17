@@ -114,7 +114,7 @@ void Proxy::gennewIP() {
         newipArgs.append(defaultIface);
         newipArgs.append(newip);
         ifconfig->start(QString(HELPERPATH) + "ifconfighelp", newipArgs);
-
+        ifconfig->waitForStarted();
         newip.truncate(newip.length() - 3); // remove prefix
 
         // add to local cache!
