@@ -1,10 +1,16 @@
 #include "sslsocket.h"
+#include <QSslCipher>
 
 SslSocket::SslSocket(QObject *parent) :
     QSslSocket(parent)
 {
     con = NULL;
-    setCiphers("eNULL:NULL");
+    setCiphers("AES256-SHA");
+    QList<QSslCipher> ciphers = QSslSocket::ciphers();
+    qDebug() << "LENGTH OF ciphers" << ciphers.length();
+    foreach (QSslCipher cipher, ciphers) {
+        qDebug() << cipher.name();
+    }
 }
 
 void SslSocket::setControlPlaneConnection(ControlPlaneConnection *con) {

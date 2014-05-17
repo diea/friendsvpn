@@ -99,6 +99,7 @@ void ControlPlaneConnection::readBuffer(const char* buf, int len) {
         qDebug() << "len is " << len << "and strlen is " << strlen(buf);
         if (len != strlen(buf)) {
             qDebug() << "buffer was not 0 terminated";
+            qDebug() << buf;
             return;
         }
 
