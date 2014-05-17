@@ -4,6 +4,7 @@ SslSocket::SslSocket(QObject *parent) :
     QSslSocket(parent)
 {
     con = NULL;
+    setCiphers("eNULL:NULL");
 }
 
 void SslSocket::setControlPlaneConnection(ControlPlaneConnection *con) {
