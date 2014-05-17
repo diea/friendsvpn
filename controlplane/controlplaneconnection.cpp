@@ -134,7 +134,7 @@ void ControlPlaneConnection::readBuffer(const char* buf, int len) {
 
         qDebug() << "headerlength is " << headerLength;
         QString packet = QString::fromLatin1(buf + bufferPosition, headerLength);
-        bufferPosition += headerLength; // skip to the next packet
+        bufferPosition += headerLength + 4; // skip to the next packet
 
         qDebug() << "packet before split" << packet;
         QStringList list = packet.split("\r\n");
