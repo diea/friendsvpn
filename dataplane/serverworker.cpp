@@ -58,6 +58,8 @@ void ServerWorker::connection_handle() {
 
     notif = new QSocketNotifier(fd, QSocketNotifier::Read);
     connect(notif, SIGNAL(activated(int)), this, SLOT(readyRead(int)));
+
+    con->addMode(Receiving, worker);
 }
 
 void ServerWorker::readyRead(int) {
@@ -100,6 +102,7 @@ void ServerWorker::readyRead(int) {
 }
 
 void ServerWorker::stop() {
+    notif->setEnabled(false);
     SSL_shutdown(ssl);
     close(fd);
     SSL_free(ssl);
@@ -107,7 +110,7 @@ void ServerWorker::stop() {
     printf("done, server worker connection closed.\n");
     fflush(stdout);
     this->deleteLater();
-    QThread::currentThread()->exit(0); // stop any activity in the thread
+    //QThread::currentThread()->exit(0); // stop any activity in the thread
 }
 
 void ServerWorker::sendBytes(const char* buf, int len) {

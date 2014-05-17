@@ -108,9 +108,6 @@ void DataPlaneClient::run() {
     printf ("\nConnected to %s\n",
              inet_ntop(AF_INET6, &remote_addr.s6.sin6_addr, addrbuf, INET6_ADDRSTRLEN));
 
-    con->addMode(Emitting, this);
-
-    qDebug() << "should not happen since we have xited";
     if (SSL_get_peer_certificate(ssl)) {
         printf ("------------------------------------------------------------\n");
         X509_NAME_print_ex_fp(stdout, X509_get_subject_name(SSL_get_peer_certificate(ssl)),
@@ -121,6 +118,8 @@ void DataPlaneClient::run() {
 
     notif = new QSocketNotifier(fd, QSocketNotifier::Read);
     connect(notif, SIGNAL(activated(int)), this, SLOT(readyRead(int)));
+
+    con->addMode(Emitting, this);
 }
 
 void DataPlaneClient::readyRead(int fd) {
@@ -191,13 +190,14 @@ void DataPlaneClient::sendBytes(const char *bytes, socklen_t len) {
 }
 
 void DataPlaneClient::stop() {
+    notif->setEnabled(false);
     SSL_shutdown(ssl);
     close(fd);
     SSL_free(ssl);
     ERR_remove_state(0);
     qDebug() << "dataplane client stopped";
     this->deleteLater();
-    QThread::currentThread()->exit(0); // stop any activity in the thread
+    //QThread::currentThread()->exit(0); // stop any activity in the thread
 
 }
 

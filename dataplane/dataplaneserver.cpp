@@ -194,8 +194,6 @@ void DataPlaneServer::start() {
         connect(worker, SIGNAL(bufferReady(const char*, int)), dpc, SLOT(readBuffer(const char*, int)));
         workerThread->start();
 
-        dpc->addMode(Receiving, worker);
-
         qDebug() << "Worked thread done";
     }
 }
