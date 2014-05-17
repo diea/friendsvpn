@@ -60,7 +60,8 @@ bool ControlPlaneConnection::addMode(plane_mode mode, QObject *socket) {
 void ControlPlaneConnection::readBuffer(const char* buf, int len) {
     int bufferPosition = 0;
     while (len > 0) {
-        char* found = strnstr(buf + bufferPosition, "\r\n\r\n", len);
+        qDebug() << "len is " << len << "and strlen is " << strlen(buf);
+        char* found = strstr(buf + bufferPosition, "\r\n\r\n");
         int headerLength = 0;
         if (found) {
             headerLength = found - (buf + bufferPosition);
