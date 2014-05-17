@@ -3,6 +3,7 @@
 #include "ph2phtp_parser.h"
 #include "proxyserver.h"
 
+#include <string.h>
 #include <QDebug>
 ControlPlaneConnection::ControlPlaneConnection(QString uid, AbstractPlaneConnection *parent) :
     AbstractPlaneConnection(uid, parent)
