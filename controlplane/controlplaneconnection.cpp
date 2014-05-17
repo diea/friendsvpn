@@ -61,6 +61,11 @@ void ControlPlaneConnection::readBuffer(const char* buf, int len) {
     int bufferPosition = 0;
     while (len > 0) {
         qDebug() << "len is " << len << "and strlen is " << strlen(buf);
+        if (len != strlen(buf)) {
+            qDebug() << "buffer was not \0 terminated";
+            return;
+        }
+
         const char* found = strstr(buf + bufferPosition, "\r\n\r\n");
         int headerLength = 0;
         if (found) {
