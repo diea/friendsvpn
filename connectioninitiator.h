@@ -27,6 +27,7 @@ private:
     ControlPlaneServer* server;
     QThread dpServerThread;
     DataPlaneServer* dpServer;
+
     QList<ControlPlaneClient*> clients;
     QList<ControlPlaneConnection*> connections;
 

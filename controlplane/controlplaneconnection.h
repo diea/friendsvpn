@@ -17,12 +17,24 @@ private:
     BonjourSQL* qSql;
 
     /**
+     * @brief mutex used to protect the current mode before sending!
+     */
+    QMutex mutex;
+
+    /**
+     * @brief lastRcvdTimestap contains the timestamp of the last received packet
+     */
+    uint lastRcvdTimestamp;
+
+    /**
      * @brief proxyServers associates this control plane connection to proxy servers for each
      * of the received services from the distant host
      */
     QStack<ProxyServer*> proxyServers;
 
     void removeConnection();
+
+    void sendPacket(QString& pack);
 public:
     explicit ControlPlaneConnection(QString uid, AbstractPlaneConnection *parent = 0);
     ~ControlPlaneConnection();
@@ -47,8 +59,10 @@ signals:
     void uid_received();
 private slots:
     void wasDisconnected();
+    void aliveTimeout();
 public slots:
     void sendBonjour();
+    void alive();
 };
 
 #endif // CONTROLPLANECONNECTION_H

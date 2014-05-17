@@ -27,11 +27,18 @@ private:
     QMutex mutex;
 
     /**
+     * @brief lastRcvdTimestap contains the timestamp of the last received packet
+     */
+    uint lastRcvdTimestamp;
+
+    /**
      * @brief clientProxys contains the list of pointers of proxy clients for this connection
      */
     QStack<ProxyClient*> clientProxys;
 
     void removeConnection();
+
+    void sendPacket(const char* buf, int len);
 public:
     explicit DataPlaneConnection(QString uid, AbstractPlaneConnection *parent = 0);
 

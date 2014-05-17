@@ -2,19 +2,54 @@
 #include "connectioninitiator.h"
 #include "ph2phtp_parser.h"
 #include "proxyserver.h"
-
+#include <time.h>
 #include <string.h>
 #include <QDebug>
 ControlPlaneConnection::ControlPlaneConnection(QString uid, AbstractPlaneConnection *parent) :
-    AbstractPlaneConnection(uid, parent)
+    AbstractPlaneConnection(uid, parent), lastRcvdTimestamp(time(NULL))
 {
     qSql = BonjourSQL::getInstance();
     this->connect(this, SIGNAL(disconnected()), SLOT(wasDisconnected()));
     this->connect(this, SIGNAL(connected()), SLOT(sendBonjour()));
+    this->connect(this, SIGNAL(connected()), SLOT(alive()));
 }
 
 ControlPlaneConnection::~ControlPlaneConnection() {
     qDebug() << "Destroyed control plane connection !";
+}
+
+void ControlPlaneConnection::alive() {
+    QString alive = "PING\r\n\r\n";
+    sendPacket(alive);
+    QTimer::singleShot(5000, this, SLOT(aliveTimeout()));
+}
+
+void ControlPlaneConnection::aliveTimeout() {
+    if (time(NULL) - lastRcvdTimestamp > 60) {
+        qDebug() << "Connection with " << friendUid << "timed out";
+        wasDisconnected(); // we disco
+    }
+}
+
+void ControlPlaneConnection::sendPacket(QString& packet) {
+    mutex.lock();
+    QSslSocket* toWrite; // the socket on which the bonjour packets are to be sent
+    //qDebug() << "passed the lock in sendbonjour";
+
+    if (curMode == Closed) {
+        qDebug() << "trying to write bonjour but mode is Closed";
+        mutex.unlock();
+        return;
+    }
+
+    if (curMode == Emitting) {
+        toWrite = clientSock;
+    } else {
+        toWrite = serverSock;
+    }
+
+    toWrite->write(packet.toUtf8().data());
+    mutex.unlock();
 }
 
 void ControlPlaneConnection::removeConnection() {
@@ -59,10 +94,11 @@ bool ControlPlaneConnection::addMode(plane_mode mode, QObject *socket) {
 
 void ControlPlaneConnection::readBuffer(const char* buf, int len) {
     int bufferPosition = 0;
+    lastRcvdTimestamp = time(NULL); // we received a packet, update time
     while (len > 0) {
         qDebug() << "len is " << len << "and strlen is " << strlen(buf);
         if (len != strlen(buf)) {
-            qDebug() << "buffer was not \0 terminated";
+            qDebug() << "buffer was not 0 terminated";
             return;
         }
 
@@ -119,30 +155,16 @@ void ControlPlaneConnection::readBuffer(const char* buf, int len) {
             } catch (int i) {
                 // proxy exists
             }
-        } else {
-            qDebug() << "not starting with BONJOUR";
+        } else if (list.at(0) == "PING") {
+            QString pong = "PONG\r\n\r\n";
+            sendPacket(pong);
+        } else { // no need to analyze PONG, we just need a packet for the time :)
+            qDebug() << "not starting with BONJOUR or PING";
         }
     }
 }
 
 void ControlPlaneConnection::sendBonjour() {
-    static QMutex mutex; // XXX should maybe mutex more than this function (with the mode that can change)
-    mutex.lock();
-    QSslSocket* toWrite; // the socket on which the bonjour packets are to be sent
-    //qDebug() << "passed the lock in sendbonjour";
-
-    if (curMode == Closed) {
-        qDebug() << "trying to write bonjour but mode is Closed";
-        mutex.unlock();
-        return;
-    }
-
-    if (curMode == Emitting) {
-        toWrite = clientSock;
-    } else {
-        toWrite = serverSock;
-    }
-
     // get bonjour records from db & send them over the connection
     //qDebug() << "fetching records for " << this->friendUid;
     QList < BonjourRecord* > records = qSql->getRecordsFor(this->friendUid);
@@ -157,9 +179,9 @@ void ControlPlaneConnection::sendBonjour() {
                  % "Port:" % QString::number(rec->port) % "\r\n"
                 % "\r\n";
 
-        toWrite->write(packet.toUtf8().data());
+        sendPacket(packet);
     }
-    mutex.unlock();
+
     static bool first = true;
     if (first) {
         QTimer::singleShot(10000, this, SLOT(sendBonjour())); // first call, let the time to the Bonjour discoverer

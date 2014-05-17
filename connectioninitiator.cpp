@@ -59,20 +59,15 @@ void ConnectionInitiator::startClients() {
 
         DataPlaneConnection* con = this->getDpConnection(QString(*(frien_d->uid)));
         DataPlaneClient* dc = new DataPlaneClient(QHostAddress(*(frien_d->ipv6)), con);
-        //DataPlaneClient* dc = new DataPlaneClient(QHostAddress("::1"));
         connect(dcThread, SIGNAL(started()), dc, SLOT(run()));
         connect(dcThread, SIGNAL(finished()), dcThread, SLOT(deleteLater()));
         connect(dc, SIGNAL(bufferReady(const char*, int)), con, SLOT(readBuffer(const char*, int)));
-        //connect(dc, SIGNAL(disconnected()), dcThread, SLOT())
 
         dc->moveToThread(dcThread);
 
         /* we start the thread when the control plane connection is connected! */
         ControlPlaneConnection* controlPlane = this->getConnection(QString(*(frien_d->uid)));
         connect(controlPlane, SIGNAL(connected()), dcThread, SLOT(start()));
-        //dcThread->start();
-
-        //con->addMode(Emitting, dc);
 
         // TODO delete user?
     }
