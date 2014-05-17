@@ -59,7 +59,7 @@ void ServerWorker::connection_handle() {
     notif = new QSocketNotifier(fd, QSocketNotifier::Read);
     connect(notif, SIGNAL(activated(int)), this, SLOT(readyRead(int)));
 
-    con->addMode(Receiving, worker);
+    con->addMode(Receiving, this);
 }
 
 void ServerWorker::readyRead(int) {
