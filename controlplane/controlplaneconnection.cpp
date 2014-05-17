@@ -191,4 +191,6 @@ void ControlPlaneConnection::wasDisconnected() {
     if (dp) {
         dp->disconnect(); // we disconnect the dataplane for this same client!
     }
+
+    this->deleteLater();
 }

@@ -5,6 +5,7 @@
 #include <string.h>
 #include <QtConcurrent>
 #include <pcap.h>
+#include <signal.h>
 
 QHash<QString, Proxy*> Proxy::proxyHashes;
 IpResolver* Proxy::resolver = IpResolver::getInstance();
@@ -17,10 +18,20 @@ Proxy::~Proxy() {
     while (!processes.empty()) {
         qDebug() << "Deleting processes associated with proxy";
         QProcess* p = processes.pop();
-        p->close();
+        qDebug() << "Process state" << p->state();
+        //p->terminate();
+        qDebug() << "pid is " << p->pid();
+        qDebug() << "THREAD Remove PCAP" << QThread::currentThreadId();
+        ::kill(p->pid(), SIGINT);
+        p->waitForReadyRead();
+        qDebug() << p->readAllStandardOutput();
+        p->waitForFinished();
+        qDebug() << "Delete p";
+        //p->kill();
         delete p;
         p = NULL;
     }
+    qDebug() << "Got out of proxy!";
 }
 
 Proxy::Proxy(int srcPort, int sockType, QString md5)
@@ -444,7 +455,9 @@ void Proxy::run_pcap() {
         processes.push(pcap);
         u->addQProcess(pcap); // add pcap to be killed when main is killed
 
+        qDebug() << "THREAD ADDING PCAP" << QThread::currentThreadId();
         pcap->start(QString(HELPERPATH) + "pcapListen", args);
+        pcap->waitForStarted();
 }
 
 

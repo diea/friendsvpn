@@ -161,5 +161,5 @@ void DataPlaneConnection::disconnect() {
 
     curMode = Closed;
     ConnectionInitiator::getInstance()->removeConnection(this);
-    // this->deleteLater();
+    this->deleteLater();
 }
