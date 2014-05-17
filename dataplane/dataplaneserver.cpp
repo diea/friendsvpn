@@ -26,12 +26,6 @@ DataPlaneServer* DataPlaneServer::getInstance(QObject* parent) {
 }
 
 void DataPlaneServer::start() {
-    union {
-        struct sockaddr_storage ss;
-        struct sockaddr_in6 s6;
-    } server_addr, client_addr;
-
-
     server_addr.s6.sin6_family = AF_INET6;
     // we listen on public IP, which is the one stored in the DB.
     struct in6_addr servIp;
@@ -39,11 +33,6 @@ void DataPlaneServer::start() {
     server_addr.s6.sin6_addr = servIp; //in6addr_any;
     server_addr.s6.sin6_port = htons(DATAPLANEPORT);
 
-    SSL_CTX *ctx;
-    BIO *bio;
-    SSL* ssl;
-
-    struct timeval timeout;
     const int on = 1, off = 0;
 
     OpenSSL_add_ssl_algorithms();
@@ -117,7 +106,7 @@ void DataPlaneServer::start() {
     SSL_CTX_set_cookie_generate_cb(ctx, generate_cookie);
     SSL_CTX_set_cookie_verify_cb(ctx, verify_cookie);
 
-    int fd = socket(server_addr.ss.ss_family, SOCK_DGRAM, 0);
+    fd = socket(server_addr.ss.ss_family, SOCK_DGRAM, 0);
     if (fd < 0) {
         perror("socket");
         exit(-1);
@@ -135,67 +124,70 @@ void DataPlaneServer::start() {
     setsockopt(fd, IPPROTO_IPV6, IPV6_V6ONLY, (char *)&off, sizeof(off));
     bind(fd, (const struct sockaddr *) &server_addr, sizeof(struct sockaddr_in6));
 
-    while (1) {
-        memset(&client_addr, 0, sizeof(struct sockaddr_storage));
+    notif = new QSocketNotifier(fd, QSocketNotifier::Read);
+    connect(notif, SIGNAL(activated(int)), this, SLOT(readyRead(int)));
+}
 
-        /* Create BIO */
-        bio = BIO_new_dgram(fd, BIO_NOCLOSE);
+void DataPlaneServer::readyRead(int) {
+    memset(&client_addr, 0, sizeof(struct sockaddr_storage));
 
-        /* Set and activate timeouts */
-        timeout.tv_sec = 5;
-        timeout.tv_usec = 0;
-        BIO_ctrl(bio, BIO_CTRL_DGRAM_SET_RECV_TIMEOUT, 0, &timeout);
+    /* Create BIO */
+    bio = BIO_new_dgram(fd, BIO_NOCLOSE);
 
-        ssl = SSL_new(ctx);
+    /* Set and activate timeouts */
+    timeout.tv_sec = 5;
+    timeout.tv_usec = 0;
+    BIO_ctrl(bio, BIO_CTRL_DGRAM_SET_RECV_TIMEOUT, 0, &timeout);
 
-        SSL_set_bio(ssl, bio, bio);
-        SSL_set_options(ssl, SSL_OP_COOKIE_EXCHANGE);
+    ssl = SSL_new(ctx);
 
-        while (DTLSv1_listen(ssl, &client_addr) <= 0);
+    SSL_set_bio(ssl, bio, bio);
+    SSL_set_options(ssl, SSL_OP_COOKIE_EXCHANGE);
 
-        QThread* workerThread = new QThread();
-        threads.append(workerThread);
+    while (DTLSv1_listen(ssl, &client_addr) <= 0);
 
-        addrUnion infServer_addr;
-        addrUnion infClient_addr;
-        memcpy(&infServer_addr, &server_addr, sizeof(struct sockaddr_storage));
-        memcpy(&infClient_addr, &client_addr, sizeof(struct sockaddr_storage));
+    QThread* workerThread = new QThread();
+    threads.append(workerThread);
 
-        qDebug() << "Creating worker Thread";
+    addrUnion infServer_addr;
+    addrUnion infClient_addr;
+    memcpy(&infServer_addr, &server_addr, sizeof(struct sockaddr_storage));
+    memcpy(&infClient_addr, &client_addr, sizeof(struct sockaddr_storage));
 
-        // get UID from friend using his IP to create worker thread
-        // if IP is not in DB we close the connection
-        char friendIp[INET6_ADDRSTRLEN];
-        inet_ntop(AF_INET6, &infClient_addr.s6.sin6_addr, friendIp, INET6_ADDRSTRLEN);
+    qDebug() << "Creating worker Thread";
 
-        ConnectionInitiator* init = ConnectionInitiator::getInstance();
+    // get UID from friend using his IP to create worker thread
+    // if IP is not in DB we close the connection
+    char friendIp[INET6_ADDRSTRLEN];
+    inet_ntop(AF_INET6, &infClient_addr.s6.sin6_addr, friendIp, INET6_ADDRSTRLEN);
 
-        QString friendUid = qSql->getUidFromIP(friendIp);
-        ControlPlaneConnection* cp = init->getConnection(friendUid);
-        if (friendUid == "NULL" || cp->getMode() == Closed) {
-            qDebug() << "friendUId NOT in DB or no control plane connection!";
-            SSL_shutdown(ssl);
+    ConnectionInitiator* init = ConnectionInitiator::getInstance();
 
-            close(fd);
-            //free(info);
-            SSL_free(ssl);
-            ERR_remove_state(0);
-            printf("done, connection closed.\n");
-            fflush(stdout);
-            return;
-        }
-        // associate with dataplaneconnection        
-        DataPlaneConnection* dpc = init->getDpConnection(friendUid);
+    QString friendUid = qSql->getUidFromIP(friendIp);
+    ControlPlaneConnection* cp = init->getConnection(friendUid);
+    if (friendUid == "NULL" || cp->getMode() == Closed) {
+        qDebug() << "friendUId NOT in DB or no control plane connection!";
+        SSL_shutdown(ssl);
 
-        ServerWorker* worker = new ServerWorker(infServer_addr, infClient_addr, ssl, dpc);
-        worker->moveToThread(workerThread);
-        connect(workerThread, SIGNAL(started()), worker, SLOT(connection_handle()));
-        connect(workerThread, SIGNAL(finished()), workerThread, SLOT(deleteLater()));
-        connect(worker, SIGNAL(bufferReady(const char*, int)), dpc, SLOT(readBuffer(const char*, int)));
-        workerThread->start();
-
-        qDebug() << "Worked thread done";
+        close(fd);
+        //free(info);
+        SSL_free(ssl);
+        ERR_remove_state(0);
+        printf("done, connection closed.\n");
+        fflush(stdout);
+        return;
     }
+    // associate with dataplaneconnection
+    DataPlaneConnection* dpc = init->getDpConnection(friendUid);
+
+    ServerWorker* worker = new ServerWorker(infServer_addr, infClient_addr, ssl, dpc);
+    worker->moveToThread(workerThread);
+    connect(workerThread, SIGNAL(started()), worker, SLOT(connection_handle()));
+    connect(workerThread, SIGNAL(finished()), workerThread, SLOT(deleteLater()));
+    connect(worker, SIGNAL(bufferReady(const char*, int)), dpc, SLOT(readBuffer(const char*, int)));
+    workerThread->start();
+
+    qDebug() << "Worked thread done";
 }
 
 int DataPlaneServer::dtls_verify_callback(int ok, X509_STORE_CTX *ctx) {

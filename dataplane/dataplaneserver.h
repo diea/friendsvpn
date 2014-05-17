@@ -14,6 +14,17 @@ private:
     QList<QThread*> threads;
     BonjourSQL* qSql;
 
+    union {
+        struct sockaddr_storage ss;
+        struct sockaddr_in6 s6;
+    } server_addr, client_addr;
+    SSL_CTX *ctx;
+    BIO *bio;
+    SSL* ssl;
+    struct timeval timeout;
+    int fd;
+    QSocketNotifier* notif;
+
     static int cookie_initialized;
     static unsigned char* cookie_secret;
     static DataPlaneServer* instance;
@@ -25,7 +36,8 @@ private:
     explicit DataPlaneServer(QObject *parent = 0);
 public:
     static DataPlaneServer* getInstance(QObject *parent = 0);
-
+private slots:
+    void readyRead(int fd);
 public slots:
     void start();
 
