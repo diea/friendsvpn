@@ -66,12 +66,12 @@ int main(int argc, char *argv[])
     struct ip_mac_mapping map = ip->getMapping("192.168.1.127");
     qDebug() << map.interface;*/
 
-    //BonjourSQL* qSql = BonjourSQL::getInstance();
+    BonjourSQL* qSql = BonjourSQL::getInstance();
 
     QtConcurrent::run(Proxy::gennewIP); // generate the initial new ips
 
     // discover services
-    /*QThread discovererThread;
+    QThread discovererThread;
     BonjourDiscoverer* disco = BonjourDiscoverer::getInstance();
     disco->moveToThread(&discovererThread);
     QObject::connect(&discovererThread, SIGNAL(started()), disco, SLOT(discoverServices()));
@@ -79,7 +79,7 @@ int main(int argc, char *argv[])
     //disco->discoverServices();
 
     ConnectionInitiator* con = ConnectionInitiator::getInstance();
-    con->run();*/
+    con->run();
 
    /* ProxyServer* newProxy1 = new ProxyServer("100008078109463", "diea-VirtualBox-3", "_http._tcp.", ".friendsvpn.", "diea-VirtualBox-3.local", 45940);
     newProxy1->run();*/
