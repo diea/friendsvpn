@@ -2,6 +2,7 @@
 
 cd openssl-1.0.1g
 ./Configure darwin64-x86_64-cc
+make
 cd ../libmaia
 make
 cd ..
@@ -12,6 +13,8 @@ gcc pcapListen.c -o pcapListen -lpcap
 gcc sendRaw.c -o sendRaw -lpcap
 gcc icmpReqMac.c raw_structs.c -o reqIp -lpcap
 gcc newSocket.c -o newSocket
+
+echo "Please provide root password for setting the setuid bit to the helpers, thank you"
 
 sudo chown root:wheel pcapListen sendRaw ifconfighelp reqIp
 sudo chmod u+s pcapListen sendRaw ifconfighelp reqIp
