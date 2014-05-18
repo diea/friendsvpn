@@ -98,7 +98,7 @@ int main(int argc, char** argv) {
         return 2;
     }
     while (fgets(line, sizeof(line) - 1, fp) != NULL) {
-        if ((strstr(line, "duplicate") != NULL) && (strstr(line, ip) != NULL)) {
+        if ((strstr(line, "duplicate") != NULL) && (strstr(line, testIp) != NULL)) {
             sig_handler(SIGTERM);
         }
     }
