@@ -33,7 +33,7 @@ public:
      * @brief addQProcess adds a QProcess to close before shutting down
      * @param p
      */
-    void addQProcess(QProcess* p);
+    bool addQProcess(QProcess* p);
     void removeQProcess(QProcess *p);
 
     static void termSignalHandler(int unused);
