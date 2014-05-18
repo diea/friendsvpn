@@ -182,7 +182,11 @@ struct prefix Proxy::getPrefix() {
 
         if (list.at(0).contains("inet6")) {
 #ifdef __APPLE__
+#ifdef TEST
             if (!list.at(1).startsWith("fe80") && list.at(1).startsWith("fd3b")) { // remove fd3b & maybe remove ULA.
+#else
+            if (!list.at(1).startsWith("fe80")) { // remove fd3b & maybe remove ULA.
+#endif
                 QString ip = list.at(1);
                 ifconfig.close();
 
@@ -192,7 +196,11 @@ struct prefix Proxy::getPrefix() {
                 return p;
             }
 #elif __GNUC__
+#ifdef TEST
             if (!list.at(2).startsWith("fe80") && list.at(2).startsWith("fd3b")) {
+#else
+            if (!list.at(2).startsWith("fe80")) {
+#endif
                 QString ip = list.at(2);
                 int slashIndex = ip.indexOf("/");
                 QString prefixLength = ip.right(ip.length() - slashIndex - 1);

@@ -5,7 +5,6 @@
 SysTray::SysTray(QWidget *parent) :
     QWidget(parent)
 {
-    qDebug() << "got here";
 }
 
 void SysTray::closeEvent(QCloseEvent *event)

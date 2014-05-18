@@ -47,7 +47,7 @@ int main(int argc, char** argv) {
     setuid(0);
 
     struct sigaction sa;
-    memset(&sa, 0, sizeof(sigaction));
+    memset(&sa, '\0', sizeof(sigaction));
     sa.sa_handler = &sig_handler;
     sa.sa_flags = SA_RESTART;
     sigfillset(&sa.sa_mask);

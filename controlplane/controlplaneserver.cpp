@@ -60,7 +60,7 @@ void ControlPlaneServer::sslSockReady() {
 }
 
 void ControlPlaneServer::sslSockError(const QList<QSslError>& errors) {
-    SslSocket* sslSock = qobject_cast<SslSocket*>(sender());
+    //SslSocket* sslSock = qobject_cast<SslSocket*>(sender());
     qDebug() << "ssl error";
     qDebug() << errors;
 }
