@@ -88,7 +88,6 @@ int main(int argc, char** argv) {
     testIp[found - ip] = '\0';
 #endif
 
-    printf("testIp is %s and ip is %s \n", testIp, ip);
     char line[2000];
     /* Read the output a line at a time - output it. */
     FILE *fp;
