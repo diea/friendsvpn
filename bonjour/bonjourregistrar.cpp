@@ -22,6 +22,13 @@ BonjourRegistrar::~BonjourRegistrar()
 }
 
 void BonjourRegistrar::registerService(const BonjourRecord &record) {
+    qDebug() << "registering " << record.hostname;
+    qDebug() << record.ips;
+    qDebug() << record.port;
+    qDebug() << record.registeredType;
+    qDebug() << record.replyDomain;
+    qDebug() << record.serviceName;
+
     if (dnssref || dnssref_pa) {
         qWarning("Already registered a service");
         return;
