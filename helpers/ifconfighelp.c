@@ -78,8 +78,17 @@ int main(int argc, char** argv) {
         fprintf(stderr, "New IP needs a /something prefix\n");
         return 1;
     }
+    char* testIp;
+#ifdef __APPLE__
     *found = '\0'; // terminate the IP, don't bother the prefix for deletion
+    testIp = ip; // on apple those are the same
+#elif __GNUC__ /* on linux the "del" command has to specifiy ip prefix so we can't just \0 the string */
+    testIp = malloc(2000);
+    strncpy(testIp, ip, found - ip);
+    testIp[found - ip] = '\0';
+#endif
 
+    printf("testIp is %s and ip is %s \n", testIp, ip);
     char line[2000];
     /* Read the output a line at a time - output it. */
     FILE *fp;
