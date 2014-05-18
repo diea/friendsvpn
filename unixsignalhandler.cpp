@@ -62,9 +62,10 @@ void UnixSignalHandler::termSignalHandler(int) {
                 qDebug() << p->state();
                 qDebug() << "closing " << p->pid();
                 p->terminate();
-                while (!p->waitForFinished(100)) {
-                    ::kill(p->pid(), SIGINT);
-                    p->terminate();
+                if (!p->waitForFinished(100)) {
+                    //::kill(p->pid(), SIGINT);
+                    qDebug() << "waiting pid";
+                    waitpid(p->pid(), NULL, 0);
                 }
             }
         }
