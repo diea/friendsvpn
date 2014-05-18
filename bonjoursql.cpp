@@ -6,10 +6,12 @@ BonjourSQL* BonjourSQL::instance = NULL;
 BonjourSQL::BonjourSQL(QObject *parent) :
     QObject(parent)
 {
+#ifdef TEST
 #ifdef __APPLE__
     uid = "1086104828"; // TODO REMOVE
 #elif __GNUC__
     uid = "100008078109463";
+#endif
 #endif
     while (!db.open()) {
         initDB();

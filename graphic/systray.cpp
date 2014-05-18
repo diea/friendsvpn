@@ -1,11 +1,10 @@
 #include "systray.h"
+#include "unixsignalhandler.h"
 #include <QDebug>
 
 SysTray::SysTray(QWidget *parent) :
     QWidget(parent)
 {
-    createActions();
-    createTrayIcon();
     qDebug() << "got here";
 }
 
@@ -23,7 +22,11 @@ void SysTray::createActions()
     this->connect(restoreAction, SIGNAL(triggered()), this, SLOT(show()));
 
     quitAction = new QAction(tr("&Exit"), this);
-    this->connect(quitAction, SIGNAL(triggered()), qApp, SLOT(quit()));
+    this->connect(quitAction, SIGNAL(triggered()), this, SLOT(quit()));
+}
+
+void SysTray::quit() {
+    UnixSignalHandler::termSignalHandler(SIGTERM);
 }
 
 void SysTray::createTrayIcon()

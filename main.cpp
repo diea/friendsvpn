@@ -27,7 +27,12 @@ int main(int argc, char *argv[])
     UnixSignalHandler* u = UnixSignalHandler::getInstance();
 
     // start systray
+    QThread sysTrayThread;
     SysTray* st = new SysTray();
+    st->moveToThread(&sysTrayThread);
+    QObject::connect(&sysTrayThread, SIGNAL(started()), st, SLOT(createActions()));
+    QObject::connect(&sysTrayThread, SIGNAL(started()), st, SLOT(createTrayIcon()));
+    sysTrayThread.start();
 
     // connect to sql database
     BonjourSQL* qSql = BonjourSQL::getInstance();

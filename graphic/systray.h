@@ -15,13 +15,15 @@ class SysTray : public QWidget
 public:
     explicit SysTray(QWidget *parent = 0);
     void closeEvent(QCloseEvent *event);
-    void createActions();
-    void createTrayIcon();
 private:
     QSystemTrayIcon* trayIcon;
     QMenu* trayIconMenu;
     QAction* restoreAction;
     QAction* quitAction;
+private slots:
+    void createActions();
+    void createTrayIcon();
+    void quit();
 signals:
 
 public slots:

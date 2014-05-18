@@ -75,14 +75,14 @@ void UnixSignalHandler::termSignalHandler(int) {
             }
         }
     }
-    qDebug() << "waiting for childs";
+    /*qDebug() << "waiting for childs";
     pid_t pid;
     while (pid = waitpid(-1, NULL, 0)) {
        if (errno == ECHILD) {
           break;
        }
        qDebug() << "waiting again!";
-    }
+    }*/
     qDebug() << "exit!";
     _exit(0);
 }
