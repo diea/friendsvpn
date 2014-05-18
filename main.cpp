@@ -14,18 +14,20 @@
 #include "proxyserver.h"
 #include "unixsignalhandler.h"
 #include "ipresolver.h"
-//#include "testextend.h"
 #include <QDebug>
 #include <QtConcurrent>
 
-#if 0
+#if 1
 int main(int argc, char *argv[])
 {
     QApplication a(argc, argv);
     a.setQuitOnLastWindowClosed(false);
 
+    // init signal handler
+    UnixSignalHandler* u = UnixSignalHandler::getInstance();
+
     // start systray
-    //SysTray* st = new SysTray();
+    SysTray* st = new SysTray();
 
     // connect to sql database
     BonjourSQL* qSql = BonjourSQL::getInstance();
@@ -40,18 +42,22 @@ int main(int argc, char *argv[])
     // get uid from app
     qSql->uidOK();
 
-    // discover services
-    BonjourDiscoverer* disco = BonjourDiscoverer::getInstance(qApp);
-    disco->discoverServices();
+    QtConcurrent::run(Proxy::gennewIP); // generate the initial new ips
 
-    // Control plane
+    // discover services
+    QThread discovererThread;
+    BonjourDiscoverer* disco = BonjourDiscoverer::getInstance();
+    disco->moveToThread(&discovererThread);
+    QObject::connect(&discovererThread, SIGNAL(started()), disco, SLOT(discoverServices()));
+    discovererThread.start();
+    //disco->discoverServices();
+
     ConnectionInitiator* con = ConnectionInitiator::getInstance();
     con->run();
 
     return a.exec();
 }
-#elif 1
-
+#elif 0
 
 // test main
 int main(int argc, char *argv[])

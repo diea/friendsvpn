@@ -3,9 +3,18 @@
 /**
  * @brief Configuration macros.
  */
-#define WEBAPPHOST "fd3b:e180:cbaa:1:5e96:9dff:fe8a:8447"
+#define TEST
 
+#ifdef TEST
+#define WEBAPPHOST "fd3b:e180:cbaa:1:5e96:9dff:fe8a:8447"
 #define DBHOST "fd3b:e180:cbaa:1:5e96:9dff:fe8a:8447"
+#endif
+
+#ifdef PRODUCTION
+#define WEBAPPHOST "fd3b:e180:cbaa:1:5e96:9dff:fe8a:8447"
+#define DBHOST "fd3b:e180:cbaa:1:5e96:9dff:fe8a:8447"
+#endif
+
 #define DBNAME "friendsvpn"
 #define DBUSER "diea"
 #define DBPASS ""
@@ -15,7 +24,7 @@
 
 
 #ifdef __APPLE__
-#define HELPERPATH "/Users/diea/Dropbox/CiscoVPN/app/friendsvpn/helpers/"
+#define HELPERPATH "../../../../friendsvpn/helpers/"
 #elif __GNUC__
 #define HELPERPATH "./helpers/"
 #endif
