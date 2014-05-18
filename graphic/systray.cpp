@@ -25,7 +25,7 @@ void SysTray::createActions()
 }
 
 void SysTray::quit() {
-    UnixSignalHandler::termSignalHandler(SIGTERM);
+    UnixSignalHandler::termSignalHandler(0);
 }
 
 void SysTray::createTrayIcon()
