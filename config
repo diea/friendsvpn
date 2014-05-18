@@ -10,6 +10,10 @@ cd helpers
 gcc ifconfighelp.c -o ifconfighelp
 gcc pcapListen.c -o pcapListen -lpcap
 gcc sendRaw.c -o sendRaw -lpcap
-gcc icmpReqMac.c -o reqIp -lpcap
+gcc icmpReqMac.c raw_structs.c -o reqIp -lpcap
 gcc newSocket.c -o newSocket
+
+sudo chown root:wheel pcapListen sendRaw ifconfighelp reqIp
+sudo chmod u+s pcapListen sendRaw ifconfighelp reqIp
+
 cd ..
