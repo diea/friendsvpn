@@ -1,4 +1,5 @@
 #include "bonjourbrowser.h"
+#include "bonjourdiscoverer.h"
 #include <QApplication>
 
 BonjourBrowser::BonjourBrowser(QObject *parent)
@@ -42,7 +43,9 @@ void BonjourBrowser::reply(DNSServiceRef , DNSServiceFlags flags,
     BonjourBrowser *serviceBrowser = static_cast<BonjourBrowser *>(context);
     if (errorCode != kDNSServiceErr_NoError) {
         emit serviceBrowser->error(errorCode);
-    } else {
+    } else if (strncmp(serviceName, "friendsvpn_", 11) != 0) { /* we ignore if starts with friendsvpn
+                                                                 because those are records the app
+                                                                 has registered */
         BonjourRecord* bonjourRecord = new BonjourRecord(serviceName, regType, replyDomain);
 
         if (flags & kDNSServiceFlagsAdd) {
@@ -50,15 +53,20 @@ void BonjourBrowser::reply(DNSServiceRef , DNSServiceFlags flags,
                 serviceBrowser->bonjourRecords.append(bonjourRecord);
                 qDebug() << "Appending " << QString(serviceName) << " " << QString(regType);
         } else { // delete the record
+            qDebug() << "Bonjour browser delete record" << serviceName << regType << replyDomain;
             QList<BonjourRecord*>::iterator it;
             int bjrIndex = 0;
             // iterate through list to find the record to delete
-            for (it = serviceBrowser->bonjourRecords.begin(); it!= serviceBrowser->bonjourRecords.end(); it++) {
-                BonjourRecord* oldBonjourRecord = *it;
+            foreach (BonjourRecord* oldBonjourRecord, serviceBrowser->bonjourRecords) {
                 if (*oldBonjourRecord == *bonjourRecord) {
                     serviceBrowser->bonjourRecords.removeAt(bjrIndex);
                     qDebug() << "Removing " << QString(serviceName) << " " << QString(regType);
                     qDebug() << "IP " << oldBonjourRecord->ips << " port " << oldBonjourRecord->port;
+                    if (oldBonjourRecord->resolved) {
+                        // delete record from bonjour discoverer global list
+                        qDebug() << "remove record from global QHash in bonjour discoverer";
+                        BonjourDiscoverer::recordHashes.remove(oldBonjourRecord->md5);
+                    }
                     delete oldBonjourRecord;
                 }
                 bjrIndex++;

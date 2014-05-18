@@ -66,6 +66,7 @@ void BonjourDiscoverer::reply(DNSServiceRef dnsref, DNSServiceFlags flags,
         } else {
             delete serviceBrowser->availableServices.value(service);
             serviceBrowser->availableServices.remove(service);
+
             // TODO serviceBrowser->qSql->removeService(serviceName, reg.right(3));
             qDebug() << "Removing " + QString(service);
         }

@@ -20,7 +20,8 @@ ProxyServer::ProxyServer(const QString &friendUid, const QString &name, const QS
     // create bonjour rec with new IP
     QList<QString> ip;
     ip.append(newip);
-    rec = BonjourRecord(name, regType, domain, hostname, ip, port);
+    // we prepend "friendsvpn_" in front of names so we know when scanning to ignore those
+    rec = BonjourRecord("friendsvpn_" + name, regType, domain, hostname, ip, port);
 
     // get DataPlaneConnection associated with friendUid
     ConnectionInitiator* initiator = ConnectionInitiator::getInstance();
@@ -30,7 +31,7 @@ ProxyServer::ProxyServer(const QString &friendUid, const QString &name, const QS
 
 void ProxyServer::run() {
     run_pcap();
-
+    rec.port = port; /* change to actual listen port before advertising */
     // advertise by registering the record with a bonjour registrar
     registrar.registerService(rec);
 }
