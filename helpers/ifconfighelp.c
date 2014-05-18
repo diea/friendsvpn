@@ -105,7 +105,6 @@ int main(int argc, char** argv) {
     fflush(stdout);
     pclose(fp);
 
-
     getchar(); // wait before leaving!
     // got char, exit!
     sig_handler(SIGTERM);

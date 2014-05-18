@@ -66,5 +66,5 @@ void UnixSignalHandler::termSignalHandler(int) {
         }
     }
     qDebug() << "exit!";
-    exit(0);
+    _exit(0);
 }
