@@ -3,7 +3,7 @@
 #include <QDebug>
 #include <sys/types.h>
 #include <sys/wait.h>
-
+#include <errno.h>
 
 UnixSignalHandler* UnixSignalHandler::instance = NULL;
 QMutex UnixSignalHandler::mutex;
@@ -73,6 +73,7 @@ void UnixSignalHandler::termSignalHandler(int) {
         }
     }
     qDebug() << "waiting for childs";
+    pid_t pid;
     while (pid = waitpid(-1, NULL, 0)) {
        if (errno == ECHILD) {
           break;
