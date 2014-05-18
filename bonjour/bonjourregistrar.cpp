@@ -28,7 +28,7 @@ void BonjourRegistrar::registerService(const BonjourRecord &record) {
     qDebug() << record.registeredType;
     qDebug() << record.replyDomain;
     qDebug() << record.serviceName;
-
+#ifdef __APPLE__ /* register is not supported by AVAHI compatibility layer */
     if (dnssref || dnssref_pa) {
         qWarning("Already registered a service");
         return;
@@ -80,6 +80,7 @@ void BonjourRegistrar::registerService(const BonjourRecord &record) {
                   this, SLOT(bonjourSocketReadyRead()));
         }
     }
+#endif
 }
 
 void BonjourRegistrar::registerRecordCallback(DNSServiceRef service, DNSRecordRef rec, const DNSServiceFlags flags,
