@@ -81,5 +81,5 @@ void UnixSignalHandler::termSignalHandler(int) {
        qDebug() << "waiting again!";
     }
     qDebug() << "exit!";
-    exit(0);
+    _exit(0);
 }
