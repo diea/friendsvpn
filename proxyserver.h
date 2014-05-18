@@ -5,6 +5,7 @@
 #include <QHash>
 #include <QProcess>
 #include "rawsockets.h"
+#include "bonjour/bonjourregistrar.h"
 
 class ProxyServer : public Proxy
 {
@@ -14,6 +15,7 @@ private:
     RawSockets* rawSocks;
 
     QString friendUid;
+    BonjourRegistrar registrar;
     //QMutex mutex;
 
     static QString computeMd5(const QString &friendUid, const QString &name, const QString &regType, const QString &domain,

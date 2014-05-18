@@ -32,7 +32,7 @@ void ProxyServer::run() {
     run_pcap();
 
     // advertise by registering the record with a bonjour registrar
-    // TODO
+    registrar.registerService(rec);
 }
 
 void ProxyServer::sendBytes(const char *buf, int len, QString dstIp) {

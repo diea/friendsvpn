@@ -41,12 +41,11 @@ int UnixSignalHandler::setup_unix_signal_handlers() {
     return 0;
 }
 
-bool UnixSignalHandler::addQProcess(QProcess *p) {
+void UnixSignalHandler::addQProcess(QProcess *p) {
     mutex.lock();
     qDebug() << "adding q process and got into mutex";
     listOfProcessToKill.append(p);
     mutex.unlock();
-    return true;
 }
 
 void UnixSignalHandler::removeQProcess(QProcess *p) {

@@ -122,35 +122,32 @@ void Proxy::gennewIP() {
 
         // add it with ifconfig
         QProcess* ifconfig = new QProcess();
-        if (u->addQProcess(ifconfig)) {
-            // TODO include in the app bundle to launch from there
-            // TODO check DAD
-            QStringList newipArgs;
-            newipArgs.append(defaultIface);
-            newipArgs.append(newip);
-            ifconfig->start(QString(HELPERPATH) + "ifconfighelp", newipArgs);
-            ifconfig->waitForStarted();
+        u->addQProcess(ifconfig);
+        QStringList newipArgs;
+        newipArgs.append(defaultIface);
+        newipArgs.append(newip);
+        ifconfig->start(QString(HELPERPATH) + "ifconfighelp", newipArgs);
+        ifconfig->waitForStarted();
 
-            // wait 6 seconds for ifconfig to fail
-            if (ifconfig->waitForFinished(6000)) {
-                qDebug() << "new Duplicate! we generate an other one";
-                u->removeQProcess(ifconfig);
-                delete ifconfig;
-            } else {
-                newip.truncate(newip.length() - 3); // remove prefix
+        // wait 6 seconds for ifconfig to fail
+        if (ifconfig->waitForFinished(6000)) {
+            qDebug() << "new Duplicate! we generate an other one";
+            u->removeQProcess(ifconfig);
+            delete ifconfig;
+        } else {
+            newip.truncate(newip.length() - 3); // remove prefix
 
-                // add to local cache!
-            #ifdef __APPLE__ // XXX better way of determining local loopback interface ?
-                resolver->addMapping(newip, "", "lo0");
-            #elif __GNUC__
-                resolver->addMapping(newip, "", "lo");
-            #endif
+            // add to local cache!
+        #ifdef __APPLE__ // XXX better way of determining local loopback interface ?
+            resolver->addMapping(newip, "", "lo0");
+        #elif __GNUC__
+            resolver->addMapping(newip, "", "lo");
+        #endif
 
-                poolOfIpsMutex.lock();
-                poolOfIps.enqueue(newip);
-                poolOfIpsMutex.unlock();
-                length++;
-            }
+            poolOfIpsMutex.lock();
+            poolOfIps.enqueue(newip);
+            poolOfIpsMutex.unlock();
+            length++;
         }
     }
 }
@@ -305,13 +302,7 @@ Proxy* Proxy::getProxy(QString md5) {
 }
 
 void Proxy::sendRawFinish(int exitCode) {
-    // TODO
-    // TODO check correspondance of exit code (seems like 255 -3 = 252 ?)
     qWarning() << "sendRaw helper had an error " << exitCode;
-
-    if (exitCode == 3) {
-        //qDebug() << sendRaw.readAllStandardError();
-    }
 }
 
 void Proxy::sendRawStandardError() {
@@ -357,8 +348,6 @@ void Proxy::readyRead() {
 }
 
 void Proxy::pcapFinish(int exitCode) {
-    // TODO
-    // TODO check correspondance of exit code (seems like 255 -3 = 252 ?)
     qWarning() << "pcap exited with exit code " << exitCode;
 }
 
