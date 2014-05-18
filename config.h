@@ -29,7 +29,7 @@
 #define CONTROLPLANELISTENPORT 61323
 
 
-#ifdef __APPLE__
+#ifdef frefre // TODO change
 #define HELPERPATH "../../../../friendsvpn/helpers/"
 #elif __GNUC__
 #define HELPERPATH "./helpers/"
