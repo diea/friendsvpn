@@ -1,6 +1,7 @@
 #include "dataplaneserver.h"
 #include "dataplaneconnection.h"
 #include "controlplane/controlplaneconnection.h"
+#include "unixsignalhandler.h"
 #include <sys/types.h>
 #include <sys/socket.h>
 #include <QtConcurrent>
@@ -185,6 +186,8 @@ void DataPlaneServer::readyRead(int) {
     connect(workerThread, SIGNAL(started()), worker, SLOT(connection_handle()));
     connect(workerThread, SIGNAL(finished()), workerThread, SLOT(deleteLater()));
     connect(worker, SIGNAL(bufferReady(const char*, int)), dpc, SLOT(readBuffer(const char*, int)));
+    UnixSignalHandler* u = UnixSignalHandler::getInstance();
+    connect(u, SIGNAL(exiting()), workerThread, SLOT(quit()));
     workerThread->start();
 
     qDebug() << "Worked thread done";

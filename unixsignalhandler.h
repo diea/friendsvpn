@@ -23,6 +23,7 @@ private:
 
     static QMutex mutex;
     QList<QProcess*> listOfProcessToKill;
+    QList<QThread*> listOfThreads;
     explicit UnixSignalHandler(QObject *parent = 0);
 
     static UnixSignalHandler* instance;
@@ -37,6 +38,8 @@ public:
     void removeQProcess(QProcess *p);
 
     static void termSignalHandler(int unused);
+signals:
+    void exiting();
 };
 
 #endif // UNIXSIGNALHANDLER_H

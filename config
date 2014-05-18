@@ -1,0 +1,15 @@
+#!/bin/sh
+
+cd openssl-1.0.1g
+./Configure darwin64-x86_64-cc
+cd ../libmaia
+make
+cd ..
+make
+cd helpers
+gcc ifconfighelp.c -o ifconfighelp
+gcc pcapListen.c -o pcapListen -lpcap
+gcc sendRaw.c -o sendRaw -lpcap
+gcc icmpReqMac.c -o reqIp -lpcap
+gcc newSocket.c -o newSocket
+cd ..

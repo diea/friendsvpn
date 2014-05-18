@@ -58,6 +58,7 @@ void UnixSignalHandler::termSignalHandler(int) {
     qDebug() << "terminating!";
     UnixSignalHandler* u = UnixSignalHandler::getInstance();
     mutex.lock(); // no need to unlock we exit
+    emit u->exiting();
     qDebug() << "got instance and there are " << u->listOfProcessToKill.length() << "processes to kill";
     foreach (QProcess* p, u->listOfProcessToKill) {
         qDebug() << "Going once more in loop";
@@ -65,13 +66,14 @@ void UnixSignalHandler::termSignalHandler(int) {
             if ((p->state() != QProcess::NotRunning)) {
                 qDebug() << p->state();
                 qDebug() << "closing " << p->pid();
-                p->write("abcd");
-                p->waitForBytesWritten();
-                if (!p->waitForFinished(100)) {
+                //p->terminate();
+                ::kill(p->pid(), SIGTERM);
+                //p->waitForFinished(5000);
+                /*if (!p->waitForFinished(1000)) {
                     qDebug() << "waiting pid";
                     p->terminate();
                     waitpid(p->pid(), NULL, 0);
-                }
+                }*/
             }
         }
     }

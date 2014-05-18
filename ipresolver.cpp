@@ -2,6 +2,7 @@
 #include <QProcess>
 #include <QDebug>
 #include <QStack>
+#include <QThread>
 IpResolver* IpResolver::instance = NULL;
 
 IpResolver::IpResolver() :
@@ -48,17 +49,19 @@ struct ip_mac_mapping IpResolver::getMapping(QString ip) {
         QProcess ndp;
 #ifdef __APPLE__
         ndp.start("ndp -an");
-        ndp.waitForReadyRead();
         char buf[3000];
         int length;
-        while ((length = ndp.readLine(buf, 3000))) {
-            QString curLine(buf);
-            QStringList list = curLine.split(" ", QString::SkipEmptyParts);
-            if (list.at(0) == ip) {
-                this->addMapping(ip, list.at(1), list.at(2));
-                qDebug() << "add mapping was done!";
-                ndp.close();
-                return getMapping(ip);
+        while (ndp.waitForReadyRead(500)) {
+            while ((length = ndp.readLine(buf, 3000))) {
+                QString curLine(buf);
+                QStringList list = curLine.split(" ", QString::SkipEmptyParts);
+                qDebug() << list.at(0);
+                if (list.at(0).contains(ip)) {
+                    this->addMapping(ip, list.at(1), list.at(2));
+                    qDebug() << "add mapping was done!";
+                    ndp.close();
+                    return getMapping(ip);
+                }
             }
         }
         ndp.close();
@@ -67,13 +70,15 @@ struct ip_mac_mapping IpResolver::getMapping(QString ip) {
         ndp.waitForReadyRead();
         char buf[3000];
         int length;
-        while ((length = ndp.readLine(buf, 3000))) {
-            QString curLine(buf);
-            QStringList list = curLine.split(" ", QString::SkipEmptyParts);
-            if (list.at(0) == ip) {
-                this->addMapping(ip, list.at(4), list.at(2));
-                ndp.close();
-                return getMapping(ip);
+        while (ndp.waitForReadyRead(500)) {
+            while ((length = ndp.readLine(buf, 3000))) {
+                QString curLine(buf);
+                QStringList list = curLine.split(" ", QString::SkipEmptyParts);
+                if (list.at(0) == ip) {
+                    this->addMapping(ip, list.at(4), list.at(2));
+                    ndp.close();
+                    return getMapping(ip);
+                }
             }
         }
         ndp.close();

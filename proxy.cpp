@@ -19,15 +19,11 @@ Proxy::~Proxy() {
         qDebug() << "Deleting processes associated with proxy";
         QProcess* p = processes.pop();
         qDebug() << "Process state" << p->state();
-        //p->terminate();
+        p->terminate();
         qDebug() << "pid is " << p->pid();
         qDebug() << "THREAD Remove PCAP" << QThread::currentThreadId();
-        ::kill(p->pid(), SIGINT);
-        p->waitForReadyRead();
-        qDebug() << p->readAllStandardOutput();
         p->waitForFinished();
         qDebug() << "Delete p";
-        //p->kill();
         UnixSignalHandler* u = UnixSignalHandler::getInstance();
         u->removeQProcess(p);
         delete p;

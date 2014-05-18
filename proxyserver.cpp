@@ -21,7 +21,9 @@ ProxyServer::ProxyServer(const QString &friendUid, const QString &name, const QS
     QList<QString> ip;
     ip.append(newip);
     // we prepend "friendsvpn_" in front of names so we know when scanning to ignore those
-    rec = BonjourRecord("friendsvpn_" + name, regType, domain, hostname, ip, port);
+    // we append the current ms time to hostname to avoid name collision
+    rec = BonjourRecord("friendsvpn_" + name, regType, domain,
+                        QString::number(QDateTime::currentMSecsSinceEpoch())+"_"+hostname, ip, port);
 
     // get DataPlaneConnection associated with friendUid
     ConnectionInitiator* initiator = ConnectionInitiator::getInstance();

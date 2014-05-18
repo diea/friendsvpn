@@ -23,14 +23,16 @@ int main(int argc, char *argv[])
     a.setQuitOnLastWindowClosed(false);
 
     // init signal handler
-    UnixSignalHandler::getInstance();
+    UnixSignalHandler* u = UnixSignalHandler::getInstance();
 
+#if 1
     // start systray
     QThread sysTrayThread;
     SysTray* st = new SysTray();
     QObject::connect(&sysTrayThread, SIGNAL(started()), st, SLOT(createActions()));
     QObject::connect(&sysTrayThread, SIGNAL(started()), st, SLOT(createTrayIcon()));
     sysTrayThread.start();
+    QObject::connect(u, SIGNAL(exiting()), &sysTrayThread, SLOT(quit()));
 
     // connect to sql database
     BonjourSQL* qSql = BonjourSQL::getInstance();
@@ -40,7 +42,9 @@ int main(int argc, char *argv[])
     Poller* poller = new Poller();
     poller->moveToThread(&pollerThread);
     poller->connect(&pollerThread, SIGNAL(started()), SLOT(run()));
+    QObject::connect(u, SIGNAL(exiting()), &pollerThread, SLOT(quit()));
     pollerThread.start();
+
 
     // get uid from app
     qSql->uidOK();
@@ -52,10 +56,11 @@ int main(int argc, char *argv[])
     BonjourDiscoverer* disco = BonjourDiscoverer::getInstance();
     disco->moveToThread(&discovererThread);
     QObject::connect(&discovererThread, SIGNAL(started()), disco, SLOT(discoverServices()));
+    QObject::connect(u, SIGNAL(exiting()), &discovererThread, SLOT(quit()));
     discovererThread.start();
 
     ConnectionInitiator* con = ConnectionInitiator::getInstance();
     con->run();
-
+#endif
     return a.exec();
 }

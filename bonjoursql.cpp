@@ -84,7 +84,7 @@ bool BonjourSQL::insertService(QString name, QString trans_prot) {
     query.bindValue(2, trans_prot);
     query.exec();
     // test query
-    qryMut.unlock();
+    db.close(); qryMut.unlock();
     return true;
 }
 
@@ -111,7 +111,7 @@ bool BonjourSQL::removeService(QString name, QString trans_prot) {
     query.bindValue(2, trans_prot);
     query.exec();
     db.close();
-    qryMut.unlock();
+    db.close(); qryMut.unlock();
     // test query
     return true;*/
 }
@@ -129,7 +129,7 @@ bool BonjourSQL::insertDevice(QString hostname, int port, QString service_name, 
     query.bindValue(5, record_name);
     query.exec();
     // test qry
-    qryMut.unlock();
+    db.close(); qryMut.unlock();
     return true;
 }
 
@@ -172,10 +172,10 @@ QString BonjourSQL::fetchXmlRpc() {
         query.bindValue(0, id);
         query.bindValue(1, ipv6);
         query.exec();
-        qryMut.unlock();
+        db.close(); qryMut.unlock();
         return xmlrpcReq;
     }
-    qryMut.unlock();
+    db.close(); qryMut.unlock();
     return NULL;
 }
 
@@ -198,7 +198,7 @@ QList< User* > BonjourSQL::getFriends() {
 
         list.append(new User(uid, ipv6, cert, key));
     }
-    qryMut.unlock();
+    db.close(); qryMut.unlock();
     return list;
 }
 
@@ -212,12 +212,12 @@ QSslCertificate BonjourSQL::getLocalCert() {
 
     if (query.next()) {
         QSslCertificate cert(query.value(0).toByteArray(), QSsl::Pem);
-        qryMut.unlock();
+        db.close(); qryMut.unlock();
         return cert;
     } else {
         // error
         qDebug() << "No certificate for user " << uid;
-        qryMut.unlock();
+        db.close(); qryMut.unlock();
         return QSslCertificate(NULL);
     }
 }
@@ -232,12 +232,12 @@ QSslKey BonjourSQL::getMyKey() {
 
     if (query.next()) {
         QSslKey key(query.value(0).toByteArray(), QSsl::Rsa, QSsl::Pem);
-        qryMut.unlock();
+        db.close(); qryMut.unlock();
         return key;
     } else {
         // error
         qDebug() << "No certificate for user " << uid;
-        qryMut.unlock();
+        db.close(); qryMut.unlock();
         return QSslKey(NULL);
     }
 }
@@ -256,12 +256,12 @@ QString BonjourSQL::getLocalIP() {
 
     if (query.next()) {
         QString ipv6 = query.value(0).toString();
-        qryMut.unlock();
+        db.close(); qryMut.unlock();
         return ipv6;
     } else {
         // error
         qDebug() << "No ipv6 for user " << uid;
-        qryMut.unlock();
+        db.close(); qryMut.unlock();
         return "::1"; // TODO handle this case
     }
 }
@@ -276,12 +276,12 @@ QString BonjourSQL::getUidFromIP(QString IP) {
 
     if (query.next()) {
         QString user_uid = query.value(0).toString();
-        qryMut.unlock();
+        db.close(); qryMut.unlock();
         return user_uid;
     } else {
         // error
         qDebug() << "No uid for ip " << IP;
-        qryMut.unlock();
+        db.close(); qryMut.unlock();
         return "NULL";
     }
 }
@@ -295,7 +295,7 @@ QList < BonjourRecord* > BonjourSQL::getRecordsFor(QString friendUid) {
 
     if (!qry.prepare("SELECT * FROM Authorized_user WHERE id = ? AND Record_Service_User_uid = ?")) {
         qDebug() << "ERROR SQL " << qry.lastError();
-        qryMut.unlock();
+        db.close(); qryMut.unlock();
         return list;
     }
 
@@ -319,7 +319,7 @@ QList < BonjourRecord* > BonjourSQL::getRecordsFor(QString friendUid) {
             }
         }
     }
-    qryMut.unlock();
+    db.close(); qryMut.unlock();
     return list;
 }
 

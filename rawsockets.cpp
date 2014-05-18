@@ -121,7 +121,10 @@ RawSockets* RawSockets::getInstance() {
 
 void RawSockets::writeBytes(QString srcIp, QString dstIp, int srcPort, const char *transAndPayload, int sockType, int packet_send_size) {
     IpResolver* r = IpResolver::getInstance();
+    qDebug() << "getting mapping for" << dstIp;
     struct ip_mac_mapping map = r->getMapping(dstIp);
+    qDebug() << "getting rawProcess for interface";
+    qDebug() << map.interface;
     struct rawProcess* p = rawHelpers.value(map.interface);
     QProcess* raw = p->process;
     if (!raw || raw->state() != 2) {

@@ -6,6 +6,7 @@
 #include "dataplane/dataplaneserver.h"
 #include "dataplane/dataplaneclient.h"
 #include "dataplane/dataplaneconnection.h"
+#include "unixsignalhandler.h"
 
 ConnectionInitiator* ConnectionInitiator::instance = NULL;
 
@@ -43,6 +44,8 @@ void ConnectionInitiator::startServer() {
     dpServer->moveToThread(&dpServerThread);
     connect(&dpServerThread, SIGNAL(started()), dpServer, SLOT(start()));
     dpServerThread.start();
+    UnixSignalHandler* u = UnixSignalHandler::getInstance();
+    connect(u, SIGNAL(exiting()), &dpServerThread, SLOT(quit()));
 }
 
 void ConnectionInitiator::startClients() {
@@ -62,7 +65,8 @@ void ConnectionInitiator::startClients() {
         connect(dcThread, SIGNAL(started()), dc, SLOT(run()));
         connect(dcThread, SIGNAL(finished()), dcThread, SLOT(deleteLater()));
         connect(dc, SIGNAL(bufferReady(const char*, int)), con, SLOT(readBuffer(const char*, int)));
-
+        UnixSignalHandler* u = UnixSignalHandler::getInstance();
+        connect(u, SIGNAL(exiting()), dcThread, SLOT(quit()));
         dc->moveToThread(dcThread);
 
         /* we start the thread when the control plane connection is connected! */
