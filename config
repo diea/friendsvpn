@@ -4,8 +4,10 @@ cd openssl-1.0.1g
 ./Configure darwin64-x86_64-cc
 make
 cd ../libmaia
+qmake
 make
 cd ..
+qmake
 make
 cd helpers
 gcc ifconfighelp.c -o ifconfighelp
