@@ -10,23 +10,6 @@
 // we send an icmpv6 echo request with a mac dst to ipv6 ff02::1 to try and get ipv6
 // since inverse neighbor requests are not yet supported
 
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
-#include <pcap.h>
-#include <arpa/inet.h>
-#include <net/if.h>
-#include <net/ethernet.h>
-#include <netinet/if_ether.h>
-#include <sys/ioctl.h>
-#include <unistd.h>
-#include <netdb.h>
-
-#ifdef __APPLE__
-#include <ifaddrs.h>
-#include <net/if_dl.h>
-#endif /* __APPLE__ */
-
 #include "raw_structs.h"
 
 int main(int argc,const char* argv[]) {
