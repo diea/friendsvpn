@@ -10,9 +10,6 @@ char* iface = NULL;
 char* ip = NULL;
 
 void sig_handler(int signal) {
-    FILE* fp = fopen("/home/diea/Storage/TFE/helpers/gotinisg", "w");
-    fprintf(fp, "dafuq \n");
-    fclose(fp);
     /* used on linux to delete the ip6tables rule */
     if (!command) return;
 
