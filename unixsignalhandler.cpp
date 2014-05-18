@@ -43,6 +43,7 @@ int UnixSignalHandler::setup_unix_signal_handlers() {
 
 bool UnixSignalHandler::addQProcess(QProcess *p) {
     mutex.lock();
+    qDebug() << "adding q process and got into mutex";
     listOfProcessToKill.append(p);
     mutex.unlock();
     return true;
