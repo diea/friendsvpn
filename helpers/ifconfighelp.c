@@ -10,7 +10,7 @@ char* iface = NULL;
 char* ip = NULL;
 
 void sig_handler(int signal) {
-    /* used on linux to delete the ip6tables rule */
+/* used on linux to delete the ip6tables rule */
     if (!command) return;
 
     char delCommand[2010];
@@ -24,29 +24,28 @@ void sig_handler(int signal) {
     strcat(delCommand, " inet6 del ");
 #endif
 
-    char* found = strstr(ip, "/");
-    *found = '\0'; // terminate the IP, don't bother the prefix for deletion
     strcat(delCommand, ip);
-    
+
     system(delCommand);
 
     exit(0);
 }
 
-/**
- * usage: iface ipv6
- *
- * return: 1 wrong arguments
- * return: 2 unable to run dmesg
- *
- */
+  /**
+   * usage: ifconfighelp iface ipv6
+   *
+   * return: 1 wrong arguments
+   * return: 2 unable to run dmesg
+   * return: 4 unable to handle signals
+   * return: 0 success or duplicate
+   */
 int main(int argc, char** argv) {
-	if (argc != 3) {
-		fprintf(stderr, "Need interface & ip as argument\n");
-		return 1;
-	}
-  	setuid(0);
-    
+    if (argc != 3) {
+        fprintf(stderr, "Need interface & ip as argument\n");
+        return 1;
+    }
+    setuid(0);
+
     struct sigaction sa;
     sa.sa_handler = &sig_handler;
     sa.sa_flags = SA_RESTART;
@@ -65,40 +64,43 @@ int main(int argc, char** argv) {
     ip = malloc(sizeof(char) * strlen(argv[2]));
     strcpy(ip, argv[2]);
 
-  	command = malloc(sizeof(char) * 2000);
+    command = malloc(sizeof(char) * 2000);
     memset(command, 0, sizeof(char) * 2000);
-  	strcat(command, "ifconfig ");
-  	strcat(command, iface);
-  	strcat(command, " inet6 add ");
-  	strcat(command, ip);
+    strcat(command, "ifconfig ");
+    strcat(command, iface);
+    strcat(command, " inet6 add ");
+    strcat(command, ip);
 
-	  system(command);
-#if 0
-	  char line[2000];
-  	/* Read the output a line at a time - output it. */
-  	FILE *fp;
-  	int sec = 2; // check 2seconds for DAD
-  	while (sec > 2) {
-		fp = popen("dmesg", "r");
-		if (fp == NULL) {
-			fprintf(stderr, "Unable to run dmesg\n");
-			return 2;
-		}
-  		while (fgets(line, sizeof(line) - 1, fp) != NULL) {
-  			// TODO CONTINUE HERE
-    		printf("%s", line);
- 		}
- 		fflush(stdout);
- 		pclose(fp);
- 		sleep(1);
- 		sec--;
-  	}
-  	/* close */
-  	pclose(fp);
-#endif
-  getchar(); // wait before leaving!
-  // got char, exit!
-  sig_handler(SIGTERM);
+    system(command);
 
-	return 0;
+    char* found = strstr(ip, "/");
+    if (!found) {
+        fprintf(stderr, "New IP needs a /something prefix\n");
+        return 1;
+    }
+    *found = '\0'; // terminate the IP, don't bother the prefix for deletion
+
+    char line[2000];
+    /* Read the output a line at a time - output it. */
+    FILE *fp;
+    usleep(3000000); // wait 3000ms before checking 3000ms for DAD, should be enough
+    fp = popen("dmesg", "r");
+    if (fp == NULL) {
+        fprintf(stderr, "Unable to run dmesg\n");
+        return 2;
+    }
+    while (fgets(line, sizeof(line) - 1, fp) != NULL) {
+        if ((strstr(line, "duplicate") != NULL) && (strstr(line, ip) != NULL)) {
+            sig_handler(SIGTERM);
+        }
+    }
+    fflush(stdout);
+    pclose(fp);
+
+
+    getchar(); // wait before leaving!
+    // got char, exit!
+    sig_handler(SIGTERM);
+
+    return 0;
 }

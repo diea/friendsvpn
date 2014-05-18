@@ -65,7 +65,6 @@ void UnixSignalHandler::termSignalHandler(int) {
             }
         }
     }
-    mutex.unlock();
     qDebug() << "exit!";
     exit(0);
 }

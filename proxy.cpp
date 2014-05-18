@@ -72,7 +72,8 @@ Proxy::Proxy(int srcPort, const QString& regType, QString md5) : listenPort(srcP
 QString Proxy::newIP() {
     poolOfIpsMutex.lock();
     while (poolOfIps.length() < 1) {
-        qWarning() << "No ipv6 available!";
+        qWarning() << "No ipv6 available!"; // should rarely happen!
+        // it causes long delay for initiating connection if this happens
         poolOfIpsMutex.unlock();
         QtConcurrent::run(gennewIP);
         QThread::sleep(1);
@@ -93,7 +94,7 @@ void Proxy::gennewIP() {
     poolOfIpsMutex.unlock();
 
     UnixSignalHandler* u = UnixSignalHandler::getInstance();
-    while (length < 4) {
+    while (length < 8) {
         bool newIp = true; // the new IP has not been assigned to iface yet or is not a duplicate
         QString newip;
         do {
@@ -129,19 +130,27 @@ void Proxy::gennewIP() {
         newipArgs.append(newip);
         ifconfig->start(QString(HELPERPATH) + "ifconfighelp", newipArgs);
         ifconfig->waitForStarted();
-        newip.truncate(newip.length() - 3); // remove prefix
 
-        // add to local cache!
-    #ifdef __APPLE__ // XXX better way of determining local loopback interface ?
-        resolver->addMapping(newip, "", "lo0");
-    #elif __GNUC__
-        resolver->addMapping(newip, "", "lo");
-    #endif
+        // wait 6 seconds for ifconfig to fail
+        if (ifconfig->waitForFinished(6000)) {
+            qDebug() << "new Duplicate! we generate an other one";
+            u->removeQProcess(ifconfig);
+            delete ifconfig;
+        } else {
+            newip.truncate(newip.length() - 3); // remove prefix
 
-        poolOfIpsMutex.lock();
-        poolOfIps.enqueue(newip);
-        poolOfIpsMutex.unlock();
-        length++;
+            // add to local cache!
+        #ifdef __APPLE__ // XXX better way of determining local loopback interface ?
+            resolver->addMapping(newip, "", "lo0");
+        #elif __GNUC__
+            resolver->addMapping(newip, "", "lo");
+        #endif
+
+            poolOfIpsMutex.lock();
+            poolOfIps.enqueue(newip);
+            poolOfIpsMutex.unlock();
+            length++;
+        }
     }
 }
 

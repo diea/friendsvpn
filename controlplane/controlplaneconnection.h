@@ -60,6 +60,7 @@ signals:
 private slots:
     void wasDisconnected();
     void aliveTimeout();
+
 public slots:
     void sendBonjour();
     void alive();
