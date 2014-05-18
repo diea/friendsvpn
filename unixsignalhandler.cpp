@@ -1,6 +1,8 @@
 #include "unixsignalhandler.h"
 #include <signal.h>
 #include <QDebug>
+#include <sys/types.h>
+#include <sys/wait.h>
 
 
 UnixSignalHandler* UnixSignalHandler::instance = NULL;
