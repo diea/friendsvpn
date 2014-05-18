@@ -94,7 +94,7 @@ void Proxy::gennewIP() {
     poolOfIpsMutex.unlock();
 
     UnixSignalHandler* u = UnixSignalHandler::getInstance();
-    while (length < 8) {
+    while (length < 4) { // TODO add more IPs.
         bool newIp = true; // the new IP has not been assigned to iface yet or is not a duplicate
         QString newip;
         do {
@@ -130,11 +130,11 @@ void Proxy::gennewIP() {
         ifconfig->waitForStarted();
 
         // wait 6 seconds for ifconfig to fail
-        if (ifconfig->waitForFinished(6000)) {
+        /*if (ifconfig->waitForFinished(6000)) {
             qDebug() << "new Duplicate! we generate an other one";
             u->removeQProcess(ifconfig);
             delete ifconfig;
-        } else {
+        } else { TODO REMOVE COMMENT AND CHECK FOR DAD */
             newip.truncate(newip.length() - 3); // remove prefix
 
             // add to local cache!
@@ -148,7 +148,7 @@ void Proxy::gennewIP() {
             poolOfIps.enqueue(newip);
             poolOfIpsMutex.unlock();
             length++;
-        }
+        //}
     }
 }
 
