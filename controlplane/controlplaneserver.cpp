@@ -12,7 +12,9 @@ ControlPlaneServer::ControlPlaneServer(QSslCertificate servCert, QSslKey myKey,
 
     BonjourSQL* qSql = BonjourSQL::getInstance();
     SSL_library_init();
-    SSL_METHOD *method;
+    SSL_METHOD* constmethod = SSLv3_client_method();
+    SSL_METHOD *method = static_cast<SSL_METHOD*>(malloc(sizeof(SSL_METHOD)));
+    memcpy(method, constmethod, sizeof(SSL_METHOD));
 
     OpenSSL_add_all_algorithms();  /* load & register all cryptos, etc. */
     SSL_load_error_strings();   /* load all error messages */

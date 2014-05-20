@@ -10,7 +10,9 @@ ControlPlaneClient::ControlPlaneClient(QSslCertificate servCert, QSslKey myKey,
     this->servCert = servCert;
 
     SSL_library_init();
-    SSL_METHOD *method;
+    SSL_METHOD* constmethod = SSLv3_client_method();
+    SSL_METHOD *method = static_cast<SSL_METHOD*>(malloc(sizeof(SSL_METHOD)));
+    memcpy(method, constmethod, sizeof(SSL_METHOD));
 
     OpenSSL_add_all_algorithms();  /* Load cryptos, et.al. */
     SSL_load_error_strings();   /* Bring in and register error messages */
