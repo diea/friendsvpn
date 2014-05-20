@@ -7,7 +7,7 @@
 #include <pcap.h>
 #include <signal.h>
 
-QHash<QString, Proxy*> Proxy::proxyHashes;
+QHash<QByteArray, Proxy*> Proxy::proxyHashes;
 IpResolver* Proxy::resolver = IpResolver::getInstance();
 RawSockets* Proxy::rawSockets = RawSockets::getInstance();
 QString Proxy::defaultIface = IpResolver::getDefaultInterface();

@@ -120,7 +120,7 @@ public:
     static void gennewIP();
     static QString getDefaultInterface();
 
-    static Proxy* getProxy(QString md5);
+    static Proxy* getProxy(QByteArray md5);
 private slots:
     void sendRawFinish(int);
     void sendRawStandardError();
