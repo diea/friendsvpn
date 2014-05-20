@@ -14,7 +14,7 @@ ControlPlaneClient::ControlPlaneClient(QSslCertificate servCert, QSslKey myKey,
 
     OpenSSL_add_all_algorithms();  /* Load cryptos, et.al. */
     SSL_load_error_strings();   /* Bring in and register error messages */
-    method = SSLv2_client_method();  /* Create new client-method instance */
+    method = SSLv3_client_method();  /* Create new client-method instance */
     ctx = SSL_CTX_new(method);   /* Create new context */
     if ( ctx == NULL )
     {
