@@ -5,6 +5,7 @@
 #include <sys/wait.h>
 #include <errno.h>
 #include <QThread>
+#include <unistd.h>
 
 UnixSignalHandler* UnixSignalHandler::instance = NULL;
 QMutex UnixSignalHandler::mutex;
