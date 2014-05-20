@@ -1,6 +1,6 @@
 #include "controlplaneserver.h"
 #include "connectioninitiator.h"
-
+#include "unixsignalhandler.h"
 ControlPlaneServer::ControlPlaneServer(QSslCertificate servCert, QSslKey myKey,
                                        QHostAddress listenAdr, int listenPort, QObject *parent) :
     QObject(parent)
@@ -10,11 +10,59 @@ ControlPlaneServer::ControlPlaneServer(QSslCertificate servCert, QSslKey myKey,
 
     tcpSrv = new QTcpServer(this);
 
-    cfg = QSslConfiguration();
-    sslSockList = QList<SslSocket*>();
+    BonjourSQL* qSql = BonjourSQL::getInstance();
+    SSL_library_init();
+    SSL_METHOD *method;
+    SSL_CTX *ctx;
 
-    cfg.setLocalCertificate(servCert);
-    cfg.setPrivateKey(myKey);
+    OpenSSL_add_all_algorithms();  /* load & register all cryptos, etc. */
+    SSL_load_error_strings();   /* load all error messages */
+    method = SSLv2_server_method();  /* create new server-method instance */
+    ctx = SSL_CTX_new(method);   /* create new context from method */
+    if ( ctx == NULL )
+    {
+        ERR_print_errors_fp(stderr);
+        UnixSignalHandler::termSignalHandler(0);
+    }
+
+    // get certificate and key from SQL & use them
+    QSslCertificate cert = qSql->getLocalCert();
+    QByteArray certBytesPEM = cert.toPem();
+    char* x509buffer = certBytesPEM.data();
+
+    BIO *bi;
+    bi = BIO_new_mem_buf(x509buffer, certBytesPEM.length());
+    X509 *x;
+    x = PEM_read_bio_X509(bi, NULL, NULL, NULL);
+
+    if (!SSL_CTX_use_certificate(ctx,x)) {
+        qWarning() << "ERROR: no certificate found!";
+        UnixSignalHandler::termSignalHandler(0);
+    }
+
+    if (x != NULL) X509_free(x);
+    if (bi != NULL) BIO_free(bi);
+
+    QSslKey key = qSql->getMyKey();
+    QByteArray keyBytesPEM = key.toPem();
+    char* keyBuffer = keyBytesPEM.data();
+
+    bi = BIO_new_mem_buf(keyBuffer, keyBytesPEM.length());
+    EVP_PKEY *pkey;
+    pkey = PEM_read_bio_PrivateKey(bi, NULL, NULL, NULL);
+
+    if (!SSL_CTX_use_PrivateKey(ctx, pkey)) {
+        qWarning() << "ERROR: no private key found!";
+        UnixSignalHandler::termSignalHandler(0);
+    }
+
+    if (pkey != NULL) EVP_PKEY_free(pkey);
+    if (bi != NULL) BIO_free(bi);
+
+    if (!SSL_CTX_check_private_key (ctx)) {
+        qWarning() << "ERROR: invalid private key!";
+        UnixSignalHandler::termSignalHandler(0);
+    }
 }
 
 ControlPlaneServer::~ControlPlaneServer()
@@ -37,16 +85,11 @@ void ControlPlaneServer::start() {
 void ControlPlaneServer::newIncoming() {
     qDebug() << "New incoming control Plane !";
     QTcpSocket* socket = tcpSrv->nextPendingConnection();
-    SslSocket* sslSock = new SslSocket();
+    SSL* ssl = SSL_new(ctx);              /* get new SSL state with context */
+    SSL_set_fd(ssl, socket->socketDescriptor());      /* set connection socket to SSL state */
+    SslSocket* newSsl = new SslSocket(ssl);
+    sslSockList.append(newSsl);
 
-    sslSock->setSslConfiguration(cfg);
-    sslSock->setSocketDescriptor(socket->socketDescriptor());
-    connect(sslSock, SIGNAL(encrypted()), this, SLOT(sslSockReady()));
-    connect(sslSock, SIGNAL(disconnected()), this, SLOT(sslDisconnected()));
-    // XXX ignore safety concerns about the self signed certificate...
-    // connect(sslSock, SIGNAL(sslErrors(const QList<QSslError>&)), sslSock, SLOT(ignoreSslErrors()));
-    sslSockList.append(sslSock);
-    sslSock->startServerEncryption(); // XXX encrypted() never sent on linux ubuntu 12.04 & fedora.
 }
 
 void ControlPlaneServer::sslSockReady() {

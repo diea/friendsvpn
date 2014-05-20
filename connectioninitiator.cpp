@@ -17,7 +17,7 @@ ConnectionInitiator::ConnectionInitiator(QObject *parent) :
 
     // generate self-signed certificate
     // this bit is inspired by http://stackoverflow.com/questions/256405/programmatically-create-x509-certificate-using-openssl
-    EVP_PKEY* pkey;
+    /*EVP_PKEY* pkey;
     pkey = EVP_PKEY_new();
 
     RSA* rsa = RSA_generate_key(2048, RSA_F4, NULL, NULL);
@@ -44,7 +44,7 @@ ConnectionInitiator::ConnectionInitiator(QObject *parent) :
     if (!X509_sign(x509, pkey, EVP_sha1())) {
         qWarning() << "Error signing certificate";
         UnixSignalHandler::termSignalHandler(0);
-    }
+    }*/
 }
 
 ConnectionInitiator* ConnectionInitiator::getInstance() {

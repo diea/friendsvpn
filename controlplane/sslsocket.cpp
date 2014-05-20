@@ -1,16 +1,19 @@
 #include "sslsocket.h"
 #include <QSslCipher>
 
-SslSocket::SslSocket(QObject *parent) :
-    QSslSocket(parent)
+SslSocket::~SslSocket() {
+    SSL_free(ssl);         /* release SSL state */
+    close(sd);          /* close connection */
+}
+
+SslSocket::SslSocket(SSL* ssl, QObject *parent) :
+    ssl(ssl), QSslSocket(parent)
 {
     con = NULL;
-    setCiphers("AES256-SHA");
-    QList<QSslCipher> ciphers = QSslSocket::ciphers();
-    qDebug() << "LENGTH OF ciphers" << ciphers.length();
-    foreach (QSslCipher cipher, ciphers) {
-        qDebug() << cipher.name();
-    }
+
+    if (SSL_accept(ssl) == FAIL)     /* do SSL-protocol accept */
+        ERR_print_errors_fp(stderr);
+    sd = SSL_get_fd(ssl);       /* get socket connection */
 }
 
 void SslSocket::setControlPlaneConnection(ControlPlaneConnection *con) {

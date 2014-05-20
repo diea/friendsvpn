@@ -1,19 +1,22 @@
 #ifndef SSLSOCKET_H
 #define SSLSOCKET_H
 
-#include <QSslSocket>
 #include "controlplaneconnection.h"
 /**
  * @brief The SslSocket class inherits the QSslSocket class to be able to be associated with
  * a ControlPlaneConnection.
  */
-class SslSocket : public QSslSocket
+class SslSocket : public QObject
 {
     Q_OBJECT
 private:
     ControlPlaneConnection* con;
+
+    SSL* ssl;
+    int sd;
+    QSocketNotifier* notif;
 public:
-    explicit SslSocket(QObject *parent = 0);
+    explicit SslSocket(SSL* ssl, QObject *parent = 0);
     ~SslSocket();
     void setControlPlaneConnection(ControlPlaneConnection* con);
 
