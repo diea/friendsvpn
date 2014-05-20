@@ -200,7 +200,7 @@ void ControlPlaneConnection::sendBonjour() {
                  % "Name:" % rec->serviceName % "\r\n"
                  % "Type:" % rec->registeredType % "\r\n"
                  % "Port:" % QString::number(rec->port) % "\r\n"
-                 % "MD5:" % rec->md5 % "\r\n"
+                 % "MD5:" % rec->md5.toHex() % "\r\n"
                 % "\r\n";
 
         sendPacket(packet);
