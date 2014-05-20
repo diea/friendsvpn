@@ -2,6 +2,7 @@
 #include "dataplaneconnection.h"
 #include "controlplane/controlplaneconnection.h"
 #include "unixsignalhandler.h"
+#include "connectioninitiator.h"
 #include <sys/types.h>
 #include <sys/socket.h>
 #include <QtConcurrent>
@@ -49,7 +50,8 @@ void DataPlaneServer::start() {
 
     // get certificate and key from SQL & use them
 #if 1
-    QSslCertificate cert = qSql->getLocalCert();
+    ConnectionInitiator* i = ConnectionInitiator::getInstance();
+    QSslCertificate cert = i->getLocalCertificate();
     QByteArray certBytesPEM = cert.toPem();
     char* x509buffer = certBytesPEM.data();
 
@@ -66,7 +68,7 @@ void DataPlaneServer::start() {
     if (x != NULL) X509_free(x);
     if (bi != NULL) BIO_free(bi);
 
-    QSslKey key = qSql->getMyKey();
+    QSslKey key = i->getPrivateKey();
     QByteArray keyBytesPEM = key.toPem();
     char* keyBuffer = keyBytesPEM.data();
 

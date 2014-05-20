@@ -43,7 +43,8 @@ void DataPlaneClient::run() {
     }
 
     // get certificate and key from SQL & use them
-    QSslCertificate cert = qSql->getLocalCert();
+    ConnectionInitiator* i = ConnectionInitiator::getInstance();
+    QSslCertificate cert = i->getLocalCertificate();
     QByteArray certBytesPEM = cert.toPem();
     char* x509buffer = certBytesPEM.data();
 
@@ -60,7 +61,7 @@ void DataPlaneClient::run() {
     if (x != NULL) X509_free(x);
     if (bi != NULL) BIO_free(bi);
 
-    QSslKey key = qSql->getMyKey();
+    QSslKey key = i->getPrivateKey();
     QByteArray keyBytesPEM = key.toPem();
     char* keyBuffer = keyBytesPEM.data();
 

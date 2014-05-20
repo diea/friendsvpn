@@ -202,45 +202,15 @@ QList< User* > BonjourSQL::getFriends() {
     return list;
 }
 
-QSslCertificate BonjourSQL::getLocalCert() {
+void BonjourSQL::pushCert(const QSslCertificate& cert) {
     qryMut.lock();
     QSqlDatabase db = QSqlDatabase::database();
-    QSqlQuery query = QSqlQuery(QSqlDatabase::database());
-    query.prepare("SELECT certificate FROM User WHERE uid = ?");
-    query.bindValue(0, uid);
+    QSqlQuery query = QSqlQuery(db);
+    query.prepare("UPDATE User SET certificate=? WHERE uid = ?");
+    query.bindValue(0, cert.toPem());
+    query.bindValue(1, uid);
     query.exec();
-
-    if (query.next()) {
-        QSslCertificate cert(query.value(0).toByteArray(), QSsl::Pem);
-        db.close(); qryMut.unlock();
-        return cert;
-    } else {
-        // error
-        qDebug() << "No certificate for user " << uid;
-        db.close(); qryMut.unlock();
-        return QSslCertificate(NULL);
-    }
-}
-
-QSslKey BonjourSQL::getMyKey() {
-    qryMut.lock();
-    QSqlDatabase db = QSqlDatabase::database();
-    QSqlQuery query = QSqlQuery(QSqlDatabase::database());
-    query.prepare("SELECT privateKey FROM User WHERE uid = ?");
-    query.bindValue(0, uid);
-    query.exec();
-
-    if (query.next()) {
-        QSslKey key(query.value(0).toByteArray(), QSsl::Rsa, QSsl::Pem);
-        db.close(); qryMut.unlock();
-        return key;
-    } else {
-        // error
-        qDebug() << "No certificate for user " << uid;
-        db.close();
-        qryMut.unlock();
-        return QSslKey(NULL);
-    }
+    qryMut.unlock();
 }
 
 QString BonjourSQL::getLocalUid() {

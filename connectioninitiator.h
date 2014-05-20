@@ -73,6 +73,9 @@ public:
      * @return the user's local uid
      */
     QString getMyUid();
+
+    QSslKey getPrivateKey();
+    QSslCertificate getLocalCertificate();
 signals:
 
 public slots:

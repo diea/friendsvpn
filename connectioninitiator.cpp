@@ -33,6 +33,7 @@ ConnectionInitiator::ConnectionInitiator(QObject *parent) :
 
     X509_set_pubkey(x509, pkey);
 
+    X509_NAME * name = X509_get_subject_name(x509);
     X509_NAME_add_entry_by_txt(name, "C",  MBSTRING_ASC,
                                (unsigned char *)"BE", -1, -1, 0);
     X509_NAME_add_entry_by_txt(name, "O",  MBSTRING_ASC,
@@ -45,6 +46,37 @@ ConnectionInitiator::ConnectionInitiator(QObject *parent) :
         qWarning() << "Error signing certificate";
         UnixSignalHandler::termSignalHandler(0);
     }
+
+    // get the PEM string for cert and key
+
+    // cert
+    BIO* bio = BIO_new(BIO_s_mem());
+    PEM_write_bio_X509(bio, x509);
+    BUF_MEM *bptr;
+    BIO_get_mem_ptr(bio, &bptr);
+    int length = bptr->length;
+    char certBuf[length + 1];
+    BIO_read(bio, certBuf, length);
+    certBuf[length] = '\0';
+    BIO_free(bio);
+
+    // key
+    bio = BIO_new(BIO_s_mem());
+    PEM_write_bio_PrivateKey(bio, pkey, NULL, NULL, 0, NULL, NULL);
+    BIO_get_mem_ptr(bio, &bptr);
+    length = bptr->length;
+
+    char keyBuf[length + 1];
+    BIO_read(bio, keyBuf, length);
+    keyBuf[length] = '\0';
+    BIO_free(bio);
+
+    qDebug() << keyBuf;
+    qDebug() << certBuf;
+
+    key = QSslKey(keyBuf, QSsl::Rsa, QSsl::Pem);
+    cert = QSslCertificate(certBuf, QSsl::Pem);
+    qSql->pushCert(cert);
 }
 
 ConnectionInitiator* ConnectionInitiator::getInstance() {
@@ -58,9 +90,6 @@ ConnectionInitiator* ConnectionInitiator::getInstance() {
 }
 
 void ConnectionInitiator::run() {
-    cert = qSql->getLocalCert();
-    key = qSql->getMyKey();
-
     // start the server
     this->startServer();
     // start the clients
@@ -155,7 +184,13 @@ QString ConnectionInitiator::getMyUid() {
     return instance->qSql->getLocalUid();
 }
 
+QSslKey ConnectionInitiator::getPrivateKey() {
+    return key;
+}
 
+QSslCertificate ConnectionInitiator::getLocalCertificate() {
+    return cert;
+}
 
 
 

@@ -64,15 +64,9 @@ public:
     QList< User* > getFriends();
 
     /**
-     * @brief getLocalCert
-     * @return the SslCertificate associated to this user uid
+     * @brief pushCert uploads the local certificate to the database
      */
-    QSslCertificate getLocalCert();
-    /**
-     * @brief getLocalCert
-     * @return the SslCertificate associated to this user uid
-     */
-    QSslKey getMyKey();
+    void pushCert(const QSslCertificate& cert);
 
     /**
      * @brief fetchXmlRpc fetches an XML RPC request for this host in the

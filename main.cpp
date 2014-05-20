@@ -25,9 +25,6 @@ int main(int argc, char *argv[])
     // init signal handler
     UnixSignalHandler* u = UnixSignalHandler::getInstance();
 
-    /*QByteArray hash = QCryptographicHash::hash("allParams.toUtf8().data()", QCryptographicHash::Md5);
-    qDebug() << hash.size();
-    qDebug() << hash.toHex();*/
 #if 1
     // start systray
     QThread sysTrayThread;
