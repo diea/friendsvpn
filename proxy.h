@@ -62,7 +62,7 @@ protected:
      * @brief proxyHashes each proxy will be identified by a hash of its constructor parameters
      * so that we don't create twice the same proxy
      */
-    static QHash<QString, Proxy*> proxyHashes;
+    static QHash<QByteArray, Proxy*> proxyHashes;
     /**
      * @brief defaultIface contains the default interface
      */

@@ -298,7 +298,7 @@ QString Proxy::randomIP() {
     return toRet;
 }
 
-Proxy* Proxy::getProxy(QString md5) {
+Proxy* Proxy::getProxy(QByteArray md5) {
     if (proxyHashes.contains(md5)) {
         return proxyHashes.value(md5);
     }

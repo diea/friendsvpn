@@ -78,6 +78,7 @@ void DataPlaneConnection::readBuffer(const char* buf, int len) {
     //qDebug() << "header srcIp" << header->srcIp << header->md5;
     // qDebug() << "packetBuf"
     QByteArray hash(header->md5, 16);
+    qDebug() << "READ BUFFER HASH " << hash.toHex();
     char srcIpc[INET6_ADDRSTRLEN];
     inet_ntop(AF_INET6, &(header->srcIp), srcIpc, INET6_ADDRSTRLEN);
     QString srcIp(srcIpc);
