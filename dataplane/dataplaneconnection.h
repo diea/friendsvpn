@@ -6,6 +6,10 @@
 #include "dataplaneclient.h"
 #include "dataplaneserver.h"
 #include "serverworker.h"
+#include <openssl/bio.h>
+#include <openssl/crypto.h>
+#include <openssl/ssl.h>
+#include <openssl/x509.h>
 
 class ProxyClient;
 

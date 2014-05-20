@@ -4,6 +4,7 @@
 #include "controlplane/controlplaneconnection.h"
 #include <QCryptographicHash>
 
+
 DataPlaneConnection::DataPlaneConnection(QString uid, AbstractPlaneConnection *parent) :
     AbstractPlaneConnection(uid, parent), client(NULL), server(NULL), lastRcvdTimestamp(time(NULL))
 {
