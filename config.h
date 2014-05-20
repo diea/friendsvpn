@@ -3,9 +3,9 @@
 /**
  * @brief Configuration macros.
  */
-//#define TEST
+#define TEST
 //#define TESTROM
-#define PRODUCTION
+//#define PRODUCTION
 
 #ifdef TEST
 #ifdef TESTROM
