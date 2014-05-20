@@ -78,7 +78,6 @@ void DataPlaneConnection::readBuffer(const char* buf, int len) {
     //qDebug() << "header srcIp" << header->srcIp << header->md5;
     // qDebug() << "packetBuf"
     QByteArray hash(header->md5, 16);
-    qDebug() << "READ BUFFER HASH " << hash.toHex();
     char srcIpc[INET6_ADDRSTRLEN];
     inet_ntop(AF_INET6, &(header->srcIp), srcIpc, INET6_ADDRSTRLEN);
     QString srcIp(srcIpc);
@@ -105,7 +104,7 @@ void DataPlaneConnection::readBuffer(const char* buf, int len) {
             qDebug() << "Found the client proxy ! :)";
         }
     }
-    prox->sendBytes(packetBuf, header->len, srcIp);
+    prox->sendBytes(packetBuf, ntohs(header->len), srcIp);
 }
 
 void DataPlaneConnection::sendBytes(const char *buf, int len, QByteArray& hash, int sockType, QString& srcIp) {
@@ -125,15 +124,8 @@ void DataPlaneConnection::sendBytes(const char *buf, int len, QByteArray& hash, 
     // make the DATA header
     struct dpHeader header;
     header.sockType = sockType;
-    qDebug() << "length" << len;
-    header.len = qint16(len);
-    qDebug() << "header contains length in 16bit" << header.len;
-    qDebug() << "hash length" << hash.length();
-    /*strcpy(header.md5, hash.toUtf8().data());
-    strcpy(header.srcIp, srcIp.toUtf8().data());*/
-    qDebug() << "hash is " << hash.length() << "bytes long";
+    header.len = htons(qint16(len));
     memcpy(header.md5, hash, 16); // 16 bytes
-
     inet_pton(AF_INET6, srcIp.toUtf8().data(), &(header.srcIp));
 
     char* packet = static_cast<char*>(malloc(len + sizeof(struct dpHeader)));
