@@ -226,6 +226,7 @@ void BonjourResolver::hostInfoReady(const QHostInfo &info) {
     QByteArray hash = QCryptographicHash::hash(allParams.toUtf8().data(), QCryptographicHash::Md5).toHex();
     // add record to hashes list
     record->md5 = QString(hash); /* TODO check duplicate */
+    record->md5 = "Yeay";
     BonjourDiscoverer::recordHashes.insert(QString(hash), record);
     //BonjourDiscoverer::recordHashes.insert(QString(allParams), record);
 
