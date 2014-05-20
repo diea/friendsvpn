@@ -15,9 +15,8 @@ public:
     const QString* uid;
     const QString* ipv6;
     const QSslCertificate* cert;
-    const QSslKey* key;
 
-    explicit User(QString* uid, QString* ipv6, QSslCertificate* cert, QSslKey* key, QObject *parent = 0);
+    explicit User(QString* uid, QString* ipv6, QSslCertificate* cert, QObject *parent = 0);
     ~User();
 signals:
 
