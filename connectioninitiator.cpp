@@ -14,6 +14,37 @@ ConnectionInitiator::ConnectionInitiator(QObject *parent) :
     QObject(parent)
 {
     this->qSql = BonjourSQL::getInstance();
+
+    // generate self-signed certificate
+    // this bit is inspired by http://stackoverflow.com/questions/256405/programmatically-create-x509-certificate-using-openssl
+    EVP_PKEY* pkey;
+    pkey = EVP_PKEY_new();
+
+    RSA* rsa = RSA_generate_key(2048, RSA_F4, NULL, NULL);
+    if (!EVP_PKEY_assign_RSA(pkey, rsa)) {
+        qWarning() << "Unable to generate 2048-bit RSA key";
+        UnixSignalHandler::termSignalHandler(0);
+    }
+
+    X509* x509 = X509_new();
+    ASN1_INTEGER_set(X509_get_serialNumber(x509), 1);
+    X509_gmtime_adj(X509_get_notBefore(x509), 0);
+    X509_gmtime_adj(X509_get_notAfter(x509), 31536000L);
+
+    X509_set_pubkey(x509, pkey);
+
+    X509_NAME_add_entry_by_txt(name, "C",  MBSTRING_ASC,
+                               (unsigned char *)"BE", -1, -1, 0);
+    X509_NAME_add_entry_by_txt(name, "O",  MBSTRING_ASC,
+                               (unsigned char *)"FriendsVPN", -1, -1, 0);
+    X509_NAME_add_entry_by_txt(name, "CN", MBSTRING_ASC,
+                               (unsigned char *)"localhost", -1, -1, 0);
+    X509_set_issuer_name(x509, name);
+
+    if (!X509_sign(x509, pkey, EVP_sha1())) {
+        qWarning() << "Error signing certificate";
+        UnixSignalHandler::termSignalHandler(0);
+    }
 }
 
 ConnectionInitiator* ConnectionInitiator::getInstance() {

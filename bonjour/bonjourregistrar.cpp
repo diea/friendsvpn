@@ -11,6 +11,7 @@ BonjourRegistrar::BonjourRegistrar(QObject *parent)
 
 BonjourRegistrar::~BonjourRegistrar()
 {
+    qDebug() << "freeing bonjour registrar";
     if (dnssref) {
         DNSServiceRefDeallocate(dnssref);
         dnssref = 0;

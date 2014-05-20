@@ -54,6 +54,8 @@ int main(int argc, char *argv[])
 
     QtConcurrent::run(Proxy::gennewIP); // generate the initial new ips
 
+    ConnectionInitiator* con = ConnectionInitiator::getInstance();
+
     // discover services
     QThread discovererThread;
     BonjourDiscoverer* disco = BonjourDiscoverer::getInstance();
@@ -62,7 +64,6 @@ int main(int argc, char *argv[])
     QObject::connect(u, SIGNAL(exiting()), &discovererThread, SLOT(quit()));
     discovererThread.start();
 
-    ConnectionInitiator* con = ConnectionInitiator::getInstance();
     con->run();
 #endif
     return a.exec();

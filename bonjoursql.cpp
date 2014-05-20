@@ -237,7 +237,8 @@ QSslKey BonjourSQL::getMyKey() {
     } else {
         // error
         qDebug() << "No certificate for user " << uid;
-        db.close(); qryMut.unlock();
+        db.close();
+        qryMut.unlock();
         return QSslKey(NULL);
     }
 }
