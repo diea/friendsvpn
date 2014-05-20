@@ -1,5 +1,6 @@
 #include "controlplaneclient.h"
 #include "connectioninitiator.h"
+#include <openssl/ssl.h>
 ControlPlaneClient::ControlPlaneClient(QSslCertificate servCert, QSslKey myKey,
                                        QHostAddress addr, int port, QObject *parent) :
     QObject(parent)
