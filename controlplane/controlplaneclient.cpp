@@ -8,18 +8,25 @@ ControlPlaneClient::ControlPlaneClient(QSslCertificate servCert, QSslKey myKey,
     this->port = port;
     this->servCert = servCert;
 
-    sslClient = new SslSocket();
+    SSL_library_init();
+    SSL_METHOD *method;
 
-    sslClient->addCaCertificate(servCert);
-    sslClient->setPrivateKey(myKey);
-    sslClient->setPeerVerifyName("facebookApp"); // common name for all our certificates
+    OpenSSL_add_all_algorithms();  /* Load cryptos, et.al. */
+    SSL_load_error_strings();   /* Bring in and register error messages */
+    method = SSLv2_client_method();  /* Create new client-method instance */
+    ctx = SSL_CTX_new(method);   /* Create new context */
+    if ( ctx == NULL )
+    {
+        ERR_print_errors_fp(stderr);
+        abort();
+    }
 
     init = ConnectionInitiator::getInstance();
 }
 
 ControlPlaneClient::~ControlPlaneClient()
 {
-    qDebug() << "Destroy contorl plane client";
+    qDebug() << "Destroy control plane client";
     sslClient->close();
     //delete sslClient;
 }
@@ -30,16 +37,17 @@ void ControlPlaneClient::run() {
                     "connection";
         return; // do nothing if serv cert was not set!
     }
+    connect(&sock, SIGNAL(connected()), this, SLOT(connectSSL()));
+    sock.connectToHost(addr.toString(), port);
+}
 
-    // ignore errors since we are using self-signed certificates
-    // connect(sslClient, SIGNAL(sslErrors(const QList<QSslError>&)), sslClient, SLOT(ignoreSslErrors()));
-    connect(sslClient, SIGNAL(sslErrors(const QList<QSslError>&)), this,
-            SLOT(sslErrors(const QList<QSslError>&)));
+void ControlPlaneClient::connectSSL() {
+    SSL* ssl = SSL_new(ctx);      /* create new SSL connection state */
+    SSL_set_fd(ssl, sock.socketDescriptor());    /* attach the socket descriptor */
+    sslClient = new SslSocket(ssl);
     connect(sslClient, SIGNAL(encrypted()), this, SLOT(connectionReady()));
     connect(sslClient, SIGNAL(disconnected()), this, SLOT(sslDisconnected()));
-
-    qDebug() << "CONNECT TO HOST " << addr.toString() << ":" << port;
-    sslClient->connectToHostEncrypted(addr.toString(), port);
+    sslClient->startClientEncryption();
 }
 
 void ControlPlaneClient::sslErrors(const QList<QSslError>& errors) {
@@ -52,9 +60,8 @@ void ControlPlaneClient::connectionReady() {
     connect(sslClient, SIGNAL(readyRead()), this, SLOT(sslClientReadyRead()));
     // TODO protocol starts here
     // Send HELLO packet
-    QString hello("HELLO\r\nUid:" + init->getMyUid() + "\r\n");
-    sslClient->write(hello.toUtf8().constData());
-    sslClient->flush();
+    QString hello("HELLO\r\n\r\nUid:" + init->getMyUid() + "\r\n");
+    sslClient->write(hello.toUtf8().constData(), hello.length());
 }
 
 void ControlPlaneClient::sslClientReadyRead() {
@@ -66,10 +73,10 @@ void ControlPlaneClient::sslClientReadyRead() {
     }
     if (!sslClient->isAssociated()) { // not associated with a ControlPlaneConnection
         char buf[300];
-        sslClient->readLine(buf, 300);
+        sslClient->read(buf, 9);
         QString bufStr(buf);
         if (bufStr.startsWith("HELLO")) {
-            sslClient->readLine(buf, 300);
+            sslClient->read(buf, 300);
             QString uidStr(buf);
             uidStr.chop(2); // drop \r\0
             //qDebug() << uidStr.remove(0, 4);
@@ -80,9 +87,9 @@ void ControlPlaneClient::sslClientReadyRead() {
             mutexx.unlock();
         }
     } else { // socket is associated with controlplaneconnection
-        //qDebug() << sslClient->readAll();
-        QByteArray bytesBuf = sslClient->readAll();
-        sslClient->getControlPlaneConnection()->readBuffer(bytesBuf.data(), bytesBuf.length());
+        char buf[2048];
+        int bytesRead = sslClient->read(buf, 2048);
+        sslClient->getControlPlaneConnection()->readBuffer(buf, bytesRead);
     }
 }
 

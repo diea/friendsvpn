@@ -24,7 +24,7 @@ private:
 
     QTcpServer* tcpSrv;
     QList<SslSocket*> sslSockList;
-
+    SSL_CTX *ctx;
     ConnectionInitiator* init;
 public:
     explicit ControlPlaneServer(QSslCertificate servCert, QSslKey myKey,

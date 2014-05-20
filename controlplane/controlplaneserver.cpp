@@ -13,7 +13,6 @@ ControlPlaneServer::ControlPlaneServer(QSslCertificate servCert, QSslKey myKey,
     BonjourSQL* qSql = BonjourSQL::getInstance();
     SSL_library_init();
     SSL_METHOD *method;
-    SSL_CTX *ctx;
 
     OpenSSL_add_all_algorithms();  /* load & register all cryptos, etc. */
     SSL_load_error_strings();   /* load all error messages */
@@ -68,7 +67,7 @@ ControlPlaneServer::ControlPlaneServer(QSslCertificate servCert, QSslKey myKey,
 ControlPlaneServer::~ControlPlaneServer()
 {
     qDebug() << "Destroy control plane server";
-    foreach (QSslSocket* sock, sslSockList) {
+    foreach (SslSocket* sock, sslSockList) {
         sock->close();
         delete sock;
     }
@@ -87,9 +86,12 @@ void ControlPlaneServer::newIncoming() {
     QTcpSocket* socket = tcpSrv->nextPendingConnection();
     SSL* ssl = SSL_new(ctx);              /* get new SSL state with context */
     SSL_set_fd(ssl, socket->socketDescriptor());      /* set connection socket to SSL state */
-    SslSocket* newSsl = new SslSocket(ssl);
-    sslSockList.append(newSsl);
+    SslSocket* sslSock = new SslSocket(ssl);
+    sslSockList.append(sslSock);
+    connect(sslSock, SIGNAL(encrypted()), this, SLOT(sslSockReady()));
+    connect(sslSock, SIGNAL(disconnected()), this, SLOT(sslDisconnected()));
 
+    sslSock->startServerEncryption();
 }
 
 void ControlPlaneServer::sslSockReady() {
@@ -97,9 +99,8 @@ void ControlPlaneServer::sslSockReady() {
     connect(sslSock, SIGNAL(readyRead()), this, SLOT(sslSockReadyRead()));
     // send HELLO packet
     QString hello("Uid:" + init->getMyUid() + "\r\n");
-    sslSock->write("HELLO\r\n");
-    sslSock->write(hello.toLatin1().constData());
-    sslSock->flush();
+    sslSock->write("HELLO\r\n\r\n", 9);
+    sslSock->write(hello.toLatin1().constData(), hello.size());
 }
 
 void ControlPlaneServer::sslSockError(const QList<QSslError>& errors) {
@@ -118,10 +119,10 @@ void ControlPlaneServer::sslSockReadyRead() {
     }
     if (!sslSock->isAssociated()) { // not associated with a ControlPlaneConnection
         char buf[300];
-        sslSock->readLine(buf, 300);
+        sslSock->read(buf, 9);
         QString bufStr(buf);
         if (bufStr.startsWith("HELLO")) {
-            sslSock->readLine(buf, 300);
+            sslSock->read(buf, 300);
             QString uidStr(buf);
             uidStr.chop(2); // drop \r\0
             // TODO double check UID is friend
@@ -132,8 +133,9 @@ void ControlPlaneServer::sslSockReadyRead() {
             mutexx.unlock();
         }
     } else { // socket is associated with controlplaneconnection
-        QByteArray bytesBuf = sslSock->readAll();
-        sslSock->getControlPlaneConnection()->readBuffer(bytesBuf.data(), bytesBuf.length());
+        char buf[2048];
+        int bytesRead = sslSock->read(buf, 2048);
+        sslSock->getControlPlaneConnection()->readBuffer(buf, bytesRead);
     }
 }
 

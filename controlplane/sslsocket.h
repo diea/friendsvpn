@@ -11,7 +11,6 @@ class SslSocket : public QObject
     Q_OBJECT
 private:
     ControlPlaneConnection* con;
-
     SSL* ssl;
     int sd;
     QSocketNotifier* notif;
@@ -19,7 +18,8 @@ public:
     explicit SslSocket(SSL* ssl, QObject *parent = 0);
     ~SslSocket();
     void setControlPlaneConnection(ControlPlaneConnection* con);
-
+    void startServerEncryption();
+    void startClientEncryption();
     ControlPlaneConnection* getControlPlaneConnection();
 
     /**
@@ -27,8 +27,17 @@ public:
      * @return TRUE if this SslSocket is associated with a ControlPlaneConnection.
      */
     bool isAssociated();
-signals:
 
+    void write(const char* buf, int size);
+    int read(char* buf, int maxBytes);
+
+    void close();
+signals:
+    void encrypted();
+    void readyRead();
+    void disconnected();
+private slots:
+    void emitRead();
 public slots:
 
 };
