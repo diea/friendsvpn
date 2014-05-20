@@ -13,13 +13,13 @@ private:
      * @brief serverRecord will be the server record for which this proxy client will proxy to
      */
     BonjourRecord* serverRecord;
-    QString servermd5;
+    QByteArray servermd5;
     QString serversrcIp; /* the ip that the server will have to fwd (the real client of the server) */
     RawSockets* rawSocks;
     int origSrcPort;
 
 public:
-    ProxyClient(QString md5, QString servermd5, QString serversrcIp, int sockType, int srcPort, DataPlaneConnection* con);
+    ProxyClient(QByteArray md5, QByteArray servermd5, QString serversrcIp, int sockType, int srcPort, DataPlaneConnection* con);
 
     //ProxyClient* getProxyClient(QString md5, int sockType, int srcPort, DataPlaneConnection* con);
     void receiveBytes(const char* buf, int len, int sockType, QString& srcIp);

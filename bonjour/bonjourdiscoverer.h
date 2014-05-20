@@ -42,7 +42,7 @@ public:
      * md5(uid + name + regType + domaine + hostname + port)
      * @return
      */
-    static QHash<QString, BonjourRecord*> recordHashes;
+    static QHash<QByteArray, BonjourRecord*> recordHashes;
 
     static BonjourDiscoverer* getInstance(QObject* parent = NULL);
     ~BonjourDiscoverer();

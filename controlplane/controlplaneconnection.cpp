@@ -172,7 +172,7 @@ void ControlPlaneConnection::readBuffer(const char* buf, int len) {
             qDebug() << "Running new proxy!!";
             ProxyServer* newProxy = NULL;
             try {
-                newProxy = new ProxyServer(friendUid, name, type, "", hostname, port, md5);
+                newProxy = new ProxyServer(friendUid, name, type, "", hostname, port, QByteArray::fromHex(md5.toUtf8()));
                 proxyServers.push(newProxy);
                 newProxy->run();
             } catch (int i) {

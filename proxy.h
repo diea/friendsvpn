@@ -45,7 +45,7 @@ protected:
     int sockType; // to know if SOCK_STREAM or SOCK_DATAGRAM
     int ipProto; // again, TCP or UDP
 
-    QString idHash;
+    QByteArray idHash;
 
     /**
      * @brief con the associated connection
@@ -55,8 +55,8 @@ protected:
     /**
      * @brief Proxy is an abstract class
      */
-    Proxy(int port, int sockType, QString md5);
-    Proxy(int port, const QString& regType, QString md5);
+    Proxy(int port, int sockType, QByteArray md5);
+    Proxy(int port, const QString& regType, QByteArray md5);
 
     /**
      * @brief proxyHashes each proxy will be identified by a hash of its constructor parameters

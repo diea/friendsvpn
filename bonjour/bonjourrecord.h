@@ -19,7 +19,7 @@ public:
     QList<QString> ips; // list of ips, begins with ipv6s and ends with v4s
     quint16 port;
     bool resolved;
-    QString md5; /* md5 computed by the bonjourResolver */
+    QByteArray md5; /* md5 computed by the bonjourResolver */
 
     BonjourRecord() {}
 
@@ -42,12 +42,6 @@ public:
     {
         resolved = true;
     }
-
-    /**
-     * @brief computemd5 computes the hexadecimal md5 according to the current state of this record
-     * @return md5(uid + name + regType + domaine + hostname + port)
-     */
-    QString computemd5();
 
     bool operator==(const BonjourRecord &other) const {
         return serviceName == other.serviceName

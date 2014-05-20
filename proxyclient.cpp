@@ -3,7 +3,7 @@
 #include "bonjour/bonjourdiscoverer.h"
 #include "rawsockets.h"
 
-ProxyClient::ProxyClient(QString md5, QString servermd5,  QString serversrcIp, int sockType, int srcPort, DataPlaneConnection* con) :
+ProxyClient::ProxyClient(QByteArray md5, QByteArray servermd5,  QString serversrcIp, int sockType, int srcPort, DataPlaneConnection* con) :
     Proxy(srcPort, sockType, md5)
 {
     this->con = con;

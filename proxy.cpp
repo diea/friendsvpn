@@ -33,7 +33,7 @@ Proxy::~Proxy() {
     qDebug() << "Got out of proxy!";
 }
 
-Proxy::Proxy(int srcPort, int sockType, QString md5)
+Proxy::Proxy(int srcPort, int sockType, QByteArray md5)
     : listenPort(srcPort), sockType(sockType)
 {
     if (proxyHashes.contains(md5)) {
@@ -48,7 +48,7 @@ Proxy::Proxy(int srcPort, int sockType, QString md5)
     else ipProto = IPPROTO_UDP;
 }
 
-Proxy::Proxy(int srcPort, const QString& regType, QString md5) : listenPort(srcPort)
+Proxy::Proxy(int srcPort, const QString& regType, QByteArray md5) : listenPort(srcPort)
 {
     if (proxyHashes.contains(md5)) {
         throw 1; // already exists, we throw int "1"

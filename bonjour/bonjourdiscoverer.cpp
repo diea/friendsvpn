@@ -1,5 +1,5 @@
 #include "bonjourdiscoverer.h"
-QHash<QString, BonjourRecord*> BonjourDiscoverer::recordHashes;
+QHash<QByteArray, BonjourRecord*> BonjourDiscoverer::recordHashes;
 
 BonjourDiscoverer::BonjourDiscoverer(QObject *parent)
 {

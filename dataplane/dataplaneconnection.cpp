@@ -75,10 +75,12 @@ void DataPlaneConnection::readBuffer(const char* buf, int len) {
     struct dpHeader *header = (struct dpHeader*) buf;
     const char* packetBuf = buf + sizeof(struct dpHeader); // packet
 
-    qDebug() << "header srcIp" << header->srcIp << header->md5;
+    //qDebug() << "header srcIp" << header->srcIp << header->md5;
     // qDebug() << "packetBuf"
-    QString hash(header->md5);
-    QString srcIp(header->srcIp);
+    QByteArray hash(header->md5, 16);
+    char srcIpc[INET6_ADDRSTRLEN];
+    inet_ntop(AF_INET6, &(header->srcIp), srcIpc, INET6_ADDRSTRLEN);
+    QString srcIp(srcIpc);
     // get server Proxy and send through it!
     Proxy* prox = Proxy::getProxy(hash); // try and get server (hash)
 
@@ -105,7 +107,7 @@ void DataPlaneConnection::readBuffer(const char* buf, int len) {
     prox->sendBytes(packetBuf, header->len, srcIp);
 }
 
-void DataPlaneConnection::sendBytes(const char *buf, int len, QString& hash, int sockType, QString& srcIp) {
+void DataPlaneConnection::sendBytes(const char *buf, int len, QByteArray& hash, int sockType, QString& srcIp) {
     if (curMode == Closed) {
         qWarning() << "Trying to sendBytes on Closed state for uid" << friendUid;
     }
@@ -126,8 +128,12 @@ void DataPlaneConnection::sendBytes(const char *buf, int len, QString& hash, int
     header.len = qint16(len);
     qDebug() << "header contains length in 16bit" << header.len;
     qDebug() << "hash length" << hash.length();
-    strcpy(header.md5, hash.toUtf8().data());
-    strcpy(header.srcIp, srcIp.toUtf8().data());
+    /*strcpy(header.md5, hash.toUtf8().data());
+    strcpy(header.srcIp, srcIp.toUtf8().data());*/
+    qDebug() << "hash is " << hash.length() << "bytes long";
+    memcpy(header.md5, hash, 16); // 16 bytes
+
+    inet_pton(AF_INET6, srcIp.toUtf8().data(), &(header.srcIp));
 
     char* packet = static_cast<char*>(malloc(len + sizeof(struct dpHeader)));
     memcpy(packet, &header, sizeof(struct dpHeader));

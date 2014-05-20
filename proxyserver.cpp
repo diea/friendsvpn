@@ -5,7 +5,7 @@
 #include <arpa/inet.h>
 
 ProxyServer::ProxyServer(const QString &friendUid, const QString &name, const QString &regType, const QString &domain,
-                       const QString &hostname, quint16 port, const QString& md5) : Proxy(port, regType, md5)
+                       const QString &hostname, quint16 port, const QByteArray& md5) : Proxy(port, regType, md5)
 {
     QString newip = listenIp;
     // create bonjour rec with new IP

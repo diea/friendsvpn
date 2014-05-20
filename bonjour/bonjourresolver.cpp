@@ -226,12 +226,11 @@ void BonjourResolver::hostInfoReady(const QHostInfo &info) {
     QByteArray hash = QCryptographicHash::hash(allParams.toUtf8().data(), QCryptographicHash::Md5).toHex();
     // add record to hashes list
     while (BonjourDiscoverer::recordHashes.contains(hash)) {
-        QString toHash = hash + QString::number(time(NULL));
-        hash = QCryptographicHash::hash(toHash.toUtf8().data(), QCryptographicHash::Md5).toHex();
+        QByteArray toHash = hash + QByteArray::number(static_cast<int>(time(NULL)));
+        hash = QCryptographicHash::hash(toHash, QCryptographicHash::Md5);
     }
-    BonjourDiscoverer::recordHashes.insert(QString(hash), record);
-    record->md5 = QString(hash); /* TODO check duplicate */
-    //BonjourDiscoverer::recordHashes.insert(QString(allParams), record);
+    BonjourDiscoverer::recordHashes.insert(hash, record);
+    record->md5 = hash;
 
     QString transProt;
     if (record->registeredType.indexOf("tcp") > -1) {
