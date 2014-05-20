@@ -319,7 +319,8 @@ QList < BonjourRecord* > BonjourSQL::getRecordsFor(QString friendUid) {
             }
         }
     }
-    db.close(); qryMut.unlock();
+    db.close();
+    qryMut.unlock();
     return list;
 }
 

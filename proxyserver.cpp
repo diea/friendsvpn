@@ -4,17 +4,8 @@
 #include "unixsignalhandler.h"
 #include <arpa/inet.h>
 
-QString ProxyServer::computeMd5(const QString &friendUid, const QString &name, const QString &regType,
-                                 const QString &domain, const QString &hostname, quint16 port) {
-    QString allParams = friendUid + name + regType + hostname + QString::number(port);
-
-    QByteArray hash = QCryptographicHash::hash(allParams.toUtf8().data(), QCryptographicHash::Md5).toHex();
-    return QString(hash);
-}
-
 ProxyServer::ProxyServer(const QString &friendUid, const QString &name, const QString &regType, const QString &domain,
-                       const QString &hostname, quint16 port) : Proxy(port, regType,
-                                                                      computeMd5(friendUid, name, regType, domain, hostname, port))
+                       const QString &hostname, quint16 port, const QString& md5) : Proxy(port, regType, md5)
 {
     QString newip = listenIp;
     // create bonjour rec with new IP

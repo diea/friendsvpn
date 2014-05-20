@@ -207,7 +207,7 @@ void BonjourResolver::hostInfoReady(const QHostInfo &info) {
 
     if (v6.empty()) {
         // TODO maybe set record as unusable in database
-        qDebug() << "Invalid record, we don't use it!";
+        qDebug() << "Invalid record no IPv6 available, we don't use it!";
         return; // do not use record
     }
 
@@ -225,7 +225,7 @@ void BonjourResolver::hostInfoReady(const QHostInfo &info) {
             record->registeredType + record->hostname + QString::number(record->port);
     QByteArray hash = QCryptographicHash::hash(allParams.toUtf8().data(), QCryptographicHash::Md5).toHex();
     // add record to hashes list
-    record->md5 = QString(hash);
+    record->md5 = QString(hash); /* TODO check duplicate */
     BonjourDiscoverer::recordHashes.insert(QString(hash), record);
     //BonjourDiscoverer::recordHashes.insert(QString(allParams), record);
 

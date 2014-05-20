@@ -146,6 +146,7 @@ void ControlPlaneConnection::readBuffer(const char* buf, int len) {
             QString name;
             QString type;
             int port = 0;
+            QString md5;
             for (int i = 1; i < list.length(); i++) {
                 QStringList keyValuePair = list.at(i).split(":");
                 QString key = keyValuePair.at(0);
@@ -158,6 +159,8 @@ void ControlPlaneConnection::readBuffer(const char* buf, int len) {
                     type = keyValuePair.at(1);
                 } else if (key == "Port") {
                     port = keyValuePair.at(1).toInt();
+                } else if (key == "MD5") {
+                    md5 = keyValuePair.at(1);
                 }
             }
 
@@ -169,7 +172,7 @@ void ControlPlaneConnection::readBuffer(const char* buf, int len) {
             qDebug() << "Running new proxy!!";
             ProxyServer* newProxy = NULL;
             try {
-                newProxy = new ProxyServer(friendUid, name, type, "", hostname, port);
+                newProxy = new ProxyServer(friendUid, name, type, "", hostname, port, md5);
                 proxyServers.push(newProxy);
                 newProxy->run();
             } catch (int i) {
@@ -197,6 +200,7 @@ void ControlPlaneConnection::sendBonjour() {
                  % "Name:" % rec->serviceName % "\r\n"
                  % "Type:" % rec->registeredType % "\r\n"
                  % "Port:" % QString::number(rec->port) % "\r\n"
+                 % "MD5:" % rec->md5 % "\r\n"
                 % "\r\n";
 
         sendPacket(packet);

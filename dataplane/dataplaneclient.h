@@ -12,6 +12,7 @@
 #include <openssl/rand.h>
 #include <openssl/bio.h>
 #include <openssl/err.h>
+#include <unistd.h>
 
 class DataPlaneConnection;
 
