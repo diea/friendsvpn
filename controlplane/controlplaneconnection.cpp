@@ -73,7 +73,7 @@ void ControlPlaneConnection::sendPacket(QString& packet) {
 }
 
 void ControlPlaneConnection::removeConnection() {
-    if (friendUid.toInt() < qSql->getLocalUid().toInt()) { // friend is smaller, I am server
+    if (friendUid.toULongLong() < qSql->getLocalUid().toULongLong()) { // friend is smaller, I am server
         clientSock->disconnect();
         clientSock = NULL;
         if (curMode == Both)
