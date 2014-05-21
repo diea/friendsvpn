@@ -15,7 +15,9 @@ void DataPlaneConnection::removeConnection() {
     BonjourSQL* qSql = BonjourSQL::getInstance();
 
     qDebug() << "Removing connection!";
+    qDebug() << friendUid<< "<" << qSql->getLocalUid();
     if (friendUid.toInt() < qSql->getLocalUid().toInt()) { // friend is smaller, I am server
+        qDebug() << "friend is smaller!";
         if (client)
             client->stop();
         client = NULL;
