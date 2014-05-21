@@ -16,7 +16,7 @@ void DataPlaneConnection::removeConnection() {
 
     qDebug() << "Removing connection!";
     qDebug() << friendUid.toULongLong() << "<" << qSql->getLocalUid().toULongLong();
-    if (friendUid.toULong() < qSql->getLocalUid().toULong()) { // friend is smaller, I am server
+    if (friendUid.toULongLong() < qSql->getLocalUid().toULongLong()) { // friend is smaller, I am server
         qDebug() << "friend is smaller!";
         if (client)
             client->stop();
