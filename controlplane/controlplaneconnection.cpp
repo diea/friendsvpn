@@ -31,6 +31,8 @@ ControlPlaneConnection::ControlPlaneConnection(QString uid, AbstractPlaneConnect
     this->connect(this, SIGNAL(disconnected()), SLOT(wasDisconnected()));
     this->connect(this, SIGNAL(connected()), SLOT(sendBonjour()));
     this->connect(this, SIGNAL(connected()), SLOT(alive()));
+    serverSock = NULL;
+    clientSock = NULL;
 }
 
 ControlPlaneConnection::~ControlPlaneConnection() {
@@ -81,7 +83,6 @@ void ControlPlaneConnection::sendPacket(QString& packet) {
 
 void ControlPlaneConnection::removeConnection() {
     if (friendUid.toULongLong() < qSql->getLocalUid().toULongLong()) { // friend is smaller, I am server
-        //clientSock->disconnect();
         clientSock->close();
         clientSock = NULL;
         if (curMode == Both)
@@ -89,7 +90,6 @@ void ControlPlaneConnection::removeConnection() {
         else
             curMode = Closed;
     } else {
-        //serverSock->disconnect();
         serverSock->close();
         serverSock = NULL;
         if (curMode == Both)

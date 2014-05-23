@@ -104,7 +104,6 @@ int main(int argc, char** argv) {
     char errbuf[PCAP_ERRBUF_SIZE];      /* error buffer */
 
     char* filter_exp = NULL; //"ip6 host fd3b:e180:cbaa:1:a9ed:f7b:5cb:10bd and tcp";
-    //int num_packets = 99999999;           /* number of packets to capture */
 
     if (argc == 3) {
         dev = argv[1];
