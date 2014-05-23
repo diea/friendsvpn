@@ -88,34 +88,6 @@ bool BonjourSQL::insertService(QString name, QString trans_prot) {
     return true;
 }
 
-// TODO test this
-bool BonjourSQL::removeService(QString name, QString trans_prot) {
-    /*qryMut.lock();
-    QSqlDatabase db = QSqlDatabase::database();
-    QSqlQuery query = QSqlQuery(QSqlDatabase::database());
-    query.prepare("DELETE FROM Authorized_user WHERE Device_Service_name = ? AND Device_Service_User_uid = ? AND Device_Service_Trans_prot = ?");
-    query.bindValue(0, name);
-    query.bindValue(1, uid);
-    query.bindValue(2, trans_prot);
-    query.exec();
-
-    query.prepare("DELETE FROM Device WHERE Service_name = ? AND Service_User_uid = ? AND Service_Trans_prot = ?");
-    query.bindValue(0, name);
-    query.bindValue(1, uid);
-    query.bindValue(2, trans_prot);
-    query.exec();
-
-    query.prepare("DELETE FROM Service WHERE name = ? AND user_uid = ? and trans_prot = ?");
-    query.bindValue(0, name);
-    query.bindValue(1, uid);
-    query.bindValue(2, trans_prot);
-    query.exec();
-    db.close();
-    db.close(); qryMut.unlock();
-    // test query
-    return true;*/
-}
-
 bool BonjourSQL::insertDevice(QString hostname, int port, QString service_name, QString service_trans_prot, QString record_name) {
     qryMut.lock();
     QSqlDatabase db = QSqlDatabase::database();

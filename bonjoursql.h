@@ -46,7 +46,6 @@ public:
      * @return true on success
      */
     bool insertService(QString name, QString trans_prot);
-    bool removeService(QString name, QString trans_prot);
     /**
      * @brief insertDevice: insert a device for a given service
      * @param ip

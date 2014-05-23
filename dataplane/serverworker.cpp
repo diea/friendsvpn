@@ -4,7 +4,7 @@
 #include <QDebug>
 #include <QThread>
 ServerWorker::ServerWorker(addrUnion server_addr, addrUnion client_addr, SSL* ssl, DataPlaneConnection* con, QObject *parent) :
-    server_addr(server_addr), client_addr(client_addr), ssl(ssl), con(con), QObject(parent)
+    QObject(parent), server_addr(server_addr), client_addr(client_addr), ssl(ssl), con(con)
 {
     notif = NULL;
 }

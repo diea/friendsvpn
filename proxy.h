@@ -120,6 +120,7 @@ public:
     static QString getDefaultInterface();
 
     static Proxy* getProxy(QByteArray md5);
+
 private slots:
     void sendRawFinish(int);
     void sendRawStandardError();
