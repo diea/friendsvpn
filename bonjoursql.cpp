@@ -50,6 +50,7 @@ BonjourSQL::~BonjourSQL() {
 
 void BonjourSQL::uidOK() {
     while (uid == NULL) {
+#ifdef __APPLE__
         QMessageBox msgBox;
         msgBox.setText("Your facebook ID was not determined, could you refresh the facebook page and click retry ?");
         msgBox.setStandardButtons(QMessageBox::Retry | QMessageBox::Abort);
@@ -63,7 +64,11 @@ void BonjourSQL::uidOK() {
                 exit(0);
                 break;
         }
+#elif __GNUC__
+        qWarning() << "Your facebook ID was not determined, please retry";
+        getchar();
     }
+#endif
 }
 
 void BonjourSQL::initDB() {
