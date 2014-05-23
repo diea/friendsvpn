@@ -246,8 +246,6 @@ void RawSockets::writeBytes(QString srcIp, QString dstIp, int srcPort, const cha
     pHeader.ip6_dst = rawHeader.ip6.ip6_dst;
     pHeader.nextHeader = rawHeader.ip6.ip6_nxt;
 
-    struct sniff_udp* udp = NULL;
-
     int nbBytes = packet_send_size;
     int padding = packet_send_size % 16;
 
@@ -256,14 +254,17 @@ void RawSockets::writeBytes(QString srcIp, QString dstIp, int srcPort, const cha
     }
     int checksumBufSize = sizeof(struct ipv6upper) + nbBytes;
     char* checksumPacket = static_cast<char*>(malloc(checksumBufSize));
+    memset(checksumPacket, 0, checksumBufSize);
 
     if (sockType == SOCK_DGRAM) {
-        udp = static_cast<struct sniff_udp*>(static_cast<void*>(packet_send));
-        pHeader.payload_len = udp->udp_length; // wait, same number of bits ? TODO
+        struct sniff_udp* udp = static_cast<struct sniff_udp*>(static_cast<void*>(packet_send));
+        udp->sport = htons(srcPort); // change udp src port
+        pHeader.payload_len = udp->udp_length;
+        memset(&(udp->udp_sum), 0, sizeof(u_short)); // checksum field to 0
         memcpy(checksumPacket, &pHeader, sizeof(struct ipv6upper));
+        memcpy(checksumPacket + sizeof(struct ipv6upper), packet_send, packet_send_size);
 
-        // change src_port
-        udp->sport = htons(srcPort);
+        udp->udp_sum = ~(checksum(checksumPacket, sizeof(struct ipv6upper) + packet_send_size));
     } else {
         pHeader.payload_len = htonl(packet_send_size);
 
@@ -275,8 +276,9 @@ void RawSockets::writeBytes(QString srcIp, QString dstIp, int srcPort, const cha
         memcpy(checksumPacket + sizeof(struct ipv6upper), packet_send, packet_send_size);
 
         tcp->th_sum = ~(checksum(checksumPacket, sizeof(struct ipv6upper) + packet_send_size));
-        free(checksumPacket);
     }
+
+    free(checksumPacket);
 
     // combine the rawHeader and packet in one contiguous block
     memcpy(buffer, &rawHeader, sizeof(struct rawComHeader));
