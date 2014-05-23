@@ -1,6 +1,5 @@
 #include "controlplaneconnection.h"
 #include "connectioninitiator.h"
-#include "ph2phtp_parser.h"
 #include "proxyserver.h"
 #include <time.h>
 #include <QDebug>
@@ -36,6 +35,14 @@ ControlPlaneConnection::ControlPlaneConnection(QString uid, AbstractPlaneConnect
 
 ControlPlaneConnection::~ControlPlaneConnection() {
     qDebug() << "Destroyed control plane connection !";
+    if (serverSock) {
+        serverSock->close();
+        delete serverSock;
+    }
+    if (clientSock) {
+        clientSock->close();
+        delete clientSock;
+    }
 }
 
 void ControlPlaneConnection::alive() {
@@ -74,14 +81,16 @@ void ControlPlaneConnection::sendPacket(QString& packet) {
 
 void ControlPlaneConnection::removeConnection() {
     if (friendUid.toULongLong() < qSql->getLocalUid().toULongLong()) { // friend is smaller, I am server
-        clientSock->disconnect();
+        //clientSock->disconnect();
+        clientSock->close();
         clientSock = NULL;
         if (curMode == Both)
             curMode = Receiving;
         else
             curMode = Closed;
     } else {
-        serverSock->disconnect();
+        //serverSock->disconnect();
+        serverSock->close();
         serverSock = NULL;
         if (curMode == Both)
             curMode = Emitting;

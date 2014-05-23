@@ -58,7 +58,6 @@ HEADERS  += \
     bonjour/bonjourregistrar.h \
     dataplane/dataplaneclient.h \
     dataplane/dataplaneconfig.h \
-    ph2phtp_parser.h \
     dataplane/dataplaneserver.h \
     dataplane/dataplaneconnection.h \
     abstractplaneconnection.h \
