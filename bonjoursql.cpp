@@ -67,8 +67,8 @@ void BonjourSQL::uidOK() {
 #elif __GNUC__
         qWarning() << "Your facebook ID was not determined, please retry";
         getchar();
-    }
 #endif
+    }
 }
 
 void BonjourSQL::initDB() {
