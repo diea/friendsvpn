@@ -24,7 +24,7 @@ private:
 
     QTcpServer* tcpSrv;
     QList<SslSocket*> sslSockList;
-    QSslConfiguration cfg; // contains configuration used for each SSL connection
+    SSL_CTX *ctx;
 
     ConnectionInitiator* init;
 public:

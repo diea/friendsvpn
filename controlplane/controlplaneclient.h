@@ -15,7 +15,9 @@ class ControlPlaneClient: public QObject
 private:
     ConnectionInitiator* init;
 
+    QTcpSocket sock;
     SslSocket* sslClient;
+    SSL_CTX *ctx;
     QSslCertificate servCert;
     QHostAddress addr;
     int port;
@@ -40,6 +42,7 @@ public slots:
      * servCert was a NULL certificate. A qWarning() is emitted in that case.
      */
     void run();
+    void connectSSL();
     void sslDisconnected();
 };
 
