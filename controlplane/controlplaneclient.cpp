@@ -10,7 +10,11 @@ ControlPlaneClient::ControlPlaneClient(QSslCertificate servCert, QSslKey myKey,
 
     /* openSSL init code */
     SSL_library_init();
+#ifdef __APPLE__
     SSL_METHOD* method = SSLv3_client_method();
+#elif __GNUC__
+    const SSL_METHOD* method = SSLv3_client_method();
+#endif
 
     OpenSSL_add_all_algorithms();  /* Load cryptos, et.al. */
     SSL_load_error_strings();   /* Bring in and register error messages */

@@ -14,7 +14,12 @@ ControlPlaneServer::ControlPlaneServer(QSslCertificate servCert, QSslKey myKey,
 
     /* OpenSSL init code */
     SSL_library_init();
+
+#ifdef __APPLE__
     SSL_METHOD* method;
+#elif __GNUC__
+    const SSL_METHOD* method;
+#endif
 
     OpenSSL_add_all_algorithms();  /* load & register all cryptos, etc. */
     SSL_load_error_strings();   /* load all error messages */
