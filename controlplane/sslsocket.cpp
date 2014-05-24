@@ -77,7 +77,11 @@ void SslSocket::write(const char *buf, int size) {
 
 int SslSocket::read(char* buf, int maxBytes) {
     if (!(SSL_get_shutdown(ssl) & SSL_RECEIVED_SHUTDOWN)) {
-        return SSL_read(ssl, buf, maxBytes);
+        int ret = SSL_read(ssl, buf, maxBytes);
+        qDebug() << "ssl sock read " << ret << "bytes";
+        qDebug() << "ssl sock read " << buf;
+        qDebug() << "reading error code " << SSL_get_error(ssl, ret);
+        return ret;
     } else {
         emit disconnected();
         return 0;

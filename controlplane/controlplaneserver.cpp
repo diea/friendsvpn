@@ -96,6 +96,12 @@ void ControlPlaneServer::newIncoming() {
 
     SSL* ssl = SSL_new(ctx);              /* get new SSL state with context */
     int sd = socket->socketDescriptor();
+
+    /* set socket to blocking mode */
+    int flags = fcntl(sd, F_GETFL, 0);
+    flags &= ~O_NONBLOCK;
+    fcntl(sd, F_SETFL, flags);
+
     qDebug() << "socket descriptor is " << sd;
     SSL_set_fd(ssl, sd);      /* set connection socket to SSL state */
     SslSocket* sslSock = new SslSocket(ssl);

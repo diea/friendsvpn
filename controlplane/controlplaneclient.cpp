@@ -50,7 +50,14 @@ void ControlPlaneClient::run() {
 
 void ControlPlaneClient::connectSSL() {
     SSL* ssl = SSL_new(ctx);      /* create new SSL connection state */
-    SSL_set_fd(ssl, sock.socketDescriptor());    /* attach the socket descriptor */
+
+    int sd = sock.socketDescriptor();
+    /* set socket to blocking mode */
+    int flags = fcntl(sd, F_GETFL, 0);
+    flags &= ~O_NONBLOCK;
+    fcntl(sd, F_SETFL, flags);
+
+    SSL_set_fd(ssl, sd);    /* attach the socket descriptor */
     sslClient = new SslSocket(ssl);
     connect(sslClient, SIGNAL(encrypted()), this, SLOT(connectionReady()));
     connect(sslClient, SIGNAL(disconnected()), this, SLOT(sslDisconnected()));
