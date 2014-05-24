@@ -63,6 +63,7 @@ void SslSocket::startClientEncryption() {
 }
 
 void SslSocket::emitRead(int) {
+    qDebug() << "emitting ready read!";
     emit readyRead();
 }
 
