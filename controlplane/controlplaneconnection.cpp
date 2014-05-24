@@ -23,6 +23,19 @@ char * my_strnstr(const char *s, const char *find, size_t slen) {
     }
     return ((char *)s);
 }
+/**
+ * @brief strrstr inverse of strnstr, returns the last occurence of find in string
+ * from stackoverflow.com/questions/1634359/is-there-a-reverse-fn-for-strstr
+ */
+char * strrstr(char *string, char *find, size_t len) {
+  char *cp;
+  for (cp = string + len - 4; cp >= string; cp--)
+  {
+    if (strncmp(cp, find, 4) == 0)
+        return cp;
+  }
+  return NULL;
+}
 
 ControlPlaneConnection::ControlPlaneConnection(QString uid, AbstractPlaneConnection *parent) :
     AbstractPlaneConnection(uid, parent), lastRcvdTimestamp(time(NULL))
@@ -143,11 +156,11 @@ void ControlPlaneConnection::readBuffer(const char* buf, int len) {
         }
     }
 
-    int len = lastFullPacket; // we only read until the last complete packet
+    int ok_len = lastFullPacket; // we only read until the last complete packet
     int bufferPosition = 0;
     lastRcvdTimestamp = time(NULL); // we received a packet, update time
-    while (len > 0) {
-        const char* found = my_strnstr(buf + bufferPosition, "\r\n\r\n", len);
+    while (ok_len > 0) {
+        const char* found = my_strnstr(buf + bufferPosition, "\r\n\r\n", ok_len);
         int headerLength = 0;
         if (found) {
             headerLength = found - (buf + bufferPosition);
@@ -162,7 +175,7 @@ void ControlPlaneConnection::readBuffer(const char* buf, int len) {
             return;
         }
 
-        len -= headerLength + 4; // 4 count for the \r\n\r\n
+        ok_len -= headerLength + 4; // 4 count for the \r\n\r\n
 
         qDebug() << "headerlength is " << headerLength;
         QString packet = QString::fromLatin1(buf + bufferPosition, headerLength);
@@ -175,7 +188,7 @@ void ControlPlaneConnection::readBuffer(const char* buf, int len) {
         QString packetType = list.at(0);
         if (!gotHello && packetType == "HELLO") {
             QStringList disec = list.at(1).split(":");
-            if (!disec.length() < 2) {
+            if (!(disec.length() < 2)) {
                 if (this->friendUid != disec.at(1)) {
                     qDebug() << "receive wrong UID for connection!";
                     wasDisconnected();
