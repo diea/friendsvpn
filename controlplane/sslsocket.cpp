@@ -86,7 +86,11 @@ void SslSocket::getNewBytes() {
         int ret = SSL_read(ssl, buf + bytesRead, SSL_BUFFERSIZE - bytesRead);
         qDebug() << "ssl sock read " << ret << "bytes";
         qDebug() << "ssl sock read " << buf;
-        qDebug() << "reading error code " << SSL_get_error(ssl, ret);
+        int sslerrcode= SSL_get_error(ssl, ret);
+        qDebug() << "reading error code " << sslerrcode;
+        char errBuf[2000];
+        ERR_error_string(sslerrcode, errBuf);
+        qDebug() << errBuf;
         if (ret > 0) {
             bytesRead += ret;
             if ((buf[bytesRead - 1] == '\n') && (buf[bytesRead - 2] == '\r') && (buf[bytesRead - 3] == '\n')
