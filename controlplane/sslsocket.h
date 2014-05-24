@@ -37,7 +37,7 @@ signals:
     void readyRead();
     void disconnected();
 private slots:
-    void emitRead();
+    void emitRead(int);
 public slots:
 
 };

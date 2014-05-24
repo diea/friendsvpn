@@ -7,7 +7,7 @@ SslSocket::~SslSocket() {
 }
 
 SslSocket::SslSocket(SSL* ssl, QObject *parent) :
-    ssl(ssl), QObject(parent)
+    QObject(parent), ssl(ssl)
 {
     con = NULL;
 }
@@ -42,7 +42,7 @@ void SslSocket::startClientEncryption() {
     emit encrypted();
 }
 
-void SslSocket::emitRead() {
+void SslSocket::emitRead(int) {
     emit readyRead();
 }
 
