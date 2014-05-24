@@ -27,7 +27,7 @@ bool SslSocket::isAssociated() {
 void SslSocket::startServerEncryption() {
     int accRet = SSL_ERROR_WANT_READ;
     while (accRet == SSL_ERROR_WANT_READ) {
-        SSL_accept(ssl);
+        accRet = SSL_accept(ssl);
         if (accRet != 1) {     /* do SSL-protocol accept */
             qDebug() << "start server encryption error" << accRet;
             qDebug() << "error code " << SSL_get_error(ssl, accRet);
@@ -46,7 +46,7 @@ void SslSocket::startClientEncryption() {
     int accRet = SSL_ERROR_WANT_READ;
 
     while (accRet == SSL_ERROR_WANT_READ) {
-        SSL_connect(ssl);
+        accRet = SSL_connect(ssl);
         if (accRet != 1) {    /* do SSL-protocol accept */
             qDebug() << "start client encryption error";
             qDebug() << "start server encryption error" << accRet;
