@@ -18,6 +18,8 @@ private:
     RawSockets* rawSocks;
     int origSrcPort;
 
+    QTimer timer;
+
 public:
     ProxyClient(QByteArray md5, QByteArray servermd5, QString serversrcIp, int sockType, int srcPort, DataPlaneConnection* con);
 
@@ -25,7 +27,8 @@ public:
     void receiveBytes(const char* buf, int len, int sockType, QString& srcIp);
 
 signals:
-
+private slots:
+    void timeout(); // called when QTimer times out
 public slots:
     void run();
     void sendBytes(const char *buf, int len, QString srcIp);

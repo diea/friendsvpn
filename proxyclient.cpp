@@ -26,12 +26,16 @@ void ProxyClient::run() {
     // I am a client so I know the dstIp is the server
     // I change the dstPort to the one from the server
     // I use listenPort which may be different than original port if bind has failed
+    connect(&timer, SIGNAL(timeout()), this, SLOT(timeout()));
+    timer.start(10000); // timeout after 10seconds
 }
 
 void ProxyClient::sendBytes(const char *buf, int len, QString) {
     // dstIp argument is unused by client, it's for the server to know to which client to send
 
     qDebug() << "Client sending bytes to " << serverRecord->ips.at(0);
+    timer.start(10000); // restart timer
+
     // the srcPort is changed in the helper :)
     rawSocks->writeBytes(listenIp, serverRecord->ips.at(0), port, buf, sockType, len);
 }
@@ -39,4 +43,10 @@ void ProxyClient::sendBytes(const char *buf, int len, QString) {
 void ProxyClient::receiveBytes(const char* buf, int len, int sockType, QString& srcIp) {
     qDebug() << "client sending bytes with srcIp" << serversrcIp;
     con->sendBytes(buf, len, servermd5, sockType, serversrcIp);
+}
+
+void ProxyClient::timeout() {
+    qDebug() << "proxy client timeout!";
+    proxyHashes.remove(idHash); // remove myself from proxyhashes
+    this->deleteLater(); // delete myself
 }
