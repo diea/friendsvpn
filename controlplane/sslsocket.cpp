@@ -74,11 +74,11 @@ void SslSocket::startClientEncryption() {
 
 void SslSocket::write(const char *buf, int size) {
     qDebug() << "writing buf" << buf;
-    if (!(SSL_get_shutdown(ssl) & SSL_RECEIVED_SHUTDOWN)) {
+    /*if (!(SSL_get_shutdown(ssl) & SSL_RECEIVED_SHUTDOWN)) {
         SSL_write(ssl, buf, size);
     } else {
         emit disconnected();
-    }
+    }*/
 }
 
 void SslSocket::getNewBytes() {
