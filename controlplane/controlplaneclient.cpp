@@ -21,7 +21,6 @@ ControlPlaneClient::~ControlPlaneClient()
 {
     qDebug() << "Destroy contorl plane client";
     sslClient->close();
-    //delete sslClient;
 }
 
 void ControlPlaneClient::run() {
@@ -32,7 +31,6 @@ void ControlPlaneClient::run() {
     }
 
     // ignore errors since we are using self-signed certificates
-    // connect(sslClient, SIGNAL(sslErrors(const QList<QSslError>&)), sslClient, SLOT(ignoreSslErrors()));
     connect(sslClient, SIGNAL(sslErrors(const QList<QSslError>&)), this,
             SLOT(sslErrors(const QList<QSslError>&)));
     connect(sslClient, SIGNAL(encrypted()), this, SLOT(connectionReady()));
@@ -43,15 +41,17 @@ void ControlPlaneClient::run() {
 }
 
 void ControlPlaneClient::sslErrors(const QList<QSslError>& errors) {
-    //QSslSocket* sslSock = qobject_cast<QSslSocket*>(sender());
     qDebug() << "ssl error";
     qDebug() << errors;
 }
 
 void ControlPlaneClient::connectionReady() {
     connect(sslClient, SIGNAL(readyRead()), this, SLOT(sslClientReadyRead()));
+    ControlPlaneConnection* con = init->getConnection(friendUid);
+    sslClient->setControlPlaneConnection(con);
+    con->addMode(Emitting, sslClient);
+
     // Send HELLO packet
-    sslClient->setControlPlaneConnection(init->getConnection(friendUid));
     QString hello("HELLO\r\nUid:" + init->getMyUid() + "\r\n\r\n");
     sslClient->write(hello.toUtf8().constData());
     sslClient->flush();
