@@ -27,12 +27,12 @@ int main(int argc, char *argv[])
 
 #if 1
     // start systray
-    /*QThread sysTrayThread;
+    QThread sysTrayThread;
     SysTray* st = new SysTray();
     QObject::connect(&sysTrayThread, SIGNAL(started()), st, SLOT(createActions()));
     QObject::connect(&sysTrayThread, SIGNAL(started()), st, SLOT(createTrayIcon()));
     sysTrayThread.start();
-    QObject::connect(u, SIGNAL(exiting()), &sysTrayThread, SLOT(quit()));*/
+    QObject::connect(u, SIGNAL(exiting()), &sysTrayThread, SLOT(quit()));
 
     // connect to sql database
     BonjourSQL* qSql = BonjourSQL::getInstance();
