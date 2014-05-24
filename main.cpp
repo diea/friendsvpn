@@ -38,12 +38,12 @@ int main(int argc, char *argv[])
     BonjourSQL* qSql = BonjourSQL::getInstance();
 
     // create facebook app xmlrpc poller
-    QThread pollerThread;
+    /*QThread pollerThread;
     Poller* poller = new Poller();
     poller->moveToThread(&pollerThread);
     poller->connect(&pollerThread, SIGNAL(started()), SLOT(run()));
     QObject::connect(u, SIGNAL(exiting()), &pollerThread, SLOT(quit()));
-    pollerThread.start();
+    pollerThread.start();*/
 
 
     // get uid from app
@@ -54,12 +54,12 @@ int main(int argc, char *argv[])
     ConnectionInitiator* con = ConnectionInitiator::getInstance();
 
     // discover services
-    QThread discovererThread;
+    /*QThread discovererThread;
     BonjourDiscoverer* disco = BonjourDiscoverer::getInstance();
     disco->moveToThread(&discovererThread);
     QObject::connect(&discovererThread, SIGNAL(started()), disco, SLOT(discoverServices()));
     QObject::connect(u, SIGNAL(exiting()), &discovererThread, SLOT(quit()));
-    discovererThread.start();
+    discovererThread.start();*/
 
     con->run();
 #endif

@@ -71,8 +71,8 @@ ConnectionInitiator::ConnectionInitiator(QObject *parent) :
     keyBuf[length] = '\0';
     BIO_free(bio);
 
-    qDebug() << keyBuf;
-    qDebug() << certBuf;
+    //qDebug() << keyBuf;
+    //qDebug() << certBuf;
 
     key = QSslKey(keyBuf, QSsl::Rsa, QSsl::Pem);
     cert = QSslCertificate(certBuf, QSsl::Pem);
