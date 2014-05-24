@@ -3,11 +3,11 @@
 /**
  * @brief Configuration macros.
  */
-//#define TEST
+#define TEST
 #ifdef __APPLE__
 #define QTCREATOR
 #endif
-#define PRODUCTION
+//#define PRODUCTION
 
 #ifdef TEST
 #define DBHOST "fd3b:e180:cbaa:1:5e96:9dff:fe8a:8447"
