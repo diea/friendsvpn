@@ -57,7 +57,7 @@ void UnixSignalHandler::removeQProcess(QProcess *p) {
 
 void UnixSignalHandler::termSignalHandler(int) {
     qDebug() << "terminating!";
-    /*UnixSignalHandler* u = UnixSignalHandler::getInstance();
+    UnixSignalHandler* u = UnixSignalHandler::getInstance();
     mutex.lock(); // no need to unlock we exit
     emit u->exiting();
     qDebug() << "got instance and there are " << u->listOfProcessToKill.length() << "processes to kill";
@@ -77,6 +77,6 @@ void UnixSignalHandler::termSignalHandler(int) {
             }
         }
     }
-    qDebug() << "exit!";*/
+    qDebug() << "exit!";
     _exit(0);
 }
