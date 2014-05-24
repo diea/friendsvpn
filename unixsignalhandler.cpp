@@ -67,25 +67,12 @@ void UnixSignalHandler::termSignalHandler(int) {
             if ((p->state() != QProcess::NotRunning)) {
                 qDebug() << p->state();
                 qDebug() << "closing " << p->pid();
-                //p->terminate();
                 ::kill(p->pid(), SIGTERM);
-                //p->waitForFinished(5000);
-                /*if (!p->waitForFinished(1000)) {
-                    qDebug() << "waiting pid";
-                    p->terminate();
-                    waitpid(p->pid(), NULL, 0);
-                }*/
+                p->setProcessState(QProcess::NotRunning);
+                waitpid(p->pid(), NULL, WNOHANG);
             }
         }
     }
-    /*qDebug() << "waiting for childs";
-    pid_t pid;
-    while (pid = waitpid(-1, NULL, 0)) {
-       if (errno == ECHILD) {
-          break;
-       }
-       qDebug() << "waiting again!";
-    }*/
     qDebug() << "exit!";
     _exit(0);
 }

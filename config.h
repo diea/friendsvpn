@@ -31,4 +31,6 @@
 #define HELPERPATH "./helpers/"
 #endif
 
+#define PROXYCLIENT_TIMEOUT 10000
+
 #endif // CONFIG_H

@@ -69,10 +69,7 @@ void ServerWorker::readyRead(int) {
         int len = SSL_read(ssl, buf, sizeof(buf));
         switch (SSL_get_error(ssl, len)) {
             case SSL_ERROR_NONE:
-            qDebug() << "sever worker read" << len << "bytes";
-            //qDebug() << buf;
-             // TODO call dataplaneconnection
-             //con->readBuffer(buf);
+            qDebug() << "server worker read" << len << "bytes";
              emit bufferReady(buf, len);
              break;
             case SSL_ERROR_WANT_READ:

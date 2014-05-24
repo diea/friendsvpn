@@ -21,8 +21,8 @@ Proxy::~Proxy() {
         qDebug() << "Process state" << p->state();
         p->terminate();
         qDebug() << "pid is " << p->pid();
-        qDebug() << "THREAD Remove PCAP" << QThread::currentThreadId();
-        p->waitForFinished();
+        p->setProcessState(QProcess::NotRunning);
+        waitpid(p->pid(), NULL, WNOHANG);
         qDebug() << "Delete p";
         UnixSignalHandler* u = UnixSignalHandler::getInstance();
         u->removeQProcess(p);
