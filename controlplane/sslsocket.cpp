@@ -73,6 +73,7 @@ void SslSocket::startClientEncryption() {
 }
 
 void SslSocket::write(const char *buf, int size) {
+    qDebug() << "writing buf" << buf;
     if (!(SSL_get_shutdown(ssl) & SSL_RECEIVED_SHUTDOWN)) {
         SSL_write(ssl, buf, size);
     } else {
@@ -83,7 +84,8 @@ void SslSocket::write(const char *buf, int size) {
 void SslSocket::getNewBytes() {
     if (!(SSL_get_shutdown(ssl) & SSL_RECEIVED_SHUTDOWN)) {
         mutex.lock();
-        int ret = SSL_read(ssl, buf + bytesRead, SSL_BUFFERSIZE - bytesRead);
+        //int ret = SSL_read(ssl, buf + bytesRead, SSL_BUFFERSIZE - bytesRead);
+        int ret = SSL_read(ssl, buf, 2000); //test
         qDebug() << "ssl sock read " << ret << "bytes";
         qDebug() << "ssl sock read " << buf;
         int sslerrcode= SSL_get_error(ssl, ret);
