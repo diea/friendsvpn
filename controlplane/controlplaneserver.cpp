@@ -1,6 +1,9 @@
 #include "controlplaneserver.h"
 #include "connectioninitiator.h"
 #include "unixsignalhandler.h"
+#include <unistd.h>
+#include <fcntl.h>
+
 ControlPlaneServer::ControlPlaneServer(QSslCertificate servCert, QSslKey myKey,
                                        QHostAddress listenAdr, int listenPort, QObject *parent) :
     QObject(parent)
