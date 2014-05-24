@@ -21,8 +21,11 @@ Proxy::~Proxy() {
         qDebug() << "Process state" << p->state();
         p->terminate();
         qDebug() << "pid is " << p->pid();
-        p->setProcessState(QProcess::NotRunning);
         waitpid(p->pid(), NULL, WNOHANG);
+        if (p->state() != QProcess::NotRunning) {
+            qDebug() << "Killing process";
+            p->kill();
+        }
         qDebug() << "Delete p";
         UnixSignalHandler* u = UnixSignalHandler::getInstance();
         u->removeQProcess(p);
