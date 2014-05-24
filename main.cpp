@@ -26,6 +26,7 @@ int main(int argc, char *argv[])
     UnixSignalHandler* u = UnixSignalHandler::getInstance();
 
 #if 1
+#ifdef __APPLE__
     // start systray
     QThread sysTrayThread;
     SysTray* st = new SysTray();
@@ -33,17 +34,18 @@ int main(int argc, char *argv[])
     QObject::connect(&sysTrayThread, SIGNAL(started()), st, SLOT(createTrayIcon()));
     sysTrayThread.start();
     QObject::connect(u, SIGNAL(exiting()), &sysTrayThread, SLOT(quit()));
+#endif
 
     // connect to sql database
     BonjourSQL* qSql = BonjourSQL::getInstance();
 
     // create facebook app xmlrpc poller
-    /*QThread pollerThread;
+    QThread pollerThread;
     Poller* poller = new Poller();
     poller->moveToThread(&pollerThread);
     poller->connect(&pollerThread, SIGNAL(started()), SLOT(run()));
     QObject::connect(u, SIGNAL(exiting()), &pollerThread, SLOT(quit()));
-    pollerThread.start();*/
+    pollerThread.start();
 
 
     // get uid from app
