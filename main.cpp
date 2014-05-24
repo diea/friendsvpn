@@ -25,7 +25,7 @@ int main(int argc, char *argv[])
     // init signal handler
     UnixSignalHandler* u = UnixSignalHandler::getInstance();
 
-#if 1
+#if 0
     // start systray
     QThread sysTrayThread;
     SysTray* st = new SysTray();
