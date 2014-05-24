@@ -15,7 +15,9 @@ char* ip6tablesRule = NULL;
 
 void sig_handler(int signal) {
     /* used on linux to delete the ip6tables rule */
-    if (!ip6tablesRule) return;
+    if (!ip6tablesRule) {
+        exit(-1);
+    }
 
     ip6tablesRule[11] = 'D'; // replace append by 'D' for delete in the command
     system(ip6tablesRule);

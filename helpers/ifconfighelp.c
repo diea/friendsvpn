@@ -11,7 +11,9 @@ char* ip = NULL;
 
 void sig_handler(int signal) {
     /* used on linux to delete the ip6tables rule */
-    if (!command) return;
+    if (!command) {
+        exit(-1);
+    }
 
     char delCommand[2010];
     memset(&delCommand, 0, sizeof(delCommand));

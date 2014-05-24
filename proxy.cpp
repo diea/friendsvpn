@@ -22,7 +22,6 @@ Proxy::~Proxy() {
         QProcess* p = processes.pop();
         qDebug() << "Process state" << p->state();
         p->terminate();
-        qDebug() << "pid is " << p->pid();
         p->waitForFinished(500);
         waitpid(p->pid(), NULL, WNOHANG);
         if (p->state() != QProcess::NotRunning) {

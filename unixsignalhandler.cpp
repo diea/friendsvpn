@@ -67,8 +67,8 @@ void UnixSignalHandler::termSignalHandler(int) {
             if ((p->state() != QProcess::NotRunning)) {
                 qDebug() << p->state();
                 qDebug() << "closing " << p->pid();
-                ::kill(p->pid(), SIGTERM);
-                p->waitForFinished(500);
+                p->terminate();
+                p->waitForFinished();
                 waitpid(p->pid(), NULL, WNOHANG);
                 if (p->state() != QProcess::NotRunning) {
                     qDebug() << "Killing process";
