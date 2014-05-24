@@ -73,20 +73,26 @@ void SslSocket::startClientEncryption() {
 }
 
 void SslSocket::write(const char *buf, int size) {
-    /*mutex.lock();
+    mutex.lock();
     qDebug() << "writing buf" << buf;
     if (!(SSL_get_shutdown(ssl) & SSL_RECEIVED_SHUTDOWN)) {
+        SSL_write(ssl, buf, size);
+        SSL_write(ssl, buf, size);
+        SSL_write(ssl, buf, size);
         SSL_write(ssl, buf, size);
     } else {
         emit disconnected();
     }
-    mutex.unlock();*/
+    mutex.unlock();
 }
 
 void SslSocket::getNewBytes() {
     if (!(SSL_get_shutdown(ssl) & SSL_RECEIVED_SHUTDOWN)) {
         mutex.lock();
         qDebug() << "going to read!";
+        if (SSL_pending(ssl) < 1) {
+            qDebug() << "no bytes available for read";
+        }
         int ret = SSL_read(ssl, buf + bytesRead, SSL_BUFFERSIZE - bytesRead);
         //int ret = SSL_read(ssl, buf, 2000); //test
         qDebug() << "ssl sock read " << ret << "bytes";
@@ -139,6 +145,6 @@ int SslSocket::read(char* caller_buf) {
 }
 
 void SslSocket::close() {
-    /*qDebug() << "Closing SSL socket, send SSL_shutdown";
-    SSL_shutdown(ssl);*/
+    qDebug() << "Closing SSL socket, send SSL_shutdown";
+    SSL_shutdown(ssl);
 }
