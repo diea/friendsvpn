@@ -94,7 +94,6 @@ void ControlPlaneServer::start() {
 void ControlPlaneServer::newIncoming() {
     qDebug() << "New incoming control Plane !";
     QTcpSocket* socket = tcpSrv->nextPendingConnection();
-
     qDebug() << "TCP socket is in" << socket->state() << "mode";
 
     SSL* ssl = SSL_new(ctx);              /* get new SSL state with context */
@@ -120,9 +119,8 @@ void ControlPlaneServer::sslSockReady() {
     SslSocket* sslSock = qobject_cast<SslSocket*>(sender());
     connect(sslSock, SIGNAL(readyRead()), this, SLOT(sslSockReadyRead()));
     // send HELLO packet
-    QString hello("Uid:" + init->getMyUid() + "\r\n");
+    QString hello("HELLO\r\nUid:" + init->getMyUid() + "\r\n\r\n");
     qDebug() << "ssl sock write";
-    sslSock->write("HELLO\r\n\r\n", 9);
     sslSock->write(hello.toLatin1().constData(), hello.size());
 }
 
