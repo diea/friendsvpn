@@ -132,6 +132,7 @@ void ControlPlaneServer::sslSockError(const QList<QSslError>& errors) {
 
 void ControlPlaneServer::sslSockReadyRead() {
     SslSocket* sslSock = qobject_cast<SslSocket*>(sender());
+    qDebug() << "sslSockReady read";
     static QMutex mutexx;
     if (!sslSock->isAssociated()) {
         mutexx.lock();
@@ -140,15 +141,18 @@ void ControlPlaneServer::sslSockReadyRead() {
     }
     if (!sslSock->isAssociated()) { // not associated with a ControlPlaneConnection
         char buf[SSL_BUFFERSIZE];
+        qDebug() << "going into read";
         sslSock->read(buf);
+        qDebug() << "gout out of read";
         QString bufStr(buf);
-        if (bufStr.startsWith("HELLO")) {
-            sslSock->read(buf);
-            QString uidStr(buf);
-            uidStr.chop(2); // drop \r\0
+        QStringList packet = bufStr.split("\r\n", QString::SkipEmptyParts);
+        qDebug() << "packet " << packet;
+        if (packet.at(0).startsWith("HELLO")) {
+            QStringList val = packet.at(1).split(":");
             // TODO double check UID is friend
-            // drop the Uid: part with the .remove and get the CPConnection* correspoding to this UID
-            ControlPlaneConnection* con = init->getConnection(uidStr.remove(0, 4));
+            qDebug() << "get connection for " << val.at(1);
+
+            ControlPlaneConnection* con = init->getConnection(val.at(1));
             con->addMode(Receiving, sslSock); // add server mode
             sslSock->setControlPlaneConnection(con); // associate the sslSock with it
             mutexx.unlock();

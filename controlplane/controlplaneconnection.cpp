@@ -2,6 +2,7 @@
 #include "connectioninitiator.h"
 #include "proxyserver.h"
 #include "config.h"
+#include "sslsocket.h"
 #include <time.h>
 #include <QDebug>
 
@@ -65,7 +66,7 @@ void ControlPlaneConnection::aliveTimeout() {
 
 void ControlPlaneConnection::sendPacket(QString& packet) {
     mutex.lock();
-    QSslSocket* toWrite; // the socket on which the bonjour packets are to be sent
+    SslSocket* toWrite; // the socket on which the bonjour packets are to be sent
     //qDebug() << "passed the lock in sendbonjour";
 
     if (curMode == Closed) {
@@ -80,7 +81,7 @@ void ControlPlaneConnection::sendPacket(QString& packet) {
         toWrite = serverSock;
     }
 
-    toWrite->write(packet.toUtf8().data());
+    toWrite->write(packet.toUtf8().data(), packet.toUtf8().length());
     mutex.unlock();
 }
 
@@ -104,8 +105,8 @@ void ControlPlaneConnection::removeConnection() {
 
 bool ControlPlaneConnection::addMode(plane_mode mode, QObject *socket) {
     qDebug() << "adding mode " << mode << "controlplane";
-    QSslSocket* sslSocket = dynamic_cast<QSslSocket*>(socket);
-    if (!sslSocket) return false; // needs to be of type QSslSocket!
+    SslSocket* sslSocket = dynamic_cast<SslSocket*>(socket);
+    if (!sslSocket) return false; // needs to be of type SslSocket!
 
     if ((curMode == Both) || (curMode == mode)) return false;
     if (mode == Receiving)
@@ -113,6 +114,7 @@ bool ControlPlaneConnection::addMode(plane_mode mode, QObject *socket) {
     else clientSock = sslSocket;
 
     if (curMode == Closed)  {
+        qDebug() << "emit controlplane connected!";
         curMode = mode;
         emit connected();
     }
@@ -200,10 +202,11 @@ void ControlPlaneConnection::readBuffer(const char* buf, int len) {
 }
 
 void ControlPlaneConnection::sendBonjour() {
+    qDebug() << "sending bonjour!";
     // get bonjour records from db & send them over the connection
     //qDebug() << "fetching records for " << this->friendUid;
     QList < BonjourRecord* > records = qSql->getRecordsFor(this->friendUid);
-    //qDebug() << "Retrieved " << records.length() << " records!";
+    qDebug() << "Retrieved " << records.length() << " records!";
     foreach (BonjourRecord* rec, records) {  
         QString packet;
         packet = packet

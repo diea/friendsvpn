@@ -52,7 +52,7 @@ void SslSocket::startServerEncryption() {
 
     sd = SSL_get_fd(ssl);       /* get socket connection */
     notif = new QSocketNotifier(sd, QSocketNotifier::Read);
-    connect(notif, SIGNAL(activated(int)), this, SLOT(emitRead(int)));
+    connect(notif, SIGNAL(activated(int)), this, SLOT(getNewBytes()));
     emit encrypted();
 }
 
@@ -92,29 +92,37 @@ void SslSocket::getNewBytes() {
             if ((buf[bytesRead - 1] == '\n') && (buf[bytesRead - 2] == '\r') && (buf[bytesRead - 3] == '\n')
                 && (buf[bytesRead - 4] == '\r')) {
                 nextFullPacket = bytesRead;
-                emit readyRead();
-            }
-            char* packetEnd = buf; //strrstr(buf, "\r\n\r\n", bytesRead) + 4;
-            int packetEndIndex = packetEnd - buf;
-            if (packetEndIndex > 4) {
-                // one full packet
-                nextFullPacket = packetEndIndex;
-                emit readyRead();
+            } else {
+                char* packetEnd = strrstr(buf, "\r\n\r\n", bytesRead) + 4;
+                int packetEndIndex = packetEnd - buf;
+                if (packetEndIndex > 4) {
+                    // one full packet
+                    nextFullPacket = packetEndIndex;
+                }
             }
         }
+        qDebug() << "gonna unlock mutex in getnewbytes";
         mutex.unlock();
+        if (nextFullPacket > 0) {
+            emit readyRead();
+        }
     } else {
         emit disconnected();
     }
 }
 
 int SslSocket::read(char* caller_buf) {
+    qDebug() << "locking ssl socket mutex in read";
     mutex.lock();
+    qDebug() << "got in";
     memcpy(caller_buf, buf, nextFullPacket);
     int ret = nextFullPacket;
     caller_buf[nextFullPacket] = '\0';
     bytesRead -= nextFullPacket;
-    memmove(buf, buf + nextFullPacket, bytesRead); // move everything back at start of buffer
+    if (bytesRead > 0) {
+        qDebug() << "we have" << bytesRead << "bytes left";
+        memmove(buf, buf + nextFullPacket, bytesRead); // move everything back at start of buffer
+    }
     mutex.unlock();
     return ret;
 }

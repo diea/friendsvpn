@@ -2,17 +2,16 @@
 #define CONTROLPLANECONNECTION_H
 
 #include <QObject>
-#include <QSslSocket>
 #include "bonjoursql.h"
 #include "abstractplaneconnection.h"
 #include "proxyserver.h"
-
+class SslSocket;
 class ControlPlaneConnection : public AbstractPlaneConnection
 {
     Q_OBJECT
 private:
-    QSslSocket* serverSock;
-    QSslSocket* clientSock;
+    SslSocket* serverSock;
+    SslSocket* clientSock;
 
     BonjourSQL* qSql;
 

@@ -100,12 +100,12 @@ void ConnectionInitiator::startServer() {
     server = new ControlPlaneServer(cert, key, QHostAddress::AnyIPv6, CONTROLPLANELISTENPORT, this);
     server->start();
 
-    dpServer = DataPlaneServer::getInstance();
+    /*dpServer = DataPlaneServer::getInstance();
     dpServer->moveToThread(&dpServerThread);
     connect(&dpServerThread, SIGNAL(started()), dpServer, SLOT(start()));
     dpServerThread.start();
     UnixSignalHandler* u = UnixSignalHandler::getInstance();
-    connect(u, SIGNAL(exiting()), &dpServerThread, SLOT(quit()));
+    connect(u, SIGNAL(exiting()), &dpServerThread, SLOT(quit()));*/
 }
 
 void ConnectionInitiator::startClients() {
@@ -131,7 +131,7 @@ void ConnectionInitiator::startClients() {
 
         /* we start the thread when the control plane connection is connected! */
         ControlPlaneConnection* controlPlane = this->getConnection(QString(*(frien_d->uid)));
-        connect(controlPlane, SIGNAL(connected()), dcThread, SLOT(start()));
+        //connect(controlPlane, SIGNAL(connected()), dcThread, SLOT(start()));
 
         // TODO delete user?
     }

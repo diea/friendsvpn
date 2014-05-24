@@ -1,6 +1,6 @@
 #ifndef CONTROLPLANECLIENT_H
 #define CONTROLPLANECLIENT_H
-
+#include <QTcpSocket>
 #include <QObject>
 #include <QHostAddress>
 #include <QSslCertificate>
@@ -35,7 +35,6 @@ private slots:
      * @brief sslClientReadyRead data is ready to be read
      */
     void sslClientReadyRead();
-    void sslErrors(const QList<QSslError>& errs);
 public slots:
     /**
      * @brief run will connect to the host given in the constructor; it won't do anything if

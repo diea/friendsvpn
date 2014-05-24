@@ -68,12 +68,6 @@ void ControlPlaneClient::connectSSL() {
     sslClient->startClientEncryption();
 }
 
-void ControlPlaneClient::sslErrors(const QList<QSslError>& errors) {
-    //QSslSocket* sslSock = qobject_cast<QSslSocket*>(sender());
-    qDebug() << "ssl error";
-    qDebug() << errors;
-}
-
 void ControlPlaneClient::connectionReady() {
     connect(sslClient, SIGNAL(readyRead()), this, SLOT(sslClientReadyRead()));
     // TODO protocol starts here
@@ -93,13 +87,13 @@ void ControlPlaneClient::sslClientReadyRead() {
         char buf[SSL_BUFFERSIZE];
         sslClient->read(buf);
         QString bufStr(buf);
-        if (bufStr.startsWith("HELLO")) {
-            sslClient->read(buf);
-            QString uidStr(buf);
-            uidStr.chop(2); // drop \r\0
-            //qDebug() << uidStr.remove(0, 4);
-            // drop the Uid: part with the .remove and get the CPConnection* correspoding to this UID
-            ControlPlaneConnection* con =  init->getConnection(uidStr.remove(0, 4));
+        QStringList packet = bufStr.split("\r\n", QString::SkipEmptyParts);
+        qDebug() << "packet " << packet;
+        if (packet.at(0).startsWith("HELLO")) {
+            QStringList val = packet.at(1).split(":");
+            // TODO double check UID is friend
+            qDebug() << "get connection for " << val.at(1);
+            ControlPlaneConnection* con = init->getConnection(val.at(1));
             con->addMode(Emitting, sslClient); // add server mode
             sslClient->setControlPlaneConnection(con); // associate the sslSock with it
             mutexx.unlock();
