@@ -107,6 +107,7 @@ void SslSocket::getNewBytes() {
             emit readyRead();
         }
     } else {
+        qDebug() << "SSL shutdown received, disconnect";
         emit disconnected();
     }
 }
@@ -128,5 +129,6 @@ int SslSocket::read(char* caller_buf) {
 }
 
 void SslSocket::close() {
+    qDebug() << "Closing SSL socket, send SSL_shutdown";
     SSL_shutdown(ssl);
 }
