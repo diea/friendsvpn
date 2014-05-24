@@ -6,6 +6,8 @@
 #include <QtConcurrent>
 #include <pcap.h>
 #include <signal.h>
+#include <sys/types.h>
+#include <sys/wait.h>
 
 QHash<QByteArray, Proxy*> Proxy::proxyHashes;
 IpResolver* Proxy::resolver = IpResolver::getInstance();
