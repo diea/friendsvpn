@@ -22,7 +22,7 @@ private:
     QHostAddress listenAdr;
     int listenPort;
 
-    QTcpServer* tcpSrv;
+    int tcpSrvfd;
     QList<SslSocket*> sslSockList;
     SSL_CTX *ctx;
 

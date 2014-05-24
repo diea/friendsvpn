@@ -3,6 +3,7 @@
 #include "unixsignalhandler.h"
 #include <unistd.h>
 #include <fcntl.h>
+#include <sys/socket.h>
 
 ControlPlaneServer::ControlPlaneServer(QSslCertificate servCert, QSslKey myKey,
                                        QHostAddress listenAdr, int listenPort, QObject *parent) :
@@ -11,8 +12,16 @@ ControlPlaneServer::ControlPlaneServer(QSslCertificate servCert, QSslKey myKey,
     this->listenAdr = listenAdr;
     this->listenPort = listenPort;
 
-    tcpSrv = new QTcpServer(this);
-
+    tcpSrvfd = socket(AF_INET6, SOCK_STREAM, 0);
+    struct sockaddr_in6 servv6;
+    memset(&servv6, 0, sizeof(servv6));
+    servv6.sin6_family = AF_INET6;
+    servv6.sin6_port = 61323;
+    servv6.sin6_addr = in6addr_any;
+    if (bind (tcpSrvfd, (struct sockaddr*) &servv6, sizeof(servv6)) != 0) {
+        qWarning() << "Could not bind server on port 61323";
+        UnixSignalHandler::termSignalHandler(0);
+    }
     BonjourSQL* qSql = BonjourSQL::getInstance();
 
     /* OpenSSL init code */
@@ -81,30 +90,20 @@ ControlPlaneServer::~ControlPlaneServer()
         sock->close();
         delete sock;
     }
-
-    tcpSrv->close();
-    delete tcpSrv;
 }
 
 void ControlPlaneServer::start() {
-    tcpSrv->listen(listenAdr, listenPort);
-    connect(tcpSrv, SIGNAL(newConnection()), this, SLOT(newIncoming()));
+    QSocketNotifier* newIncomingTcpNotif = new QSocketNotifier(tcpSrvfd, QSocketNotifier::Read);
+    connect(newIncomingTcpNotif, SIGNAL(activated(int)), this, SLOT(newIncoming()));
 }
 
 void ControlPlaneServer::newIncoming() {
     qDebug() << "New incoming control Plane !";
-    QTcpSocket* socket = tcpSrv->nextPendingConnection();
-    qDebug() << "TCP socket is in" << socket->state() << "mode";
-
     SSL* ssl = SSL_new(ctx);              /* get new SSL state with context */
-    int sd = socket->socketDescriptor();
+    struct sockaddr_in6 addr;
+    socklen_t len = sizeof(addr);
+    int sd = accept(tcpSrvfd, (struct sockaddr*)&addr, &len);
 
-    /* set socket to blocking mode */
-    int flags = fcntl(sd, F_GETFL, 0);
-    flags &= ~O_NONBLOCK;
-    fcntl(sd, F_SETFL, flags);
-
-    qDebug() << "socket descriptor is " << sd;
     SSL_set_fd(ssl, sd);      /* set connection socket to SSL state */
     SslSocket* sslSock = new SslSocket(ssl);
     sslSockList.append(sslSock);
