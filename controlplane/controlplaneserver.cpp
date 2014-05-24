@@ -91,8 +91,13 @@ void ControlPlaneServer::start() {
 void ControlPlaneServer::newIncoming() {
     qDebug() << "New incoming control Plane !";
     QTcpSocket* socket = tcpSrv->nextPendingConnection();
+
+    qDebug() << "TCP socket is in" << socket->state() << "mode";
+
     SSL* ssl = SSL_new(ctx);              /* get new SSL state with context */
-    SSL_set_fd(ssl, socket->socketDescriptor());      /* set connection socket to SSL state */
+    int sd = socket->socketDescriptor();
+    qDebug() << "socket descriptor is " << sd;
+    SSL_set_fd(ssl, sd);      /* set connection socket to SSL state */
     SslSocket* sslSock = new SslSocket(ssl);
     sslSockList.append(sslSock);
     connect(sslSock, SIGNAL(encrypted()), this, SLOT(sslSockReady()));
