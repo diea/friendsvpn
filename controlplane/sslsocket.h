@@ -2,6 +2,7 @@
 #define SSLSOCKET_H
 
 #include "controlplaneconnection.h"
+#define SSL_BUFFERSIZE 32768
 /**
  * @brief The SslSocket class inherits the QSslSocket class to be able to be associated with
  * a ControlPlaneConnection.
@@ -14,6 +15,14 @@ private:
     SSL* ssl;
     int sd;
     QSocketNotifier* notif;
+
+    /**
+     * @brief buffer will buffer the multiple reads until a \r\n\r\n is present
+     */
+    QMutex mutex;
+    char buf[SSL_BUFFERSIZE]; /* 256kb buffer */
+    int bytesRead;
+    int nextFullPacket;
 public:
     explicit SslSocket(SSL* ssl, QObject *parent = 0);
     ~SslSocket();
@@ -29,7 +38,13 @@ public:
     bool isAssociated();
 
     void write(const char* buf, int size);
-    int read(char* buf, int maxBytes);
+
+    /**
+     * @brief read
+     * @param buf should be at least 256K
+     * @return
+     */
+    int read(char* buf);
 
     void close();
 signals:
@@ -37,7 +52,7 @@ signals:
     void readyRead();
     void disconnected();
 private slots:
-    void emitRead(int);
+    void getNewBytes();
 public slots:
 
 };

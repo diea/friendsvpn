@@ -1,9 +1,11 @@
 #include "controlplaneconnection.h"
 #include "connectioninitiator.h"
 #include "proxyserver.h"
+#include "config.h"
 #include <time.h>
 #include <QDebug>
 
+/* strnstr not available on all platforms, so copied here */
 char * my_strnstr(const char *s, const char *find, size_t slen) {
     /* from http://www.opensource.apple.com/source/Libc/Libc-320/string/FreeBSD/strnstr.c */
     char c, sc;
@@ -23,6 +25,7 @@ char * my_strnstr(const char *s, const char *find, size_t slen) {
     }
     return ((char *)s);
 }
+
 
 ControlPlaneConnection::ControlPlaneConnection(QString uid, AbstractPlaneConnection *parent) :
     AbstractPlaneConnection(uid, parent), lastRcvdTimestamp(time(NULL))

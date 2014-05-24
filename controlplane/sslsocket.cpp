@@ -1,5 +1,20 @@
 #include "sslsocket.h"
+#include "config.h"
 #include <QSslCipher>
+
+/* reverse of strnstr from
+ * http://stackoverflow.com/questions/20213799/finding-last-occurence-of-string
+ */
+char * strrstr(char *string, char *find, size_t len)
+{
+  char *cp;
+  for (cp = string + len - 4; cp >= string; cp--)
+  {
+    if (strncmp(cp, find, 4) == 0)
+        return cp;
+  }
+  return NULL;
+}
 
 SslSocket::~SslSocket() {
     SSL_free(ssl);         /* release SSL state */
@@ -10,6 +25,8 @@ SslSocket::SslSocket(SSL* ssl, QObject *parent) :
     QObject(parent), ssl(ssl)
 {
     con = NULL;
+    bytesRead = 0;
+    nextFullPacket = 0;
 }
 
 void SslSocket::setControlPlaneConnection(ControlPlaneConnection *con) {
@@ -25,15 +42,12 @@ bool SslSocket::isAssociated() {
 }
 
 void SslSocket::startServerEncryption() {
-    int accRet = SSL_ERROR_WANT_READ;
-    while (accRet == SSL_ERROR_WANT_READ) {
-        accRet = SSL_accept(ssl);
-        if (accRet != 1) {     /* do SSL-protocol accept */
-            qDebug() << "start server encryption error" << accRet;
-            qDebug() << "error code " << SSL_get_error(ssl, accRet);
-            ERR_print_errors_fp(stdout);
-            fflush(stdout);
-        }
+    int accRet = SSL_accept(ssl);
+    if (accRet != 1) {     /* do SSL-protocol accept */
+        qDebug() << "start server encryption error" << accRet;
+        qDebug() << "error code " << SSL_get_error(ssl, accRet);
+        ERR_print_errors_fp(stdout);
+        fflush(stdout);
     }
 
     sd = SSL_get_fd(ssl);       /* get socket connection */
@@ -43,28 +57,19 @@ void SslSocket::startServerEncryption() {
 }
 
 void SslSocket::startClientEncryption() {
-    int accRet = SSL_ERROR_WANT_READ;
+    int accRet = SSL_connect(ssl);
+    if (accRet != 1) {    /* do SSL-protocol accept */
+        qDebug() << "start client encryption error";
+        qDebug() << "start server encryption error" << accRet;
+        qDebug() << "error code " << SSL_get_error(ssl, accRet);
 
-    while (accRet == SSL_ERROR_WANT_READ) {
-        accRet = SSL_connect(ssl);
-        if (accRet != 1) {    /* do SSL-protocol accept */
-            qDebug() << "start client encryption error";
-            qDebug() << "start server encryption error" << accRet;
-            qDebug() << "error code " << SSL_get_error(ssl, accRet);
-
-            ERR_print_errors_fp(stdout);
-            fflush(stdout);
-        }
+        ERR_print_errors_fp(stdout);
+        fflush(stdout);
     }
     sd = SSL_get_fd(ssl);       /* get socket connection */
     notif = new QSocketNotifier(sd, QSocketNotifier::Read);
-    connect(notif, SIGNAL(activated(int)), this, SLOT(emitRead(int)));
+    connect(notif, SIGNAL(activated(int)), this, SLOT(getNewBytes()));
     emit encrypted();
-}
-
-void SslSocket::emitRead(int) {
-    qDebug() << "emitting ready read!";
-    emit readyRead();
 }
 
 void SslSocket::write(const char *buf, int size) {
@@ -75,17 +80,43 @@ void SslSocket::write(const char *buf, int size) {
     }
 }
 
-int SslSocket::read(char* buf, int maxBytes) {
+void SslSocket::getNewBytes() {
     if (!(SSL_get_shutdown(ssl) & SSL_RECEIVED_SHUTDOWN)) {
-        int ret = SSL_read(ssl, buf, maxBytes);
+        mutex.lock();
+        int ret = SSL_read(ssl, buf + bytesRead, SSL_BUFFERSIZE - bytesRead);
         qDebug() << "ssl sock read " << ret << "bytes";
         qDebug() << "ssl sock read " << buf;
         qDebug() << "reading error code " << SSL_get_error(ssl, ret);
-        return ret;
+        if (ret > 0) {
+            bytesRead += ret;
+            if ((buf[bytesRead - 1] == '\n') && (buf[bytesRead - 2] == '\r') && (buf[bytesRead - 3] == '\n')
+                && (buf[bytesRead - 4] == '\r')) {
+                nextFullPacket = bytesRead;
+                emit readyRead();
+            }
+            char* packetEnd = buf; //strrstr(buf, "\r\n\r\n", bytesRead) + 4;
+            int packetEndIndex = packetEnd - buf;
+            if (packetEndIndex > 4) {
+                // one full packet
+                nextFullPacket = packetEndIndex;
+                emit readyRead();
+            }
+        }
+        mutex.unlock();
     } else {
         emit disconnected();
-        return 0;
     }
+}
+
+int SslSocket::read(char* caller_buf) {
+    mutex.lock();
+    memcpy(caller_buf, buf, nextFullPacket);
+    int ret = nextFullPacket;
+    caller_buf[nextFullPacket] = '\0';
+    bytesRead -= nextFullPacket;
+    memmove(buf, buf + nextFullPacket, bytesRead); // move everything back at start of buffer
+    mutex.unlock();
+    return ret;
 }
 
 void SslSocket::close() {

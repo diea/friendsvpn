@@ -78,7 +78,7 @@ void ControlPlaneClient::connectionReady() {
     connect(sslClient, SIGNAL(readyRead()), this, SLOT(sslClientReadyRead()));
     // TODO protocol starts here
     // Send HELLO packet
-    QString hello("HELLO\r\n\r\nUid:" + init->getMyUid() + "\r\n");
+    QString hello("HELLO\r\nUid:" + init->getMyUid() + "\r\n\r\n");
     sslClient->write(hello.toUtf8().constData(), hello.length());
 }
 
@@ -90,11 +90,11 @@ void ControlPlaneClient::sslClientReadyRead() {
             mutexx.unlock();
     }
     if (!sslClient->isAssociated()) { // not associated with a ControlPlaneConnection
-        char buf[300];
-        sslClient->read(buf, 9);
+        char buf[SSL_BUFFERSIZE];
+        sslClient->read(buf);
         QString bufStr(buf);
         if (bufStr.startsWith("HELLO")) {
-            sslClient->read(buf, 300);
+            sslClient->read(buf);
             QString uidStr(buf);
             uidStr.chop(2); // drop \r\0
             //qDebug() << uidStr.remove(0, 4);
@@ -105,8 +105,8 @@ void ControlPlaneClient::sslClientReadyRead() {
             mutexx.unlock();
         }
     } else { // socket is associated with controlplaneconnection
-        char buf[2048];
-        int bytesRead = sslClient->read(buf, 2048);
+        char buf[SSL_BUFFERSIZE];
+        int bytesRead = sslClient->read(buf);
         sslClient->getControlPlaneConnection()->readBuffer(buf, bytesRead);
     }
 }

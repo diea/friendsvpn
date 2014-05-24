@@ -139,11 +139,11 @@ void ControlPlaneServer::sslSockReadyRead() {
             mutexx.unlock();
     }
     if (!sslSock->isAssociated()) { // not associated with a ControlPlaneConnection
-        char buf[300];
-        sslSock->read(buf, 9);
+        char buf[SSL_BUFFERSIZE];
+        sslSock->read(buf);
         QString bufStr(buf);
         if (bufStr.startsWith("HELLO")) {
-            sslSock->read(buf, 300);
+            sslSock->read(buf);
             QString uidStr(buf);
             uidStr.chop(2); // drop \r\0
             // TODO double check UID is friend
@@ -154,8 +154,8 @@ void ControlPlaneServer::sslSockReadyRead() {
             mutexx.unlock();
         }
     } else { // socket is associated with controlplaneconnection
-        char buf[2048];
-        int bytesRead = sslSock->read(buf, 2048);
+        char buf[SSL_BUFFERSIZE];
+        int bytesRead = sslSock->read(buf);
         sslSock->getControlPlaneConnection()->readBuffer(buf, bytesRead);
     }
 }
