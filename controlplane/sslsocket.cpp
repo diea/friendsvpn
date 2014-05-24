@@ -25,9 +25,12 @@ bool SslSocket::isAssociated() {
 }
 
 void SslSocket::startServerEncryption() {
-    if (SSL_accept(ssl) != 1) {     /* do SSL-protocol accept */
-        qDebug() << "start server encryption error";
-        ERR_print_errors_fp(stderr);
+    int accRet = SSL_accept(ssl);
+    if (accRet != 1) {     /* do SSL-protocol accept */
+        qDebug() << "start server encryption error" << accRet;
+        qDebug() << "error code " << SSL_get_error(ssl, accRet);
+        ERR_print_errors_fp(stdout);
+        fflush(stdout);
     }
     sd = SSL_get_fd(ssl);       /* get socket connection */
     notif = new QSocketNotifier(sd, QSocketNotifier::Read);

@@ -20,6 +20,7 @@ ControlPlaneClient::ControlPlaneClient(QSslCertificate servCert, QSslKey myKey,
     SSL_load_error_strings();   /* Bring in and register error messages */
     method = SSLv3_client_method();  /* Create new client-method instance */
     ctx = SSL_CTX_new(method);   /* Create new context */
+    SSL_CTX_set_mode(ctx, SSL_MODE_AUTO_RETRY);
     if ( ctx == NULL )
     {
         ERR_print_errors_fp(stderr);
