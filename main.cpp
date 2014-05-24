@@ -27,29 +27,29 @@ int main(int argc, char *argv[])
 
 #if 1
     // start systray
-    QThread sysTrayThread;
+    /*QThread sysTrayThread;
     SysTray* st = new SysTray();
     QObject::connect(&sysTrayThread, SIGNAL(started()), st, SLOT(createActions()));
     QObject::connect(&sysTrayThread, SIGNAL(started()), st, SLOT(createTrayIcon()));
     sysTrayThread.start();
-    QObject::connect(u, SIGNAL(exiting()), &sysTrayThread, SLOT(quit()));
+    QObject::connect(u, SIGNAL(exiting()), &sysTrayThread, SLOT(quit()));*/
 
     // connect to sql database
     BonjourSQL* qSql = BonjourSQL::getInstance();
 
     // create facebook app xmlrpc poller
-    QThread pollerThread;
+    /*QThread pollerThread;
     Poller* poller = new Poller();
     poller->moveToThread(&pollerThread);
     poller->connect(&pollerThread, SIGNAL(started()), SLOT(run()));
     QObject::connect(u, SIGNAL(exiting()), &pollerThread, SLOT(quit()));
-    pollerThread.start();
+    pollerThread.start();*/
 
 
     // get uid from app
     qSql->uidOK();
 
-    QtConcurrent::run(Proxy::gennewIP); // generate the initial new ips
+    //QtConcurrent::run(Proxy::gennewIP); // generate the initial new ips
 
     ConnectionInitiator* con = ConnectionInitiator::getInstance();
 
