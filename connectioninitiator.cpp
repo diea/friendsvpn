@@ -113,7 +113,7 @@ void ConnectionInitiator::startClients() {
 
     foreach(User* frien_d, friends) {
         ControlPlaneClient* c = new ControlPlaneClient(*(frien_d->cert), key, QHostAddress(*(frien_d->ipv6)),
-                                                       CONTROLPLANELISTENPORT, this);
+                                                       CONTROLPLANELISTENPORT, *(frien_d->uid), this);
         c->run();
         clients.append(c);
 

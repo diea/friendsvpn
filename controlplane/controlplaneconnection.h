@@ -35,6 +35,12 @@ private:
     void removeConnection();
 
     void sendPacket(QString& pack);
+
+    char* inputBuffer;
+    int bytesReceived;
+    int lastFullPacket;
+
+    bool gotHello; /* connection does not accept any packets until HELLO has been received */
 public:
     explicit ControlPlaneConnection(QString uid, AbstractPlaneConnection *parent = 0);
     ~ControlPlaneConnection();

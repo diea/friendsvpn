@@ -33,6 +33,10 @@ ControlPlaneConnection::ControlPlaneConnection(QString uid, AbstractPlaneConnect
     this->connect(this, SIGNAL(connected()), SLOT(alive()));
     serverSock = NULL;
     clientSock = NULL;
+    inputBuffer = static_cast<char*>(malloc(40000 * sizeof(char)));
+    gotHello = false;
+    lastFullPacket = 0;
+    bytesReceived = 0;
 }
 
 ControlPlaneConnection::~ControlPlaneConnection() {
@@ -45,6 +49,7 @@ ControlPlaneConnection::~ControlPlaneConnection() {
         clientSock->close();
         delete clientSock;
     }
+    free(inputBuffer);
 }
 
 void ControlPlaneConnection::alive() {
@@ -122,6 +127,23 @@ bool ControlPlaneConnection::addMode(plane_mode mode, QObject *socket) {
 }
 
 void ControlPlaneConnection::readBuffer(const char* buf, int len) {
+    memcpy(inputBuffer + bytesReceived, buf, len); // copy incoming buffer
+    if (len > 0) {
+        bytesReceived += len;
+        if ((inputBuffer[bytesReceived - 1] == '\n') && (inputBuffer[bytesReceived - 2] == '\r')
+                && (inputBuffer[bytesReceived - 3] == '\n') && (inputBuffer[bytesReceived - 4] == '\r')) {
+            lastFullPacket = bytesReceived;
+        } else {
+            char* packetEnd = strrstr(inputBuffer, "\r\n\r\n", bytesReceived) + 4;
+            int packetEndIndex = packetEnd - buf;
+            if (packetEndIndex > 4) {
+                // one full packet
+                lastFullPacket = packetEndIndex;
+            }
+        }
+    }
+
+    int len = lastFullPacket; // we only read until the last complete packet
     int bufferPosition = 0;
     lastRcvdTimestamp = time(NULL); // we received a packet, update time
     while (len > 0) {
@@ -150,49 +172,74 @@ void ControlPlaneConnection::readBuffer(const char* buf, int len) {
         QStringList list = packet.split("\r\n");
 
         qDebug() << "new bjr packet" << list;
-        if (list.at(0) == "BONJOUR") {
-            QString hostname;
-            QString name;
-            QString type;
-            int port = 0;
-            QString md5;
-            for (int i = 1; i < list.length(); i++) {
-                QStringList keyValuePair = list.at(i).split(":");
-                QString key = keyValuePair.at(0);
-                qDebug() << "key" << key;
-                if (key == "Hostname") {
-                    hostname = keyValuePair.at(1);
-                } else if (key == "Name") {
-                    name = keyValuePair.at(1);
-                } else if (key == "Type") {
-                    type = keyValuePair.at(1);
-                } else if (key == "Port") {
-                    port = keyValuePair.at(1).toInt();
-                } else if (key == "MD5") {
-                    md5 = keyValuePair.at(1);
+        QString packetType = list.at(0);
+        if (!gotHello && packetType == "HELLO") {
+            QStringList disec = list.at(1).split(":");
+            if (!disec.length() < 2) {
+                if (this->friendUid != disec.at(1)) {
+                    qDebug() << "receive wrong UID for connection!";
+                    wasDisconnected();
+                    return;
+                } else {
+                    qDebug() << "Got hello!";
+                    gotHello = true;
                 }
             }
-
-            if (hostname.isEmpty() || name.isEmpty() || type.isEmpty() || !port) {
-                qDebug() << "ERROR: Bonjour packet wrong format";
-                return;
-            }
-
-            qDebug() << "Running new proxy!!";
-            ProxyServer* newProxy = NULL;
-            try {
-                newProxy = new ProxyServer(friendUid, name, type, "", hostname, port, QByteArray::fromHex(md5.toUtf8()));
-                proxyServers.push(newProxy);
-                newProxy->run();
-            } catch (int i) {
-                // proxy exists
-            }
-        } else if (list.at(0) == "PING") {
-            QString pong = "PONG\r\n\r\n";
-            sendPacket(pong);
-        } else { // no need to analyze PONG, we just need a packet for the time :)
-            qDebug() << "not starting with BONJOUR or PING";
         }
+        if (gotHello) {
+            if (packetType == "BONJOUR") {
+                QString hostname;
+                QString name;
+                QString type;
+                int port = 0;
+                QString md5;
+                for (int i = 1; i < list.length(); i++) {
+                    QStringList keyValuePair = list.at(i).split(":");
+                    QString key = keyValuePair.at(0);
+                    qDebug() << "key" << key;
+                    if (key == "Hostname") {
+                        hostname = keyValuePair.at(1);
+                    } else if (key == "Name") {
+                        name = keyValuePair.at(1);
+                    } else if (key == "Type") {
+                        type = keyValuePair.at(1);
+                    } else if (key == "Port") {
+                        port = keyValuePair.at(1).toInt();
+                    } else if (key == "MD5") {
+                        md5 = keyValuePair.at(1);
+                    }
+                }
+
+                if (hostname.isEmpty() || name.isEmpty() || type.isEmpty() || !port) {
+                    qDebug() << "ERROR: Bonjour packet wrong format";
+                    return;
+                }
+
+                qDebug() << "Running new proxy!!";
+                ProxyServer* newProxy = NULL;
+                try {
+                    newProxy = new ProxyServer(friendUid, name, type, "", hostname, port, QByteArray::fromHex(md5.toUtf8()));
+                    proxyServers.push(newProxy);
+                    newProxy->run();
+                } catch (int i) {
+                    // proxy exists
+                }
+            } else if (packetType == "PING") {
+                QString pong = "PONG\r\n\r\n";
+                sendPacket(pong);
+            } else { // no need to analyze PONG, we just need a packet for the time :)
+                qDebug() << "not starting with BONJOUR or PING";
+            }
+        }
+    }
+
+    // handle incomplete packets
+    bytesReceived -= lastFullPacket;
+    qDebug() << "bytesReceived is at " << bytesReceived;
+    if (bytesReceived > 0) {
+        // we have an incomplete packet at the end
+        qDebug() << "going into memmove";
+        memmove(inputBuffer, inputBuffer + lastFullPacket, bytesReceived); // move everything back at start of buffer
     }
 }
 

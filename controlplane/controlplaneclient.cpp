@@ -1,13 +1,13 @@
 #include "controlplaneclient.h"
 #include "connectioninitiator.h"
 ControlPlaneClient::ControlPlaneClient(QSslCertificate servCert, QSslKey myKey,
-                                       QHostAddress addr, int port, QObject *parent) :
+                                       QHostAddress addr, int port, QString friendUid, QObject *parent) :
     QObject(parent)
 {
     this->addr = addr;
     this->port = port;
     this->servCert = servCert;
-
+    this->friendUid = friendUid;
     sslClient = new SslSocket();
 
     sslClient->addCaCertificate(servCert);
@@ -50,40 +50,16 @@ void ControlPlaneClient::sslErrors(const QList<QSslError>& errors) {
 
 void ControlPlaneClient::connectionReady() {
     connect(sslClient, SIGNAL(readyRead()), this, SLOT(sslClientReadyRead()));
-    // TODO protocol starts here
     // Send HELLO packet
-    QString hello("HELLO\r\nUid:" + init->getMyUid() + "\r\n");
+    sslClient->setControlPlaneConnection(init->getConnection(friendUid));
+    QString hello("HELLO\r\nUid:" + init->getMyUid() + "\r\n\r\n");
     sslClient->write(hello.toUtf8().constData());
     sslClient->flush();
 }
 
 void ControlPlaneClient::sslClientReadyRead() {
-    static QMutex mutexx;
-    if (!sslClient->isAssociated()) {
-        mutexx.lock();
-        if (sslClient->isAssociated())
-            mutexx.unlock();
-    }
-    if (!sslClient->isAssociated()) { // not associated with a ControlPlaneConnection
-        char buf[300];
-        sslClient->readLine(buf, 300);
-        QString bufStr(buf);
-        if (bufStr.startsWith("HELLO")) {
-            sslClient->readLine(buf, 300);
-            QString uidStr(buf);
-            uidStr.chop(2); // drop \r\0
-            //qDebug() << uidStr.remove(0, 4);
-            // drop the Uid: part with the .remove and get the CPConnection* correspoding to this UID
-            ControlPlaneConnection* con =  init->getConnection(uidStr.remove(0, 4));
-            con->addMode(Emitting, sslClient); // add server mode
-            sslClient->setControlPlaneConnection(con); // associate the sslSock with it
-            mutexx.unlock();
-        }
-    } else { // socket is associated with controlplaneconnection
-        //qDebug() << sslClient->readAll();
-        QByteArray bytesBuf = sslClient->readAll();
-        sslClient->getControlPlaneConnection()->readBuffer(bytesBuf.data(), bytesBuf.length());
-    }
+    QByteArray bytesBuf = sslClient->readAll();
+    sslClient->getControlPlaneConnection()->readBuffer(bytesBuf.data(), bytesBuf.length());
 }
 
 void ControlPlaneClient::sslDisconnected() {

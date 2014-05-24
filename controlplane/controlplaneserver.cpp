@@ -15,6 +15,8 @@ ControlPlaneServer::ControlPlaneServer(QSslCertificate servCert, QSslKey myKey,
 
     cfg.setLocalCertificate(servCert);
     cfg.setPrivateKey(myKey);
+
+    init = ConnectionInitiator::getInstance();
 }
 
 ControlPlaneServer::~ControlPlaneServer()
@@ -37,61 +39,50 @@ void ControlPlaneServer::start() {
 void ControlPlaneServer::newIncoming() {
     qDebug() << "New incoming control Plane !";
     QTcpSocket* socket = tcpSrv->nextPendingConnection();
+
     SslSocket* sslSock = new SslSocket();
 
     sslSock->setSslConfiguration(cfg);
     sslSock->setSocketDescriptor(socket->socketDescriptor());
     connect(sslSock, SIGNAL(encrypted()), this, SLOT(sslSockReady()));
     connect(sslSock, SIGNAL(disconnected()), this, SLOT(sslDisconnected()));
-    // XXX ignore safety concerns about the self signed certificate...
-    // connect(sslSock, SIGNAL(sslErrors(const QList<QSslError>&)), sslSock, SLOT(ignoreSslErrors()));
+
     sslSockList.append(sslSock);
     sslSock->startServerEncryption(); // XXX encrypted() never sent on linux ubuntu 12.04 & fedora.
 }
 
 void ControlPlaneServer::sslSockReady() {
     SslSocket* sslSock = qobject_cast<SslSocket*>(sender());
+
+    BonjourSQL* qSql = BonjourSQL::getInstance();
+    QString friendUid = qSql->getUidFromIP(sslSock->peerAddress().toString());
+    if (friendUid.isEmpty()) {
+        qDebug() << "friendUid empty on new server connection";
+        sslSock->close();
+        delete sslSock;
+    }
+
+    ControlPlaneConnection* con = init->getConnection(friendUid);
+    sslSock->setControlPlaneConnection(con);
+
     connect(sslSock, SIGNAL(readyRead()), this, SLOT(sslSockReadyRead()));
+
     // send HELLO packet
-    QString hello("Uid:" + init->getMyUid() + "\r\n");
+    QString hello("Uid:" + init->getMyUid() + "\r\n\r\n");
     sslSock->write("HELLO\r\n");
     sslSock->write(hello.toLatin1().constData());
     sslSock->flush();
 }
 
 void ControlPlaneServer::sslSockError(const QList<QSslError>& errors) {
-    //SslSocket* sslSock = qobject_cast<SslSocket*>(sender());
-    qDebug() << "ssl error";
+    qDebug() << "SSL Error:";
     qDebug() << errors;
 }
 
 void ControlPlaneServer::sslSockReadyRead() {
     SslSocket* sslSock = qobject_cast<SslSocket*>(sender());
-    static QMutex mutexx;
-    if (!sslSock->isAssociated()) {
-        mutexx.lock();
-        if (sslSock->isAssociated()) // if we acquired lock, retest if was not associated
-            mutexx.unlock();
-    }
-    if (!sslSock->isAssociated()) { // not associated with a ControlPlaneConnection
-        char buf[300];
-        sslSock->readLine(buf, 300);
-        QString bufStr(buf);
-        if (bufStr.startsWith("HELLO")) {
-            sslSock->readLine(buf, 300);
-            QString uidStr(buf);
-            uidStr.chop(2); // drop \r\0
-            // TODO double check UID is friend
-            // drop the Uid: part with the .remove and get the CPConnection* correspoding to this UID
-            ControlPlaneConnection* con = init->getConnection(uidStr.remove(0, 4));
-            con->addMode(Receiving, sslSock); // add server mode
-            sslSock->setControlPlaneConnection(con); // associate the sslSock with it
-            mutexx.unlock();
-        }
-    } else { // socket is associated with controlplaneconnection
-        QByteArray bytesBuf = sslSock->readAll();
-        sslSock->getControlPlaneConnection()->readBuffer(bytesBuf.data(), bytesBuf.length());
-    }
+    QByteArray bytesBuf = sslSock->readAll();
+    sslSock->getControlPlaneConnection()->readBuffer(bytesBuf.data(), bytesBuf.length());
 }
 
 void ControlPlaneServer::sslDisconnected() {

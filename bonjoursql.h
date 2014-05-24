@@ -90,7 +90,7 @@ public:
      * @brief getUidFromIP
      * @param uid
      * @return the user's UID associated with the IP given as param
-     *          the string "NULL" if there was no IP for that user
+     *          the string "" if there was no IP for that user
      */
     QString getUidFromIP(QString ip);
 

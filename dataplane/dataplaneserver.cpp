@@ -168,7 +168,7 @@ void DataPlaneServer::readyRead(int) {
 
     QString friendUid = qSql->getUidFromIP(friendIp);
     ControlPlaneConnection* cp = init->getConnection(friendUid);
-    if (friendUid == "NULL" || cp->getMode() == Closed) {
+    if (friendUid.isEmpty() || cp->getMode() == Closed) {
         qDebug() << "friendUId NOT in DB or no control plane connection!";
         SSL_shutdown(ssl);
 

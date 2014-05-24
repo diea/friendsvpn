@@ -228,8 +228,9 @@ QString BonjourSQL::getUidFromIP(QString IP) {
     } else {
         // error
         qDebug() << "No uid for ip " << IP;
-        db.close(); qryMut.unlock();
-        return "NULL";
+        db.close();
+        qryMut.unlock();
+        return QString();
     }
 }
 

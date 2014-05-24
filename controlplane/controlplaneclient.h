@@ -19,10 +19,11 @@ private:
     QSslCertificate servCert;
     QHostAddress addr;
     int port;
+    QString friendUid;
 
 public:
     ControlPlaneClient(QSslCertificate servCert, QSslKey myKey, QHostAddress addr,
-                       int port, QObject* parent = 0);
+                       int port, QString friendUid, QObject* parent = 0);
     ~ControlPlaneClient();
 private slots:
     /**
