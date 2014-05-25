@@ -95,6 +95,7 @@ void DataPlaneClient::run() {
     SSL_set_bio(ssl, bio, bio);
 
     if (SSL_connect(ssl) < 0) {
+        qDebug() << "SSL_Connect client error";
         perror("SSL_connect");
         //printf("%s\n", ERR_error_string(ERR_get_error(), buf));
         return;
