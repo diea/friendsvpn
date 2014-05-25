@@ -120,9 +120,15 @@ void ControlPlaneConnection::removeConnection() {
 bool ControlPlaneConnection::addMode(plane_mode mode, QObject *socket) {
     qDebug() << "adding mode " << mode << "controlplane";
     QSslSocket* sslSocket = dynamic_cast<QSslSocket*>(socket);
-    if (!sslSocket) return false; // needs to be of type QSslSocket!
+    if (!sslSocket) {
+        qDebug() << "add mode fail 1 controlplane";
+        return false; // needs to be of type QSslSocket!
+    }
 
-    if ((curMode == Both) || (curMode == mode)) return false;
+    if ((curMode == Both) || (curMode == mode)) {
+        qDebug() << "add mode fail 2 controlplane";
+        return false;
+    }
     if (mode == Receiving)
         serverSock = sslSocket;
     else clientSock = sslSocket;
@@ -136,6 +142,7 @@ bool ControlPlaneConnection::addMode(plane_mode mode, QObject *socket) {
     if (curMode == Both)
         this->removeConnection();
 
+    qDebug() << "returning from add mode with mode " << curMode;
     return true;
 }
 

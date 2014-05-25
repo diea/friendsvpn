@@ -17,7 +17,7 @@ void DataPlaneClient::run() {
     remote_addr.s6.sin6_len = sizeof(struct sockaddr_in6);
 #endif
     remote_addr.s6.sin6_port = htons(DATAPLANEPORT);
-
+    qDebug() << "got here";
     fd = socket(remote_addr.ss.ss_family, SOCK_DGRAM, 0);
     if (fd < 0) {
         perror("socket");
@@ -32,7 +32,7 @@ void DataPlaneClient::run() {
     local_addr.s6.sin6_port = htons(0);
     OPENSSL_assert(remote_addr.ss.ss_family == local_addr.ss.ss_family);
     bind(fd, (const struct sockaddr *) &local_addr, sizeof(struct sockaddr_in6));
-
+    qDebug() << "got here";
     OpenSSL_add_ssl_algorithms();
     //SSL_load_error_strings();
     ctx = SSL_CTX_new(DTLSv1_client_method());
@@ -41,7 +41,7 @@ void DataPlaneClient::run() {
         fprintf(stderr, "ssl_ctx fail\n");
         return;
     }
-
+    qDebug() << "got here";
     // get certificate and key from SQL & use them
     ConnectionInitiator* i = ConnectionInitiator::getInstance();
     QSslCertificate cert = i->getLocalCertificate();
@@ -57,14 +57,14 @@ void DataPlaneClient::run() {
         qWarning() << "ERROR: no certificate found!";
         return;
     }
-
+    qDebug() << "got here";
     if (x != NULL) X509_free(x);
     if (bi != NULL) BIO_free(bi);
 
     QSslKey key = i->getPrivateKey();
     QByteArray keyBytesPEM = key.toPem();
     char* keyBuffer = keyBytesPEM.data();
-
+    qDebug() << "got here";
     bi = BIO_new_mem_buf(keyBuffer, keyBytesPEM.length());
     EVP_PKEY *pkey;
     pkey = PEM_read_bio_PrivateKey(bi, NULL, NULL, NULL);
@@ -73,7 +73,7 @@ void DataPlaneClient::run() {
         qWarning() << "ERROR: no private key found!";
         return;
     }
-
+    qDebug() << "got here";
     if (pkey != NULL) EVP_PKEY_free(pkey);
     if (bi != NULL) BIO_free(bi);
 
@@ -81,7 +81,7 @@ void DataPlaneClient::run() {
         qWarning() << "ERROR: invalid private key!";
         return;
     }
-
+    qDebug() << "got here";
     SSL_CTX_set_verify_depth (ctx, 2);
     SSL_CTX_set_read_ahead(ctx, 1);
 
@@ -99,7 +99,7 @@ void DataPlaneClient::run() {
         //printf("%s\n", ERR_error_string(ERR_get_error(), buf));
         return;
     }
-
+    qDebug() << "got here";
     /* Set and activate timeouts */
     struct timeval timeout;
     timeout.tv_sec = 3;
@@ -116,7 +116,7 @@ void DataPlaneClient::run() {
         printf("\n\n Cipher: %s", SSL_CIPHER_get_name(SSL_get_current_cipher(ssl)));
         printf ("\n------------------------------------------------------------\n\n");
     }
-
+    qDebug() << "got here";
     notif = new QSocketNotifier(fd, QSocketNotifier::Read);
     connect(notif, SIGNAL(activated(int)), this, SLOT(readyRead(int)));
 

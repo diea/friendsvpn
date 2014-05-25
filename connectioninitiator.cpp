@@ -134,6 +134,7 @@ void ConnectionInitiator::startClients() {
         connect(controlPlane, SIGNAL(connected()), dcThread, SLOT(start()));
 
         // TODO delete user?
+        delete frien_d;
     }
 }
 

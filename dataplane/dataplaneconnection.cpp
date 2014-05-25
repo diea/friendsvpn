@@ -32,9 +32,12 @@ void DataPlaneConnection::removeConnection() {
 }
 
 bool DataPlaneConnection::addMode(plane_mode mode, QObject* socket) {
+    qDebug() << "locking mutex addMode";
     mutex.lock();
+    qDebug() << "passed lock";
     if ((curMode == Both) || (curMode == mode)) {
         mutex.unlock();
+        qDebug() << "addMode failed 1";
         return false;
     }
     if (mode == Receiving) {
@@ -43,6 +46,7 @@ bool DataPlaneConnection::addMode(plane_mode mode, QObject* socket) {
         if (!sslSocket) {
             qDebug() << "NOT a server worker! returing false";
             mutex.unlock();
+            qDebug() << "addMode failed 2";
             return false;
         }
         server = sslSocket;
@@ -52,6 +56,7 @@ bool DataPlaneConnection::addMode(plane_mode mode, QObject* socket) {
         DataPlaneClient* sslSocket = dynamic_cast<DataPlaneClient*>(socket);
         if (!sslSocket) {
             mutex.unlock();
+            qDebug() << "addMode failed 3ret";
             return false;
         }
         client = sslSocket;
@@ -153,6 +158,7 @@ void DataPlaneConnection::sendPacket(const char *buf, int len) {
 
 void DataPlaneConnection::disconnect() {
     qDebug() << "Disconnect dataplane!";
+    mutex.lock();
     if (curMode == Both) {
         client->stop();
         server->stop();
@@ -166,7 +172,7 @@ void DataPlaneConnection::disconnect() {
             client->stop();
         }
     }
-
+    mutex.unlock();
     qDebug() << "releasing client proxys";
     while (!clientProxys.empty()) {
         Proxy* c = clientProxys.pop();
