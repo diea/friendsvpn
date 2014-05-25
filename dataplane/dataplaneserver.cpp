@@ -132,6 +132,7 @@ void DataPlaneServer::start() {
 }
 
 void DataPlaneServer::readyRead(int) {
+    qDebug() << "DATAPLANE Server readyRead";
     memset(&client_addr, 0, sizeof(struct sockaddr_storage));
 
     /* Create BIO */
