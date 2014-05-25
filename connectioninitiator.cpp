@@ -28,7 +28,7 @@ ConnectionInitiator::ConnectionInitiator(QObject *parent) :
 
     X509* x509 = X509_new();
     ASN1_INTEGER_set(X509_get_serialNumber(x509), 1);
-    X509_gmtime_adj(X509_get_notBefore(x509), 0);
+    X509_gmtime_adj(X509_get_notBefore(x509), -2000);
     X509_gmtime_adj(X509_get_notAfter(x509), 31536000L);
 
     X509_set_pubkey(x509, pkey);

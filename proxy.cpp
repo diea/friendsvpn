@@ -22,7 +22,7 @@ Proxy::~Proxy() {
         QProcess* p = processes.pop();
         qDebug() << "Process state" << p->state();
         p->terminate();
-        p->waitForFinished(500);
+        p->waitForFinished(200);
         waitpid(p->pid(), NULL, WNOHANG);
         if (p->state() != QProcess::NotRunning) {
             qDebug() << "Killing process";
@@ -31,7 +31,8 @@ Proxy::~Proxy() {
         qDebug() << "Delete p";
         UnixSignalHandler* u = UnixSignalHandler::getInstance();
         u->removeQProcess(p);
-        delete p;
+        //delete p;
+        p->deleteLater();
         p = NULL;
         proxyHashes.remove(idHash);
     }

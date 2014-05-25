@@ -236,6 +236,7 @@ void ControlPlaneConnection::readBuffer(const char* buf, int len) {
                     newProxy->run();
                 } catch (int i) {
                     // proxy exists
+                    qDebug() << "proxy exists!";
                 }
             } else if (packetType == "PING") {
                 QString pong = "PONG\r\n\r\n";

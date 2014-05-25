@@ -23,9 +23,8 @@ ProxyClient::ProxyClient(QByteArray md5, QByteArray servermd5,  QString serversr
 
 void ProxyClient::run() {
     run_pcap();
-    // I am a client so I know the dstIp is the server
-    // I change the dstPort to the one from the server
-    // I use listenPort which may be different than original port if bind has failed
+
+    // proxy clients timeout, connect QTimer
     connect(&timer, SIGNAL(timeout()), this, SLOT(timeout()));
     timer.start(PROXYCLIENT_TIMEOUT); // timeout after 10seconds
 }
@@ -36,7 +35,7 @@ void ProxyClient::sendBytes(const char *buf, int len, QString) {
     qDebug() << "Client sending bytes to " << serverRecord->ips.at(0);
     timer.start(PROXYCLIENT_TIMEOUT); // restart timer
 
-    // the srcPort is changed in the helper :)
+    // the srcPort is changed in the helper
     rawSocks->writeBytes(listenIp, serverRecord->ips.at(0), port, buf, sockType, len);
 }
 
