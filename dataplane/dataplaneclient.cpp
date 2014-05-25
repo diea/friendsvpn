@@ -116,7 +116,8 @@ void DataPlaneClient::run() {
         printf("\n\n Cipher: %s", SSL_CIPHER_get_name(SSL_get_current_cipher(ssl)));
         printf ("\n------------------------------------------------------------\n\n");
     }
-    qDebug() << "got here";
+    fflush(stdout);
+    qDebug() << "new qsocket";
     notif = new QSocketNotifier(fd, QSocketNotifier::Read);
     connect(notif, SIGNAL(activated(int)), this, SLOT(readyRead(int)));
 
