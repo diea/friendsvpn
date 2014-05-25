@@ -86,14 +86,14 @@ void DataPlaneClient::run() {
     SSL_CTX_set_read_ahead(ctx, 1);
 
     ssl = SSL_new(ctx);
-
+    qDebug() << "got here89";
     /* Create BIO, connect and set to already connected */
     bio = BIO_new_dgram(fd, BIO_CLOSE);
     ::connect(fd, (struct sockaddr *) &remote_addr, sizeof(struct sockaddr_in6));
     BIO_ctrl(bio, BIO_CTRL_DGRAM_SET_CONNECTED, 0, &remote_addr.ss);
-
+    qDebug() << "got here94";
     SSL_set_bio(ssl, bio, bio);
-
+    qDebug() << "got here96";
     if (SSL_connect(ssl) < 0) {
         qDebug() << "SSL_Connect client error";
         perror("SSL_connect");
