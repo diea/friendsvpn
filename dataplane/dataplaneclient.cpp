@@ -81,7 +81,7 @@ void DataPlaneClient::run() {
         qWarning() << "ERROR: invalid private key!";
         return;
     }
-    qDebug() << "got here";
+    qDebug() << "got here84";
     SSL_CTX_set_verify_depth (ctx, 2);
     SSL_CTX_set_read_ahead(ctx, 1);
 
@@ -100,7 +100,7 @@ void DataPlaneClient::run() {
         //printf("%s\n", ERR_error_string(ERR_get_error(), buf));
         return;
     }
-    qDebug() << "got here";
+    qDebug() << "got here103";
     /* Set and activate timeouts */
     struct timeval timeout;
     timeout.tv_sec = 3;
