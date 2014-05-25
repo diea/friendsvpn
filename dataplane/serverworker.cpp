@@ -70,7 +70,8 @@ void ServerWorker::readyRead(int) {
         switch (SSL_get_error(ssl, len)) {
             case SSL_ERROR_NONE:
             qDebug() << "server worker read" << len << "bytes";
-             emit bufferReady(buf, len);
+             con->readBuffer(buf, len);
+             //emit bufferReady(buf, len);
              break;
             case SSL_ERROR_WANT_READ:
              /* Handle socket timeouts */

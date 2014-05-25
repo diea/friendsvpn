@@ -131,7 +131,8 @@ void DataPlaneClient::readyRead(int fd) {
 
         switch (SSL_get_error(ssl, len)) {
             case SSL_ERROR_NONE:
-             emit bufferReady(buf, len);
+             con->readBuffer(buf, len);
+             //emit bufferReady(buf, len);
              break;
             case SSL_ERROR_WANT_READ:
              /* Handle socket timeouts */

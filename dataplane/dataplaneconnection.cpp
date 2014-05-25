@@ -110,10 +110,6 @@ void DataPlaneConnection::readBuffer(const char* buf, int len) {
 }
 
 void DataPlaneConnection::sendBytes(const char *buf, int len, QByteArray& hash, int sockType, QString& srcIp) {
-    if (curMode == Closed) {
-        qWarning() << "Trying to sendBytes on Closed state for uid" << friendUid;
-    }
-
     if (time(NULL) - lastRcvdTimestamp > 60) {
         // is distant host still alive ?
         // get controlplaneconnection and ask it
@@ -141,7 +137,9 @@ void DataPlaneConnection::sendBytes(const char *buf, int len, QByteArray& hash, 
 
 void DataPlaneConnection::sendPacket(const char *buf, int len) {
     mutex.lock();
-    if (curMode == Emitting) {
+    if (curMode == Closed) {
+        qWarning() << "Trying to sendBytes on Closed state for uid" << friendUid;
+    } else if (curMode == Emitting) {
         qDebug() << "Send bytes as dataplane client";
         client->sendBytes(buf, len);
     } else if (curMode == Receiving) {

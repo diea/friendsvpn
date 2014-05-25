@@ -16,7 +16,7 @@ char* ip6tablesRule = NULL;
 void sig_handler(int signal) {
     /* used on linux to delete the ip6tables rule */
     if (!ip6tablesRule) {
-        exit(-1);
+        exit(0);
     }
 
     ip6tablesRule[11] = 'D'; // replace append by 'D' for delete in the command
@@ -66,13 +66,7 @@ int main(int argc, char** argv) {
         }
         return 3;
     }
-#ifndef __APPLE__ /* linux */
-    /* on linux the "bind" trick does not work due to bind's implementation needing a "listen"
-     * to accept connections, we will thus prevent the kernel from sending its RST using an ip6tables
-     * rule
-     * we still bind on linux to avoid the ICMPv6 address unreachable message if we begin sending packets using this new
-     * IPv6 too quickly
-     */
+
     struct sigaction sa;
     sa.sa_handler = &sig_handler;
     sa.sa_flags = SA_RESTART;
@@ -81,6 +75,14 @@ int main(int argc, char** argv) {
         fprintf(stderr, "Cannot handle SIGINT or SIGTERM!\n");
         return 4;
     }
+
+#ifndef __APPLE__ /* linux */
+    /* on linux the "bind" trick does not work due to bind's implementation needing a "listen"
+     * to accept connections, we will thus prevent the kernel from sending its RST using an ip6tables
+     * rule
+     * we still bind on linux to avoid the ICMPv6 address unreachable message if we begin sending packets using this new
+     * IPv6 too quickly
+     */
 
     ip6tablesRule = malloc(400 * sizeof(char));
     sprintf(ip6tablesRule, "ip6tables -A OUTPUT -s %s -p tcp --sport %s --tcp-flags RST RST -j DROP", argv[4], argv[3]);
