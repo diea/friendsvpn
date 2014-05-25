@@ -82,7 +82,7 @@ void DataPlaneClient::run() {
         return;
     }
     qDebug() << "got here84";
-    SSL_CTX_set_verify_depth (ctx, 2);
+    //SSL_CTX_set_verify_depth (ctx, 2);
     SSL_CTX_set_read_ahead(ctx, 1);
 
     ssl = SSL_new(ctx);
