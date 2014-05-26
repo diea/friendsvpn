@@ -1,0 +1,15 @@
+#!/bin/sh
+
+cd helpers
+gcc ifconfighelp.c -o ifconfighelp
+gcc pcapListen.c -o pcapListen -lpcap
+gcc sendRaw.c -o sendRaw -lpcap
+gcc icmpReqMac.c raw_structs.c -o reqIp -lpcap
+gcc newSocket.c -o newSocket
+
+echo "Please provide root password for setting the setuid bit to the helpers, thank you"
+
+sudo chown root:wheel pcapListen sendRaw ifconfighelp reqIp
+sudo chmod u+s pcapListen sendRaw ifconfighelp reqIp
+
+cd ..
