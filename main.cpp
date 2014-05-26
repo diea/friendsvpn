@@ -15,7 +15,9 @@
 #include "unixsignalhandler.h"
 #include "ipresolver.h"
 #include <QDebug>
+#if QT_VERSION >= 0x50000 
 #include <QtConcurrent>
+#endif
 
 int main(int argc, char *argv[])
 {
