@@ -43,14 +43,10 @@ int main(int argc,const char* argv[]) {
 
     while (1) {
         struct rawComHeader header;
-        printf("rawComHeader size is %d\n", sizeof(struct rawComHeader));
-        uint32_t payloadlen = 44;
-        print_bytes(&payloadlen, sizeof(uint32_t));
         int res = fread(&header, sizeof(struct rawComHeader), 1, stdin);
         if (res == 0) {
             exit(4);
         }
-        printf("Packet size is %d\n", header.payload_len);
         void* packet = malloc(header.payload_len);
 
         size_t linkHeaderSize;

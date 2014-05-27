@@ -47,11 +47,9 @@ int main(int argc,const char* argv[]) {
     }
     ip6.ip6_dst = ((struct sockaddr_in6 *) res->ai_addr)->sin6_addr;
 
-    printf("ipv6 constructed!\n");
 
     // Construct icmpv6req message
     struct icmpv6_req nreq;
-    printf("size of icmpv6_req %d\n", sizeof(nreq));
     memset(&nreq, 0, sizeof(nreq)); // set all to 0
 
     nreq.type = 128;
@@ -64,7 +62,8 @@ int main(int argc,const char* argv[]) {
     header.ether_type=htons(ETH_IPV6);
     char *token = NULL;
     int i = 0;
-    while (((token = strsep(&argv[3], ":")) != NULL) && (i < 6)) {
+    char* macArg = argv[3];
+    while (((token = strsep(&macArg, ":")) != NULL) && (i < 6)) {
         header.ether_dhost[i] = strtoul(token, NULL, 16);
         i++;
     }

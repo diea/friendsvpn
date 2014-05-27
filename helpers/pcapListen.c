@@ -36,7 +36,7 @@ void got_packet(u_char* args, const struct pcap_pkthdr *header, const u_char *pa
     const struct ether_header *ethernet;  /* The ethernet header */
     const struct ipv6hdr *ip;              /* The IP header */
     const struct sniff_tcp *tcp;            /* The TCP header */
-    const char *payload;                    /* Packet payload */
+    const u_char *payload;                    /* Packet payload */
 
     char ipSrcStr[INET6_ADDRSTRLEN];
     char sourceMacStr[18];
