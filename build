@@ -39,6 +39,7 @@ cd ..
 qmake
 make
 cd helpers
+rm -f ifconfighelp pcapListen sendRaw reqIp newSocket
 gcc ifconfighelp.c -o ifconfighelp
 gcc pcapListen.c -o pcapListen -lpcap
 gcc sendRaw.c -o sendRaw -lpcap

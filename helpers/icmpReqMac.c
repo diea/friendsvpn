@@ -23,7 +23,6 @@ int main(int argc,const char* argv[]) {
 
     // Construct IPv6 Packet
     struct ipv6hdr ip6;
-    printf("sizeof ip6 %d\n", sizeof(ip6));
     memset(&ip6, 0, sizeof(ip6)); // set all to 0
     ip6.ip6_vfc = 6 << 4;
     ip6.ip6_nxt = SOL_ICMPV6;
@@ -62,7 +61,8 @@ int main(int argc,const char* argv[]) {
     header.ether_type=htons(ETH_IPV6);
     char *token = NULL;
     int i = 0;
-    char* macArg = argv[3];
+    char macArg[60];
+    strncpy(macArg, argv[3], 60);
     while (((token = strsep(&macArg, ":")) != NULL) && (i < 6)) {
         header.ether_dhost[i] = strtoul(token, NULL, 16);
         i++;
