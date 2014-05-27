@@ -52,7 +52,7 @@ void BonjourSQL::uidOK() {
     while (uid == NULL) {
 #ifdef __APPLE__
         QMessageBox msgBox;
-        msgBox.setText("Your facebook ID was not determined, could you refresh the facebook page and click retry ?");
+        msgBox.setText("Make sure the facebook application is open and retry (it may take a few seconds before your ID can be determined)");
         msgBox.setStandardButtons(QMessageBox::Retry | QMessageBox::Abort);
         msgBox.setDefaultButton(QMessageBox::Retry);
         int ret = msgBox.exec();
