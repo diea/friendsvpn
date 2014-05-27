@@ -61,7 +61,7 @@ int main(int argc,const char* argv[]) {
     header.ether_type=htons(ETH_IPV6);
     char *token = NULL;
     int i = 0;
-    char macArg[60];
+    char* macArg = malloc(sizeof(char) * 60);
     strncpy(macArg, argv[3], 60);
     while (((token = strsep(&macArg, ":")) != NULL) && (i < 6)) {
         header.ether_dhost[i] = strtoul(token, NULL, 16);
