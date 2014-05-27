@@ -39,7 +39,7 @@ void ProxyClient::sendBytes(const char *buf, int len, QString) {
     rawSocks->writeBytes(listenIp, serverRecord->ips.at(0), port, buf, sockType, len);
 }
 
-void ProxyClient::receiveBytes(const char* buf, int len, int sockType, QString& srcIp) {
+void ProxyClient::receiveBytes(const char* buf, int len, int sockType, QString&) {
     qDebug() << "client sending bytes with srcIp" << serversrcIp;
     con->sendBytes(buf, len, servermd5, sockType, serversrcIp);
 }

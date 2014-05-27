@@ -43,10 +43,10 @@ void BonjourDiscoverer::discoverServices() {
     }
 }
 
-void BonjourDiscoverer::reply(DNSServiceRef dnsref, DNSServiceFlags flags,
+void BonjourDiscoverer::reply(DNSServiceRef, DNSServiceFlags flags,
                          quint32 , DNSServiceErrorType errorCode,
                          const char *serviceName, const char *regType,
-                         const char *replyDomain, void *context) {
+                         const char *, void *context) {
     BonjourDiscoverer *serviceBrowser = static_cast<BonjourDiscoverer *>(context);
     if (errorCode != kDNSServiceErr_NoError) {
         emit serviceBrowser->error(errorCode);

@@ -27,7 +27,7 @@ char * my_strnstr(const char *s, const char *find, size_t slen) {
  * @brief strrstr inverse of strnstr, returns the last occurence of find in string
  * from stackoverflow.com/questions/1634359/is-there-a-reverse-fn-for-strstr
  */
-char * strrstr(char *string, char *find, size_t len) {
+char * strrstr(char *string, const char *find, size_t len) {
   char *cp;
   for (cp = string + len - 4; cp >= string; cp--)
   {

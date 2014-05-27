@@ -196,7 +196,7 @@ void DataPlaneServer::readyRead(int) {
     qDebug() << "Worked thread done";
 }
 
-int DataPlaneServer::dtls_verify_callback(int ok, X509_STORE_CTX *ctx) {
+int DataPlaneServer::dtls_verify_callback(int, X509_STORE_CTX *) {
     /* This function should ask the user
      * if he trusts the received certificate.
      * Here we always trust.

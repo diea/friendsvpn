@@ -84,7 +84,7 @@ void BonjourRegistrar::registerService(const BonjourRecord &record) {
 #endif
 }
 
-void BonjourRegistrar::registerRecordCallback(DNSServiceRef service, DNSRecordRef rec, const DNSServiceFlags flags,
+void BonjourRegistrar::registerRecordCallback(DNSServiceRef, DNSRecordRef, const DNSServiceFlags flags,
                                               DNSServiceErrorType errorCode, void *context) {
     qDebug() << "Callback!";
     BonjourRegistrar* registrar = static_cast<BonjourRegistrar*>(context);

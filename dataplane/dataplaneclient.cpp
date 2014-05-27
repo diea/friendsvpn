@@ -125,7 +125,7 @@ void DataPlaneClient::run() {
     con->addMode(Emitting, this);
 }
 
-void DataPlaneClient::readyRead(int fd) {
+void DataPlaneClient::readyRead(int) {
     qDebug() << "ready read client";
     size_t len;
     if (!(SSL_get_shutdown(ssl) & SSL_RECEIVED_SHUTDOWN)) {
