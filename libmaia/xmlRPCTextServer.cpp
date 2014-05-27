@@ -52,11 +52,7 @@ void XmlRPCTextServer::getMethod(QString method, QObject **responseObject, const
 }
 
 void XmlRPCTextServer::newConnection(QString xmlString) {
-	//qDebug() << "new connection !";
-	XmlRPCParser* parser = new XmlRPCParser(this);
-	//qDebug() << "new xml rpc !";
+	XmlRPCParser parser(this);
 	connect(parser, SIGNAL(getMethod(QString, QObject **, const char**)), this, SLOT(getMethod(QString, QObject **, const char**)));
-	//qDebug() << "Starting parse";
 	parser->readFromString(xmlString);
-	//delete parser;
 }

@@ -6,7 +6,6 @@
 #include "xmlRPCTextServer.h"
 
 XmlRPCParser::XmlRPCParser(QObject* parent) : QObject(parent) {
-	qDebug() << "yeay new xmlrpc parser";
 	header = NULL;
 	textStream = NULL;
 }
@@ -18,10 +17,7 @@ XmlRPCParser::~XmlRPCParser() {
 
 void XmlRPCParser::readFromString(QString xmlrpc) {
 	textStream = new QTextStream(&xmlrpc);
-	//qDebug() << "In XMLRPCParser::";
-	//qDebug() << xmlrpc;
 	QString lastLine = textStream->readLine();
-	//qDebug() << "begin loop" << lastLine;
 	while((!lastLine.isNull()) && !header) {
 		headerString += lastLine + "\r\n";
 		qDebug() << lastLine;
@@ -52,27 +48,14 @@ void XmlRPCParser::readFromString(QString xmlrpc) {
 		leftOver += lastLine + "\r\n";
 	}
 
-	//qDebug() << "out of loop";
 	if (header) {
-		//qDebug("got header OK");
 		/* all data complete */
 		parseCall(leftOver);
-		//parseCall(textStream->readAll());
     }
 }
 
 void XmlRPCParser::sendResponse(QString content) {
 	// XXX Use this if response needed, wait & see.
-
-	/*QHttpResponseHeader header(200, "Ok");
-	QByteArray block;
-	header.setValue("Server", "MaiaXmlRpc/0.1");
-	header.setValue("Content-Type", "text/xml");
-	header.setValue("Connection","close");
-	block.append(header.toString().toUtf8());
-	block.append(content.toUtf8());
-	clientConnection->write(block);
-	clientConnection->disconnectFromHost();*/
 }
 
 void XmlRPCParser::parseCall(QString call) {
@@ -82,8 +65,6 @@ void XmlRPCParser::parseCall(QString call) {
 	QString response;
 	QObject *responseObject;
 	const char *responseSlot;
-	
-	//qDebug() << "parse Call " << call;
 
 	if(!doc.setContent(call)) { /* recieved invalid xml */
 		MaiaFault fault(-32700, "parse error: not well formed");
@@ -114,7 +95,6 @@ void XmlRPCParser::parseCall(QString call) {
 		paramNode = paramNode.nextSibling();
 	}
 	
-	//qDebug() << "Invoking method with variants";
 	if(!invokeMethodWithVariants(responseObject, responseSlot, args, &ret)) { /* error invoking... */
 		MaiaFault fault(-32602, "server error: invalid method parameters");
 		sendResponse(fault.toString());
@@ -162,12 +142,9 @@ bool XmlRPCParser::invokeMethodWithVariants(QObject *obj,
 	QGenericReturnArgument retarg;
 	QVariant retval;
 	if(metatype != 0) {
-		//qDebug() << "retval";
 		retval = QVariant(metatype, (const void *)0);
-		//qDebug() << "retarg";
 		retarg = QGenericReturnArgument(retval.typeName(), retval.data());
 	} else { /* QVariant */
-		//qDebug() << "retarg solo";
 		retarg = QGenericReturnArgument("QVariant", &retval);
 	}
 
