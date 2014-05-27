@@ -1,0 +1,50 @@
+#!/bin/sh
+
+sslVersion=$(openssl version)
+
+if [[ $sslVersion != "OpenSSL 1.0.1g"* ]]
+then
+	echo "OpenSSL 1.0.1g or newer is required for the DTLS server to be able to function and it was not detected on your system"
+	echo "Your version is :" $sslVersion
+	echo "The application will still work but you will only be able to make outbound connections to your friends"
+	read -p "Would you like to download the openssl 1.0.1g library for the application to use ? (Requires wget and tar command) [y/n] " -n 1
+	echo
+	if [[ $REPLY =~ ^[Yy]$ ]]; then
+	    wget https://www.openssl.org/source/openssl-1.0.1g.tar.gz --no-check-certificate
+	    tar -xvf openssl-1.0.1g.tar.gz
+	    cd openssl-1.0.1g
+	    unamestr=$(uname)
+	    if [[ $unamestr == "Darwin" ]]; then
+			./Configure darwin64-x86_64-cc
+		else
+			./config
+		fi
+		make
+		cd ..
+		cp friendsvpn.1.0.1gssl friendsvpn.pro
+	else
+		cp friendsvpn.localssl friendsvpn.pro
+	fi
+else
+	cp friendsvpn.localssl friendsvpn.pro
+fi
+
+cd libmaia
+qmake
+make
+cd ..
+qmake
+make
+cd helpers
+gcc ifconfighelp.c -o ifconfighelp
+gcc pcapListen.c -o pcapListen -lpcap
+gcc sendRaw.c -o sendRaw -lpcap
+gcc icmpReqMac.c raw_structs.c -o reqIp -lpcap
+gcc newSocket.c -o newSocket
+
+echo "Please provide root password for setting the setuid bit to the helpers, thank you"
+
+sudo chown root:wheel pcapListen sendRaw ifconfighelp reqIp
+sudo chmod u+s pcapListen sendRaw ifconfighelp reqIp
+
+cd ..
