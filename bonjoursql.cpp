@@ -176,7 +176,24 @@ QList< User* > BonjourSQL::getFriends() {
 
         list.append(new User(uid, ipv6, cert));
     }
-    db.close(); qryMut.unlock();
+
+    // also get users that shared something to me
+    query.prepare("SELECT uid, ipv6, certificate FROM User WHERE uid IN (SELECT Record_Service_User_uid as "
+                  "uid FROM Authorized_user WHERE id = ? AND Record_Service_User_uid != ?)");
+    query.bindValue(0, uid);
+    query.bindValue(1, uid);
+    query.exec();
+
+    while (query.next()) {
+        QString* uid = new QString(query.value(0).toString());
+        QString* ipv6 = new QString(query.value(1).toString());
+        QSslCertificate* cert = new QSslCertificate(query.value(2).toByteArray(), QSsl::Pem);
+
+        list.append(new User(uid, ipv6, cert));
+    }
+
+    db.close();
+    qryMut.unlock();
     return list;
 }
 
