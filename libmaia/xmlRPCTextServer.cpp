@@ -53,6 +53,6 @@ void XmlRPCTextServer::getMethod(QString method, QObject **responseObject, const
 
 void XmlRPCTextServer::newConnection(QString xmlString) {
 	XmlRPCParser parser(this);
-	connect(parser, SIGNAL(getMethod(QString, QObject **, const char**)), this, SLOT(getMethod(QString, QObject **, const char**)));
-	parser->readFromString(xmlString);
+	connect(&parser, SIGNAL(getMethod(QString, QObject **, const char**)), this, SLOT(getMethod(QString, QObject **, const char**)));
+	parser.readFromString(xmlString);
 }
