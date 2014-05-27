@@ -1,8 +1,9 @@
-PRE-REQUISITSES
+PREREQUISITES
 This application needs mysql and Qt5 or higher to be installed.
 
 Make sure that the command qmake is in your PATH.
 
 On OSX you can check that your Qt sql plugin points to the right sql library file by using otool -L libqsqlmysql.dylib in ~/Qt5.2.1/5.2.1/clang_64/plugins/sqldrivers/ (replace by your Qt version and path).
 
+INSTALL
 To build the application use the script "build" by launching with the command ./build from within this folder.

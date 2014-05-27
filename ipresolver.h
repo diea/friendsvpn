@@ -51,11 +51,6 @@ public:
      * @return
      */
     static QString getDefaultInterface();
-
-signals:
-
-public slots:
-
 };
 
 #endif // IPRESOLVER_H
