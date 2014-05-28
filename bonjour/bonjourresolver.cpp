@@ -63,8 +63,6 @@ void BonjourResolver::resolveReply(DNSServiceRef , //sdRef
             record->txt = QByteArray(textRecord, txtLen); //QString::fromUtf8(textRecord, txtLen);
             free(textRecord);
         }
-        qDebug() << "TXT";
-        qDebug() << txtRecord;
         record->port = port;
         QHostInfo::lookupHost(QString::fromUtf8(hosttarget), resolver,
                               SLOT(hostInfoReady(const QHostInfo &)));
@@ -89,7 +87,7 @@ void BonjourResolver::hostInfoReady(const QHostInfo &info) {
             v4.append(adr.toString());
         }
     }
-
+#if 0
     qDebug() << "Going to test v6.empty";
     if (v6.empty() && !v4.empty()) { // QHostInfo was not able to fetch ipv6
         // check that v4 ip is not a local one
@@ -217,7 +215,7 @@ void BonjourResolver::hostInfoReady(const QHostInfo &info) {
             }
         }
     }
-
+#endif
     record->ips = v6;
 
     if (v6.empty()) {
@@ -257,7 +255,8 @@ void BonjourResolver::hostInfoReady(const QHostInfo &info) {
     qSql->insertService(serviceName, transProt);
     qSql->insertDevice(record->hostname, record->port, serviceName, transProt, record->serviceName);
     emit resolved(record);
-    this->deleteLater();
+
+    //this->deleteLater();
 
     /*qDebug() << "REGISTERING";
     if (record->txt.contains("\r\n")) {

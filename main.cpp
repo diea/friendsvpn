@@ -49,7 +49,6 @@ int main(int argc, char *argv[])
     QObject::connect(u, SIGNAL(exiting()), &pollerThread, SLOT(quit()));
     pollerThread.start();
 
-
     // get uid from app
     qSql->uidOK();
 

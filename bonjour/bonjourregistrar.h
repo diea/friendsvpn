@@ -5,7 +5,12 @@
 
 #include <QObject>
 #include <QSocketNotifier>
-
+/**
+ * @brief The BonjourRegistrar class can be used to register as service. As long as this class is not
+ * destroyed the service will be registered.
+ * Note that you have to call the resgisterService method to register a service, otherwise the
+ * instantiated object will do nothing.
+ */
 class BonjourRegistrar : public QObject
 {
     Q_OBJECT

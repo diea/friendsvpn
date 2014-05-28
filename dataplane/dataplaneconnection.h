@@ -13,6 +13,9 @@
 
 class ProxyClient;
 
+/**
+ * @brief The dpHeader struct is the PH2PHTP data plane custom header.
+ */
 struct dpHeader {
     quint8 sockType;
     quint8 empty;
@@ -21,6 +24,9 @@ struct dpHeader {
     struct in6_addr srcIp;
 } __attribute__((__packed__));
 
+/**
+ * @brief The DataPlaneConnection class
+ */
 class DataPlaneConnection : public AbstractPlaneConnection
 {
     Q_OBJECT

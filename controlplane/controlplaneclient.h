@@ -9,6 +9,11 @@
 #include "sslsocket.h"
 class ConnectionInitiator;
 
+/**
+ * @brief The ControlPlaneClient class is used to make outgoing control plane connections.
+ * The method run has to be called for the connection to be made, this enables to launch this
+ * method inside a new QThread.
+ */
 class ControlPlaneClient: public QObject
 {
     Q_OBJECT

@@ -14,7 +14,10 @@
 #include "controlplaneconnection.h"
 
 class ConnectionInitiator;
-
+/**
+ * @brief The ControlPlaneServer class receives incoming control plane connections. It will instantiate
+ * a new SslSocket for each incoming connection.
+ */
 class ControlPlaneServer : public QObject
 {
     Q_OBJECT
@@ -31,7 +34,6 @@ public:
     explicit ControlPlaneServer(QSslCertificate servCert, QSslKey myKey,
                                 QHostAddress listenAdr, int listenPort, QObject *parent = 0);
     ~ControlPlaneServer();
-    // TODO destructor
 signals:
 
 public slots:

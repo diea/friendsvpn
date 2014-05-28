@@ -15,7 +15,10 @@
 #include <unistd.h>
 
 class DataPlaneConnection;
-
+/**
+ * @brief The DataPlaneClient class is a wrapper for openSSL functions to make an outgoing
+ * dataplane connection.
+ */
 class DataPlaneClient : public QObject
 {
     Q_OBJECT
@@ -49,11 +52,13 @@ public:
      *             ONLY First IP in Qlist will be used!
      * @param parent
      */
-    ~DataPlaneClient();
     explicit DataPlaneClient(QHostAddress ip, DataPlaneConnection* con, QObject *parent = 0);
+    ~DataPlaneClient();
 
     void sendBytes(const char* bytes, socklen_t len);
-
+    /**
+     * @brief stop closes the connection and releases resources
+     */
     void stop();
 signals:
     void bufferReady(const char* buf, int len);

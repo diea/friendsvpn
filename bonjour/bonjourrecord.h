@@ -41,7 +41,7 @@ public:
     : serviceName(name), registeredType(regType), replyDomain(domain), hostname(hostname), ips(ips),
       port(port), txt(txt)
     {
-        resolved = true;
+        resolved = true; // since we give all attributes, set the resolved bool to true
     }
 
     bool operator==(const BonjourRecord &other) const {

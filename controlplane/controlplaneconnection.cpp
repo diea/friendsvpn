@@ -211,8 +211,7 @@ void ControlPlaneConnection::readBuffer(const char* buf, int len) {
                     gotHello = true;
                 }
             }
-        }
-        if (gotHello) {
+        } else if (gotHello) {
             if (packetType == "BONJOUR") {
                 QString hostname;
                 QString name;
@@ -275,7 +274,6 @@ void ControlPlaneConnection::readBuffer(const char* buf, int len) {
 
 void ControlPlaneConnection::sendBonjour() {
     // get bonjour records from db & send them over the connection
-    //qDebug() << "fetching records for " << this->friendUid;
     QList < BonjourRecord* > records = qSql->getRecordsFor(this->friendUid);
     qDebug() << "Retrieved " << records.length() << " records!";
     foreach (BonjourRecord* rec, records) {  

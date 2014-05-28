@@ -7,6 +7,10 @@
 #include "proxyserver.h"
 
 class SslSocket;
+/**
+ * @brief The ControlPlaneConnection class extends the AbstractPlaneConnection and will handle
+ * a ControlPlaneConnection with a friend as per PH2PHTP.
+ */
 class ControlPlaneConnection : public AbstractPlaneConnection
 {
     Q_OBJECT
