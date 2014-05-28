@@ -8,7 +8,7 @@ ProxyServer::~ProxyServer() {
 }
 
 ProxyServer::ProxyServer(const QString &friendUid, const QString &name, const QString &regType, const QString &domain,
-                       const QString &hostname, const QString& txt, quint16 port, const QByteArray& md5) : Proxy(port, regType, md5)
+                       const QString &hostname, const QByteArray& txt, quint16 port, const QByteArray& md5) : Proxy(port, regType, md5)
 {
     QString newip = listenIp;
     // create bonjour rec with new IP

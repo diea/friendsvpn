@@ -61,13 +61,19 @@ void BonjourRegistrar::registerService(const BonjourRecord &record) {
     bigEndianPort = ((record.port & 0x00ff) << 8)
                   | ((record.port & 0xff00) >> 8);
     #endif
+
+    QByteArray txtBytes = record.txt;
+    char* txtChar = txtBytes.data();
+    unsigned char txtRecord[txtBytes.length()];
+    memcpy(&txtRecord, txtChar, txtBytes.length());
+
     err = DNSServiceRegister(&dnssref,
           0, 0, record.serviceName.toUtf8().constData(),
           record.registeredType.toUtf8().constData(),
           record.replyDomain.isEmpty() ? 0
                     : record.replyDomain.toUtf8().constData(),
           QString(record.hostname + "." + record.replyDomain).toUtf8().data(), bigEndianPort,
-                             record.txt.toUtf8().length(), record.txt.toUtf8().data(), bonjourRegisterService,
+                             record.txt.length(), txtRecord, bonjourRegisterService,
           this);
     if (err != kDNSServiceErr_NoError) {
         emit error(err);

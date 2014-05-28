@@ -32,7 +32,9 @@ Proxy::~Proxy() {
         UnixSignalHandler* u = UnixSignalHandler::getInstance();
         u->removeQProcess(p);
         //delete p;
-        p->deleteLater();
+        if (p) {
+            p->deleteLater();
+        }
         p = NULL;
         proxyHashes.remove(idHash);
     }

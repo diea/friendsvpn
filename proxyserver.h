@@ -19,7 +19,7 @@ private:
 
 public:
     explicit ProxyServer(const QString &friendUid, const QString &name, const QString &regType, const QString &domain,
-                        const QString &hostname, const QString& txt, quint16 port, const QByteArray& md5);
+                        const QString &hostname, const QByteArray& txt, quint16 port, const QByteArray& md5);
     ~ProxyServer();
     void receiveBytes(const char* buf, int len, int sockType, QString& srcIp);
 

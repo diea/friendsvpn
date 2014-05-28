@@ -150,6 +150,10 @@ bool ControlPlaneConnection::addMode(plane_mode mode, QObject *socket) {
 
 void ControlPlaneConnection::readBuffer(const char* buf, int len) {
     memcpy(inputBuffer + bytesReceived, buf, len); // copy incoming buffer
+    qDebug() << "Received BONJOUR buffer";
+    qDebug() << inputBuffer;
+    qDebug() << "full input buffer";
+    qDebug() << QString::fromUtf8(buf, len);
     if (len > 0) {
         bytesReceived += len;
         if ((inputBuffer[bytesReceived - 1] == '\n') && (inputBuffer[bytesReceived - 2] == '\r')
@@ -241,7 +245,7 @@ void ControlPlaneConnection::readBuffer(const char* buf, int len) {
                 qDebug() << "Running new proxy!!";
                 ProxyServer* newProxy = NULL;
                 try {
-                    newProxy = new ProxyServer(friendUid, name, type, "", hostname, txt, port, QByteArray::fromHex(md5.toUtf8()));
+                    newProxy = new ProxyServer(friendUid, name, type, "", hostname, QByteArray::fromHex(txt.toUtf8()), port, QByteArray::fromHex(md5.toUtf8()));
                     proxyServers.push(newProxy);
                     newProxy->run();
                 } catch (int i) {
@@ -285,7 +289,7 @@ void ControlPlaneConnection::sendBonjour() {
                  % "MD5:" % rec->md5.toHex() % "\r\n";
 
         if (!rec->txt.isEmpty()) {
-            packet = packet % "TXT:" % rec->txt % "\r\n";
+            packet = packet % "TXT:" % rec->txt.toHex() % "\r\n";
         }
 
         packet = packet % "\r\n";
