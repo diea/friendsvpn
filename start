@@ -1,2 +1,3 @@
 #!/bin/sh
+sudo killall pcapListen
 ./friendsvpn.app/Contents/MacOS/friendsvpn
