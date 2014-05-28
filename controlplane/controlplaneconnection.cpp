@@ -214,20 +214,21 @@ void ControlPlaneConnection::readBuffer(const char* buf, int len) {
                 QString type;
                 int port = 0;
                 QString md5;
+                QString txt;
                 for (int i = 1; i < list.length(); i++) {
-                    QStringList keyValuePair = list.at(i).split(":");
-                    QString key = keyValuePair.at(0);
-                    qDebug() << "key" << key;
-                    if (key == "Hostname") {
-                        hostname = keyValuePair.at(1);
-                    } else if (key == "Name") {
-                        name = keyValuePair.at(1);
-                    } else if (key == "Type") {
-                        type = keyValuePair.at(1);
-                    } else if (key == "Port") {
-                        port = keyValuePair.at(1).toInt();
-                    } else if (key == "MD5") {
-                        md5 = keyValuePair.at(1);
+                    QString listAti = list.at(i);
+                    if (listAti.startsWith("Hostname:")) {
+                        hostname = listAti.right(listAti.length() - 9); // 9 is hostname size
+                    } else if (listAti.startsWith("Name:")) {
+                        name = listAti.right(listAti.length() - 5);
+                    } else if (listAti.startsWith("Type:")) {
+                        type = listAti.right(listAti.length() - 5);
+                    } else if (listAti.startsWith("Port:")) {
+                        port = listAti.right(listAti.length() - 5).toInt();
+                    } else if (listAti.startsWith("MD5:")) {
+                        md5 = listAti.right(listAti.length() - 4);
+                    } else if (listAti.startsWith("TXT:")) {
+                        txt = listAti.right(listAti.length() - 4);
                     }
                 }
 
@@ -239,7 +240,7 @@ void ControlPlaneConnection::readBuffer(const char* buf, int len) {
                 qDebug() << "Running new proxy!!";
                 ProxyServer* newProxy = NULL;
                 try {
-                    newProxy = new ProxyServer(friendUid, name, type, "", hostname, port, QByteArray::fromHex(md5.toUtf8()));
+                    newProxy = new ProxyServer(friendUid, name, type, "", hostname, txt, port, QByteArray::fromHex(md5.toUtf8()));
                     proxyServers.push(newProxy);
                     newProxy->run();
                 } catch (int i) {
@@ -278,8 +279,11 @@ void ControlPlaneConnection::sendBonjour() {
                  % "Name:" % rec->serviceName % "\r\n"
                  % "Type:" % rec->registeredType % "\r\n"
                  % "Port:" % QString::number(rec->port) % "\r\n"
-                 % "MD5:" % rec->md5.toHex() % "\r\n"
-                % "\r\n";
+                 % "MD5:" % rec->md5.toHex() % "\r\n";
+        if (!rec->txt.isEmpty()) {
+            packet = packet % "TXT:" % rec->txt % "\r\n";
+        }
+        packet = packet % "\r\n";
 
         sendPacket(packet);
     }

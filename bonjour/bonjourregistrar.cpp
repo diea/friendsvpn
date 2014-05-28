@@ -66,7 +66,8 @@ void BonjourRegistrar::registerService(const BonjourRecord &record) {
           record.registeredType.toUtf8().constData(),
           record.replyDomain.isEmpty() ? 0
                     : record.replyDomain.toUtf8().constData(),
-          QString(record.hostname + "." + record.replyDomain).toUtf8().data(), bigEndianPort, 0, 0, bonjourRegisterService,
+          QString(record.hostname + "." + record.replyDomain).toUtf8().data(), bigEndianPort,
+                             record.txt.toUtf8().length(), record.txt.toUtf8().data(), bonjourRegisterService,
           this);
     if (err != kDNSServiceErr_NoError) {
         emit error(err);

@@ -8,7 +8,7 @@ ProxyServer::~ProxyServer() {
 }
 
 ProxyServer::ProxyServer(const QString &friendUid, const QString &name, const QString &regType, const QString &domain,
-                       const QString &hostname, quint16 port, const QByteArray& md5) : Proxy(port, regType, md5)
+                       const QString &hostname, const QString& txt, quint16 port, const QByteArray& md5) : Proxy(port, regType, md5)
 {
     QString newip = listenIp;
     // create bonjour rec with new IP
@@ -18,7 +18,7 @@ ProxyServer::ProxyServer(const QString &friendUid, const QString &name, const QS
     // we append the current ms time to hostname to avoid name collision
     QString username = BonjourSQL::getInstance()->getName(friendUid);
     rec = BonjourRecord("fvpn_" + username + "_" + name, regType, domain,
-                        QString::number(QDateTime::currentMSecsSinceEpoch())+"_"+hostname, ip, port);
+                        QString::number(QDateTime::currentMSecsSinceEpoch())+"_"+hostname, ip, port, txt);
 
     // get DataPlaneConnection associated with friendUid
     ConnectionInitiator* initiator = ConnectionInitiator::getInstance();

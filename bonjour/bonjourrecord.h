@@ -20,6 +20,7 @@ public:
     quint16 port;
     bool resolved;
     QByteArray md5; /* md5 computed by the bonjourResolver */
+    QString txt;
 
     BonjourRecord() {}
 
@@ -36,9 +37,9 @@ public:
         replyDomain = QString::fromUtf8(domain);
     }
     BonjourRecord(const QString &name, const QString &regType, const QString &domain,
-                  const QString &hostname, const QList<QString> &ips, quint16 port)
+                  const QString &hostname, const QList<QString> &ips, quint16 port, const QString& txt)
     : serviceName(name), registeredType(regType), replyDomain(domain), hostname(hostname), ips(ips),
-      port(port)
+      port(port), txt(txt)
     {
         resolved = true;
     }

@@ -41,8 +41,8 @@ void BonjourResolver::resolveReply(DNSServiceRef , //sdRef
                             const char *, // fullname
                             const char *hosttarget,
                             quint16 port, /* In network byte order */
-                            quint16 , //txtLen
-                            const unsigned char *, //txtRecord
+                            quint16 txtLen,
+                            const unsigned char * txtRecord,
                             void *context) {
     QList<void*>* context_list = static_cast<QList<void*>*>(context);
     BonjourRecord* record = static_cast<BonjourRecord*>(context_list->at(0));
@@ -56,6 +56,11 @@ void BonjourResolver::resolveReply(DNSServiceRef , //sdRef
             port  =  0 | ((port & 0x00ff) << 8) | ((port & 0xff00) >> 8);
         }
 #endif
+        char* textRecord = static_cast<char*>(malloc(sizeof(char) * txtLen));
+        memcpy(textRecord, txtRecord, txtLen);
+        record->txt = QString::fromLatin1(textRecord, txtLen);
+        qDebug() << "TXT";
+        qDebug() << record->txt;
         record->port = port;
         QHostInfo::lookupHost(QString::fromUtf8(hosttarget), resolver,
                               SLOT(hostInfoReady(const QHostInfo &)));
@@ -112,9 +117,10 @@ void BonjourResolver::hostInfoReady(const QHostInfo &info) {
             // TODO make a quick ping before checking arp table
             qDebug() << "checking arp table";
             arp.start("arp -an");
+            int length;
+            char buf[3000];
+
             if (arp.waitForReadyRead(200)) {
-                char buf[3000];
-                int length;
                 while ((length = arp.readLine(buf, 3000))) {
                     QString curLine(buf);
                     QStringList list = curLine.split(" ", QString::SkipEmptyParts);
@@ -211,7 +217,6 @@ void BonjourResolver::hostInfoReady(const QHostInfo &info) {
     record->ips = v6;
 
     if (v6.empty()) {
-        // TODO maybe set record as unusable in database
         qDebug() << "Invalid record no IPv6 available, we don't use it!";
         return; // do not use record
     }
