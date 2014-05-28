@@ -60,12 +60,14 @@ void BonjourDiscoverer::reply(DNSServiceRef, DNSServiceFlags flags,
                 bb->browseForServiceType(service);
                 serviceBrowser->availableServices.insert(service, bb);
                 qDebug() << "Adding " + QString(service);
-                // Add to database
-                serviceBrowser->qSql->insertService(serviceName, reg.right(3));
+                // Add to database => done in bonjourregistrer
+                //serviceBrowser->qSql->insertService(serviceName, reg.right(3));
             }
         } else {
-            delete serviceBrowser->availableServices.value(service);
-            serviceBrowser->availableServices.remove(service);
+            if (serviceBrowser->availableServices.contains(service)) {
+                delete serviceBrowser->availableServices.value(service);
+                serviceBrowser->availableServices.remove(service);
+            }
 
             // TODO serviceBrowser->qSql->removeService(serviceName, reg.right(3));
             qDebug() << "Removing " + QString(service);

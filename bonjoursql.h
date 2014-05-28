@@ -96,6 +96,13 @@ public:
     QString getUidFromIP(QString ip);
 
     /**
+     * @brief getName
+     * @param uid
+     * @return the user's firstname and lastname in the format: "Firstname_Lastname"
+     */
+    QString getName(QString uid);
+
+    /**
      * @brief getRecordsFor will get the bonjour records that will be sent the friend with uid
      * "friendUid". That will be the records that are authorized for this friend.
      * /!\ don't forget to "delete" the bonjour records when not used anymore

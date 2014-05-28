@@ -43,7 +43,7 @@ void BonjourBrowser::reply(DNSServiceRef , DNSServiceFlags flags,
     BonjourBrowser *serviceBrowser = static_cast<BonjourBrowser *>(context);
     if (errorCode != kDNSServiceErr_NoError) {
         emit serviceBrowser->error(errorCode);
-    } else if (strncmp(serviceName, "friendsvpn_", 11) != 0) { /* we ignore if starts with friendsvpn
+    } else if (strncmp(serviceName, "fvpn_", 5) != 0) { /* we ignore if starts with friendsvpn
                                                                  because those are records the app
                                                                  has registered */
         BonjourRecord* bonjourRecord = new BonjourRecord(serviceName, regType, replyDomain);
@@ -85,10 +85,8 @@ void BonjourBrowser::reply(DNSServiceRef , DNSServiceFlags flags,
     }
 }
 void BonjourBrowser::recordIsReady(BonjourRecord* rec) {
-    qDebug() << "ip list length " << rec->ips.length();
-    //QString ip = rec->ips.at(0);
-    QString ip = "lal";
-    qDebug() << "rec is readay " << rec->hostname << " " <<
+    qDebug() << "Ip list length " << rec->ips.length();
+    qDebug() << "Record is Ready" << rec->hostname << " " <<
              rec->registeredType << " IP " <<  rec->ips << " " << rec->port;
 }
 

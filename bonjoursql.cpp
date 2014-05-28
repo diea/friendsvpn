@@ -260,6 +260,33 @@ QString BonjourSQL::getLocalIP() {
     }
 }
 
+QString BonjourSQL::getName(QString uid) {
+    qryMut.lock();
+    QSqlDatabase db = QSqlDatabase::database();
+    if (!db.isOpen()) {
+        qWarning() << "Database was not reachable, sorry I shutdown";
+        UnixSignalHandler::termSignalHandler(0);
+    }
+    QSqlQuery query = QSqlQuery(QSqlDatabase::database());
+    query.prepare("SELECT firstname, lastname FROM User WHERE uid = ?");
+    query.bindValue(0, uid);
+    query.exec();
+
+    if (query.next()) {
+        QString firstname = query.value(0).toString();
+        QString lastname = query.value(1).toString();
+        db.close();
+        qryMut.unlock();
+        return QString(firstname + "_" + lastname);
+    } else {
+        // error
+        qDebug() << "User" << uid << "not in db";
+        db.close();
+        qryMut.unlock();
+        return QString();
+    }
+}
+
 QString BonjourSQL::getUidFromIP(QString IP) {
     qryMut.lock();
     QSqlDatabase db = QSqlDatabase::database();
