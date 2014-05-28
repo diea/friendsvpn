@@ -1,6 +1,7 @@
 #include "controlplaneconnection.h"
 #include "connectioninitiator.h"
 #include "proxyserver.h"
+#include "sslsocket.h"
 #include <time.h>
 #include <QDebug>
 
@@ -80,7 +81,7 @@ void ControlPlaneConnection::aliveTimeout() {
 
 void ControlPlaneConnection::sendPacket(QString& packet) {
     mutex.lock();
-    QSslSocket* toWrite; // the socket on which the bonjour packets are to be sent
+    SslSocket* toWrite; // the socket on which the bonjour packets are to be sent
     //qDebug() << "passed the lock in sendbonjour";
 
     if (curMode == Closed) {
@@ -119,7 +120,7 @@ void ControlPlaneConnection::removeConnection() {
 
 bool ControlPlaneConnection::addMode(plane_mode mode, QObject *socket) {
     qDebug() << "adding mode " << mode << "controlplane";
-    QSslSocket* sslSocket = dynamic_cast<QSslSocket*>(socket);
+    SslSocket* sslSocket = dynamic_cast<SslSocket*>(socket);
     if (!sslSocket) {
         qDebug() << "add mode fail 1 controlplane";
         return false; // needs to be of type QSslSocket!
