@@ -184,6 +184,8 @@ QList< User* > BonjourSQL::getFriends() {
     query.bindValue(0, uid);
     query.exec();
 
+    QList <QString> uidlist;
+
     QList < User* > list;
     while (query.next()) {
         QString* uid = new QString(query.value(0).toString());
@@ -191,6 +193,7 @@ QList< User* > BonjourSQL::getFriends() {
         QSslCertificate* cert = new QSslCertificate(query.value(2).toByteArray(), QSsl::Pem);
 
         list.append(new User(uid, ipv6, cert));
+        uidlist.append(*uid);
     }
 
     // also get users that shared something to me
@@ -204,8 +207,9 @@ QList< User* > BonjourSQL::getFriends() {
         QString* uid = new QString(query.value(0).toString());
         QString* ipv6 = new QString(query.value(1).toString());
         QSslCertificate* cert = new QSslCertificate(query.value(2).toByteArray(), QSsl::Pem);
-
-        list.append(new User(uid, ipv6, cert));
+        if (!uidlist.contains(*uid)) {
+            list.append(new User(uid, ipv6, cert));
+        }
     }
 
     db.close();
