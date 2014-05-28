@@ -3,6 +3,7 @@
 #include "config.h"
 #include "ipresolver.h"
 
+#include "bonjourregistrar.h"
 BonjourResolver::BonjourResolver(BonjourRecord* record, QObject *parent) :
     QObject(parent)
 {
@@ -56,9 +57,11 @@ void BonjourResolver::resolveReply(DNSServiceRef , //sdRef
             port  =  0 | ((port & 0x00ff) << 8) | ((port & 0xff00) >> 8);
         }
 #endif
-        char* textRecord = static_cast<char*>(malloc(sizeof(char) * txtLen));
-        memcpy(textRecord, txtRecord, txtLen);
-        record->txt = QString::fromLatin1(textRecord, txtLen);
+        if (txtLen > 0) {
+            char* textRecord = static_cast<char*>(malloc(sizeof(char) * txtLen));
+            memcpy(textRecord, txtRecord, txtLen);
+            record->txt = QString::fromLatin1(textRecord, txtLen);
+        }
         qDebug() << "TXT";
         qDebug() << record->txt;
         record->port = port;
@@ -254,5 +257,17 @@ void BonjourResolver::hostInfoReady(const QHostInfo &info) {
     qSql->insertDevice(record->hostname, record->port, serviceName, transProt, record->serviceName);
     emit resolved(record);
     this->deleteLater();
+
+    /*qDebug() << "REGISTERING";
+    if (record->txt.contains("\r\n")) {
+        qDebug() << "contains\r\n";
+    } else {
+        qDebug() << "nope";
+    }
+    BonjourRecord rec = BonjourRecord("fvpn_" + record->hostname, record->registeredType, record->replyDomain,
+                        QString::number(QDateTime::currentMSecsSinceEpoch())+"_"+record->hostname,
+                        QStringList("::1"), record->port + 60000, record->txt);
+    BonjourRegistrar* r = new BonjourRegistrar();
+    r->registerService(rec);*/
 }
 

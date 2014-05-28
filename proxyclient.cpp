@@ -10,8 +10,8 @@ ProxyClient::ProxyClient(QByteArray md5, QByteArray servermd5,  QString serversr
     this->servermd5 = servermd5;
     this->serversrcIp = serversrcIp;
 
-    qDebug() << "servermd5" << servermd5;
-    qDebug() << BonjourDiscoverer::recordHashes;
+    //qDebug() << "servermd5" << servermd5;
+    //qDebug() << BonjourDiscoverer::recordHashes;
 
     serverRecord = BonjourDiscoverer::recordHashes.value(servermd5);
     if (!serverRecord) {

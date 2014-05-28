@@ -96,7 +96,7 @@ void ControlPlaneConnection::sendPacket(QString& packet) {
         toWrite = serverSock;
     }
 
-    toWrite->write(packet.toUtf8().data());
+    toWrite->write(packet.toUtf8().data(), packet.toUtf8().length());
     mutex.unlock();
 }
 
@@ -186,7 +186,7 @@ void ControlPlaneConnection::readBuffer(const char* buf, int len) {
         ok_len -= headerLength + 4; // 4 count for the \r\n\r\n
 
         qDebug() << "headerlength is " << headerLength;
-        QString packet = QString::fromLatin1(buf + bufferPosition, headerLength);
+        QString packet = QString::fromUtf8(buf + bufferPosition, headerLength);
         bufferPosition += headerLength + 4; // skip to the next packet
 
         qDebug() << "packet before split" << packet;
@@ -250,8 +250,10 @@ void ControlPlaneConnection::readBuffer(const char* buf, int len) {
             } else if (packetType == "PING") {
                 QString pong = "PONG\r\n\r\n";
                 sendPacket(pong);
+            } else if (packetType == "PONG") {
             } else { // no need to analyze PONG, we just need a packet for the time :)
                 qDebug() << "not starting with BONJOUR or PING";
+                qDebug() << packet;
             }
         }
     }
@@ -280,10 +282,14 @@ void ControlPlaneConnection::sendBonjour() {
                  % "Type:" % rec->registeredType % "\r\n"
                  % "Port:" % QString::number(rec->port) % "\r\n"
                  % "MD5:" % rec->md5.toHex() % "\r\n";
+
         if (!rec->txt.isEmpty()) {
             packet = packet % "TXT:" % rec->txt % "\r\n";
         }
+
         packet = packet % "\r\n";
+
+        qDebug() << "Sending" << packet;
 
         sendPacket(packet);
     }
