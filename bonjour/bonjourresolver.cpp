@@ -87,7 +87,7 @@ void BonjourResolver::hostInfoReady(const QHostInfo &info) {
             v4.append(adr.toString());
         }
     }
-#if 0
+#if 1
     qDebug() << "Going to test v6.empty";
     if (v6.empty() && !v4.empty()) { // QHostInfo was not able to fetch ipv6
         // check that v4 ip is not a local one
