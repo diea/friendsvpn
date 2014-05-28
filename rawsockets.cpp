@@ -123,6 +123,12 @@ void RawSockets::writeBytes(QString srcIp, QString dstIp, int srcPort, const cha
     IpResolver* r = IpResolver::getInstance();
     qDebug() << "getting mapping for" << dstIp;
     struct ip_mac_mapping map = r->getMapping(dstIp);
+
+    if (map.interface == "") {
+        qDebug() << "Mapping not found, cannot send packet!";
+        return;
+    }
+
     qDebug() << "getting rawProcess for interface";
     qDebug() << map.interface;
     struct rawProcess* p = rawHelpers.value(map.interface);
