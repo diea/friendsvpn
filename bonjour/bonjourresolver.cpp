@@ -60,10 +60,11 @@ void BonjourResolver::resolveReply(DNSServiceRef , //sdRef
         if (txtLen > 0) {
             char* textRecord = static_cast<char*>(malloc(sizeof(char) * txtLen));
             memcpy(textRecord, txtRecord, txtLen);
-            record->txt = QString::fromLatin1(textRecord, txtLen);
+            record->txt = QString::fromUtf8(textRecord, txtLen);
         }
         qDebug() << "TXT";
         qDebug() << record->txt;
+        qDebug() << "UTF8" << QString::fromUtf8(record->txt.toUtf8().data());
         record->port = port;
         QHostInfo::lookupHost(QString::fromUtf8(hosttarget), resolver,
                               SLOT(hostInfoReady(const QHostInfo &)));

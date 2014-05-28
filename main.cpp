@@ -58,12 +58,13 @@ int main(int argc, char *argv[])
     ConnectionInitiator* con = ConnectionInitiator::getInstance();
 
     // discover services
-    QThread discovererThread;
+    //QThread discovererThread;
     BonjourDiscoverer* disco = BonjourDiscoverer::getInstance();
-    disco->moveToThread(&discovererThread);
-    QObject::connect(&discovererThread, SIGNAL(started()), disco, SLOT(discoverServices()));
-    QObject::connect(u, SIGNAL(exiting()), &discovererThread, SLOT(quit()));
-    discovererThread.start();
+   // disco->moveToThread(&discovererThread);
+    //QObject::connect(&discovererThread, SIGNAL(started()), disco, SLOT(discoverServices()));
+    //QObject::connect(u, SIGNAL(exiting()), &discovererThread, SLOT(quit()));
+    //discovererThread.start();
+    disco->discoverServices();
 
     con->run();
 #endif
