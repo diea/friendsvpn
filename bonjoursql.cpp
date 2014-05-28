@@ -84,9 +84,10 @@ void BonjourSQL::initDB() {
 bool BonjourSQL::insertService(QString name, QString trans_prot) {
     qryMut.lock();
     QSqlDatabase db = QSqlDatabase::database();
-    if (!db.isOpen()) {
-        qWarning() << "Database was not reachable, sorry I shutdown";
-        UnixSignalHandler::termSignalHandler(0);
+    while (!db.isOpen()) {
+        db.open();
+        qDebug() << "Trying to reach DB";
+        QThread::sleep(1);
     }
     QSqlQuery query = QSqlQuery(QSqlDatabase::database());
     query.prepare("INSERT INTO Service VALUES(?, ?, ?)");
@@ -102,9 +103,10 @@ bool BonjourSQL::insertService(QString name, QString trans_prot) {
 bool BonjourSQL::insertDevice(QString hostname, int port, QString service_name, QString service_trans_prot, QString record_name) {
     qryMut.lock();
     QSqlDatabase db = QSqlDatabase::database();
-    if (!db.isOpen()) {
-        qWarning() << "Database was not reachable, sorry I shutdown";
-        UnixSignalHandler::termSignalHandler(0);
+    while (!db.isOpen()) {
+        db.open();
+        qDebug() << "Trying to reach DB";
+        QThread::sleep(1);
     }
     QSqlQuery query = QSqlQuery(QSqlDatabase::database());
     query.prepare("INSERT INTO Record VALUES(?, ?, ?, ?, ?, ?)");
@@ -123,9 +125,10 @@ bool BonjourSQL::insertDevice(QString hostname, int port, QString service_name, 
 QString BonjourSQL::fetchXmlRpc() {
     qryMut.lock();
     QSqlDatabase db = QSqlDatabase::database();
-    if (!db.isOpen()) {
-        qWarning() << "Database was not reachable, sorry I shutdown";
-        UnixSignalHandler::termSignalHandler(0);
+    while (!db.isOpen()) {
+        db.open();
+        qDebug() << "Trying to reach DB";
+        QThread::sleep(1);
     }
     QList<QHostAddress> list = QNetworkInterface::allAddresses();
     QString sqlString;
@@ -174,9 +177,10 @@ QString BonjourSQL::fetchXmlRpc() {
 QList< User* > BonjourSQL::getFriends() {
     qryMut.lock();
     QSqlDatabase db = QSqlDatabase::database();
-    if (!db.isOpen()) {
-        qWarning() << "Database was not reachable, sorry I shutdown";
-        UnixSignalHandler::termSignalHandler(0);
+    while (!db.isOpen()) {
+        db.open();
+        qDebug() << "Trying to reach DB";
+        QThread::sleep(1);
     }
     QSqlQuery query = QSqlQuery(QSqlDatabase::database());
     query.prepare("SELECT uid, ipv6, certificate FROM User WHERE uid IN (SELECT id as "
@@ -220,9 +224,10 @@ QList< User* > BonjourSQL::getFriends() {
 void BonjourSQL::pushCert(const QSslCertificate& cert) {
     qryMut.lock();
     QSqlDatabase db = QSqlDatabase::database();
-    if (!db.isOpen()) {
-        qWarning() << "Database was not reachable, sorry I shutdown";
-        UnixSignalHandler::termSignalHandler(0);
+    while (!db.isOpen()) {
+        db.open();
+        qDebug() << "Trying to reach DB";
+        QThread::sleep(1);
     }
     QSqlQuery query = QSqlQuery(db);
     query.prepare("UPDATE User SET certificate=? WHERE uid = ?");
@@ -239,9 +244,10 @@ QString BonjourSQL::getLocalUid() {
 QString BonjourSQL::getLocalIP() {
     qryMut.lock();
     QSqlDatabase db = QSqlDatabase::database();
-    if (!db.isOpen()) {
-        qWarning() << "Database was not reachable, sorry I shutdown";
-        UnixSignalHandler::termSignalHandler(0);
+    while (!db.isOpen()) {
+        db.open();
+        qDebug() << "Trying to reach DB";
+        QThread::sleep(1);
     }
     QSqlQuery query = QSqlQuery(QSqlDatabase::database());
     query.prepare("SELECT ipv6 FROM User WHERE uid = ?");
@@ -263,9 +269,10 @@ QString BonjourSQL::getLocalIP() {
 QString BonjourSQL::getName(QString uid) {
     qryMut.lock();
     QSqlDatabase db = QSqlDatabase::database();
-    if (!db.isOpen()) {
-        qWarning() << "Database was not reachable, sorry I shutdown";
-        UnixSignalHandler::termSignalHandler(0);
+    while (!db.isOpen()) {
+        db.open();
+        qDebug() << "Trying to reach DB";
+        QThread::sleep(1);
     }
     QSqlQuery query = QSqlQuery(QSqlDatabase::database());
     query.prepare("SELECT firstname, lastname FROM User WHERE uid = ?");
@@ -290,9 +297,10 @@ QString BonjourSQL::getName(QString uid) {
 QString BonjourSQL::getUidFromIP(QString IP) {
     qryMut.lock();
     QSqlDatabase db = QSqlDatabase::database();
-    if (!db.isOpen()) {
-        qWarning() << "Database was not reachable, sorry I shutdown";
-        UnixSignalHandler::termSignalHandler(0);
+    while (!db.isOpen()) {
+        db.open();
+        qDebug() << "Trying to reach DB";
+        QThread::sleep(1);
     }
     QSqlQuery query = QSqlQuery(QSqlDatabase::database());
     query.prepare("SELECT uid FROM User WHERE ipv6 = ?");
@@ -301,7 +309,8 @@ QString BonjourSQL::getUidFromIP(QString IP) {
 
     if (query.next()) {
         QString user_uid = query.value(0).toString();
-        db.close(); qryMut.unlock();
+        db.close();
+        qryMut.unlock();
         return user_uid;
     } else {
         // error
@@ -316,9 +325,10 @@ QString BonjourSQL::getUidFromIP(QString IP) {
 QList < BonjourRecord* > BonjourSQL::getRecordsFor(QString friendUid) {
     qryMut.lock();
     QSqlDatabase db = QSqlDatabase::database();
-    if (!db.isOpen()) {
-        qWarning() << "Database was not reachable, sorry I shutdown";
-        UnixSignalHandler::termSignalHandler(0);
+    while (!db.isOpen()) {
+        db.open();
+        qDebug() << "Trying to reach DB";
+        QThread::sleep(1);
     }
     QList < BonjourRecord * > list;
     QSqlQuery qry(QSqlDatabase::database());
