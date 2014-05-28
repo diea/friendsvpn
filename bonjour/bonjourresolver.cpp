@@ -88,16 +88,17 @@ void BonjourResolver::hostInfoReady(const QHostInfo &info) {
 
         QProcess ifconfig;
         ifconfig.start("/sbin/ifconfig");
-        ifconfig.waitForReadyRead();
-        char buf[3000];
-        int length;
-        while ((length = ifconfig.readLine(buf, 3000))) {
-            QString curLine(buf);
-            QStringList list = curLine.split(" ", QString::SkipEmptyParts);
-            foreach (QString element, list) {
-                if (element.contains(v4.at(0))) {
-                    v6.append("::1");
-                    local = true;
+        if (ifconfig.waitForReadyRead()) {
+            char buf[3000];
+            int length;
+            while ((length = ifconfig.readLine(buf, 3000))) {
+                QString curLine(buf);
+                QStringList list = curLine.split(" ", QString::SkipEmptyParts);
+                foreach (QString element, list) {
+                    if (element.contains(v4.at(0))) {
+                        v6.append("::1");
+                        local = true;
+                    }
                 }
             }
         }
@@ -111,22 +112,26 @@ void BonjourResolver::hostInfoReady(const QHostInfo &info) {
             // TODO make a quick ping before checking arp table
             qDebug() << "checking arp table";
             arp.start("arp -an");
-            arp.waitForReadyRead(200);
-            char buf[3000];
-            int length;
-            while ((length = arp.readLine(buf, 3000))) {
-                QString curLine(buf);
-                QStringList list = curLine.split(" ", QString::SkipEmptyParts);
-                foreach (QString ipv4, v4) {
-                    if (list.at(1).contains(ipv4)) {
-                        macs.append(list.at(3));
-#ifdef __APPLE__
-                        ifaces.append(list.at(5));
-#elif __GNUC__
-                        QString iface = list.at(6);
-                        iface.truncate(iface.length() - 1);
-                        ifaces.append(iface);
-#endif
+            if (arp.waitForReadyRead(200)) {
+                char buf[3000];
+                int length;
+                while ((length = arp.readLine(buf, 3000))) {
+                    QString curLine(buf);
+                    QStringList list = curLine.split(" ", QString::SkipEmptyParts);
+                    foreach (QString ipv4, v4) {
+        #ifdef __APPLE__
+                        if (list.length() > 5) {
+                            if (list.at(1).contains(ipv4)) {
+                                macs.append(list.at(3));
+                                ifaces.append(list.at(5));
+        #elif __GNUC__
+                        if (list.length() > 6) {
+                                QString iface = list.at(6);
+                                iface.truncate(iface.length() - 1);
+                                ifaces.append(iface);
+        #endif
+                            }
+                        }
                     }
                 }
             }

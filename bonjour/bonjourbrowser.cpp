@@ -84,6 +84,7 @@ void BonjourBrowser::reply(DNSServiceRef , DNSServiceFlags flags,
         }
     }
 }
+
 void BonjourBrowser::recordIsReady(BonjourRecord* rec) {
     qDebug() << "Ip list length " << rec->ips.length();
     qDebug() << "Record is Ready" << rec->hostname << " " <<
