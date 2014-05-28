@@ -32,5 +32,6 @@
 #endif
 
 #define PROXYCLIENT_TIMEOUT 10000
+#define IP_BUFFER_LENGTH 8
 
 #endif // CONFIG_H

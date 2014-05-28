@@ -84,7 +84,7 @@ QString Proxy::newIP() {
     QString newIp = poolOfIps.dequeue();
     int length = poolOfIps.length();
     poolOfIpsMutex.unlock();
-    if (length < 4) {
+    if (length < IP_BUFFER_LENGTH) {
         QtConcurrent::run(gennewIP);
     }
     return newIp;
@@ -96,7 +96,7 @@ void Proxy::gennewIP() {
     poolOfIpsMutex.unlock();
 
     UnixSignalHandler* u = UnixSignalHandler::getInstance();
-    while (length < 4) { // TODO add more IPs.
+    while (length < IP_BUFFER_LENGTH) { // TODO add more IPs.
         bool newIp = true; // the new IP has not been assigned to iface yet or is not a duplicate
         QString newip;
         do {
