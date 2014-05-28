@@ -115,7 +115,7 @@ void DataPlaneConnection::readBuffer(const char* buf, int len) {
 }
 
 void DataPlaneConnection::sendBytes(const char *buf, int len, QByteArray& hash, int sockType, QString& srcIp) {
-    if (time(NULL) - lastRcvdTimestamp > 60) {
+    if (time(NULL) - lastRcvdTimestamp > TIMEOUT_DELAY) {
         // is distant host still alive ?
         // get controlplaneconnection and ask it
         qDebug() << "Checking if host is still alive";

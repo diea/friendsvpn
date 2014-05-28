@@ -69,11 +69,12 @@ ControlPlaneConnection::~ControlPlaneConnection() {
 void ControlPlaneConnection::alive() {
     QString alive = "PING\r\n\r\n";
     sendPacket(alive);
+    qDebug() << "Setting timeout";
     QTimer::singleShot(5000, this, SLOT(aliveTimeout()));
 }
 
 void ControlPlaneConnection::aliveTimeout() {
-    if (time(NULL) - lastRcvdTimestamp > 60) {
+    if (time(NULL) - lastRcvdTimestamp > TIMEOUT_DELAY) {
         qDebug() << "Connection with " << friendUid << "timed out";
         wasDisconnected(); // we disco
     }
