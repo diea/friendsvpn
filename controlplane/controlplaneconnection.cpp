@@ -289,7 +289,7 @@ void ControlPlaneConnection::sendBonjour() {
         QTimer::singleShot(10000, this, SLOT(sendBonjour())); // first call, let the time to the Bonjour discoverer
         first = false;
     }
-    QTimer::singleShot(300000, this, SLOT(sendBonjour())); // every 5 minutes | TODO make button to force!
+    QTimer::singleShot(BONJOUR_DELAY, this, SLOT(sendBonjour())); // TODO make button to force!
 }
 
 void ControlPlaneConnection::wasDisconnected() {
