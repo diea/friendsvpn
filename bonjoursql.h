@@ -11,6 +11,7 @@
 #include <QSslCertificate>
 #include <QSslKey>
 
+#include "unixsignalhandler.h"
 #include "user.h"
 #include "config.h"
 #include "bonjour/bonjourrecord.h"
