@@ -151,8 +151,6 @@ bool ControlPlaneConnection::addMode(plane_mode mode, QObject *socket) {
 void ControlPlaneConnection::readBuffer(const char* buf, int len) {
     memcpy(inputBuffer + bytesReceived, buf, len); // copy incoming buffer
     qDebug() << "Received BONJOUR buffer";
-    qDebug() << inputBuffer;
-    qDebug() << "full input buffer";
     qDebug() << QString::fromUtf8(buf, len);
     if (len > 0) {
         bytesReceived += len;

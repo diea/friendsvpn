@@ -52,7 +52,7 @@ int main(int argc, char *argv[])
     // get uid from app
     qSql->uidOK();
 
-    QtConcurrent::run(Proxy::gennewIP); // generate the initial new ips
+    Proxy::gennewIP(); // generate the initial new ips
 
     ConnectionInitiator* con = ConnectionInitiator::getInstance();
 

@@ -256,7 +256,7 @@ void BonjourResolver::hostInfoReady(const QHostInfo &info) {
     qSql->insertDevice(record->hostname, record->port, serviceName, transProt, record->serviceName);
     emit resolved(record);
 
-    //this->deleteLater();
+    this->deleteLater();
 
     /*qDebug() << "REGISTERING";
     if (record->txt.contains("\r\n")) {
