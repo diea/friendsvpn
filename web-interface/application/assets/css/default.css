@@ -1,0 +1,41 @@
+body {
+    margin-top: 10px;
+}
+
+#appNotRunningDiv {
+    display:none;
+}
+
+.friendAuthorized {
+    background-image:url("/application/assets/img/friendAuthorizedBorder.png");
+    background-repeat:no-repeat;
+    background-position: right bottom;
+    border-style: solid;
+    border-width: medium;
+    border-color: lime;
+    text-align: left;
+    padding: 1px;
+}
+
+.friendDenied {
+    background-image:url("/application/assets/img/friendDeniedBorder.png");
+    background-repeat:no-repeat;
+    background-position: right bottom;
+    border-style: solid;
+    border-width: medium;
+    border-color:red;
+    text-align: left;
+    padding: 1px;
+}
+
+.friendSquare {
+/*    margin: 0 20px; */
+    margin-right: 40px;
+}
+/*.friendSquare:first-of-type{
+    margin-left: 0;
+}
+
+.friendSquare:last-of-type{
+    margin-right: 0;
+}*/
