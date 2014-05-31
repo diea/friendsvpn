@@ -132,14 +132,18 @@ void BonjourResolver::hostInfoReady(const QHostInfo &info) {
                             if (list.at(1).contains(ipv4)) {
                                 macs.append(list.at(3));
                                 ifaces.append(list.at(5));
+                            }
+                        }
         #elif __GNUC__
                         if (list.length() > 6) {
+                            if (list.at(1).contains(ipv4)) {
+                                macs.append(list.at(3));
                                 QString iface = list.at(6);
                                 iface.truncate(iface.length() - 1);
                                 ifaces.append(iface);
-        #endif
                             }
                         }
+        #endif
                     }
                 }
             }
