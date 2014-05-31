@@ -37,7 +37,7 @@ void DataPlaneClient::run() {
     //SSL_load_error_strings();
     ctx = SSL_CTX_new(DTLSv1_client_method());
 
-    if(!SSL_CTX_set_cipher_list(ctx, "eNULL:NULL")) {
+    if(!SSL_CTX_set_cipher_list(ctx, DTLS_ENCRYPT)) {
         fprintf(stderr, "ssl_ctx fail\n");
         return;
     }

@@ -36,4 +36,7 @@
 #define BONJOUR_DELAY 30000
 #define TIMEOUT_DELAY 10000
 
+//#define DTLS_ENCRYPT "eNULL:NULL"
+#define DTLS_ENCRYPT "DEFAULT"
+
 #endif // CONFIG_H
