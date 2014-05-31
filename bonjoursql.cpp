@@ -183,7 +183,7 @@ QList< User* > BonjourSQL::getFriends() {
         QThread::sleep(1);
     }
     QSqlQuery query = QSqlQuery(QSqlDatabase::database());
-    query.prepare("SELECT uid, ipv6, certificate FROM User WHERE uid IN (SELECT id as "
+    query.prepare("SELECT uid, ipv6, certificate FROM User WHERE uid IN (SELECT User_uid as "
                   "uid FROM Authorized_user WHERE Record_Service_User_uid = ?)");
     query.bindValue(0, uid);
     query.exec();
@@ -202,7 +202,7 @@ QList< User* > BonjourSQL::getFriends() {
 
     // also get users that shared something to me
     query.prepare("SELECT uid, ipv6, certificate FROM User WHERE uid IN (SELECT Record_Service_User_uid as "
-                  "uid FROM Authorized_user WHERE id = ? AND Record_Service_User_uid != ?)");
+                  "uid FROM Authorized_user WHERE User_uid = ? AND Record_Service_User_uid != ?)");
     query.bindValue(0, uid);
     query.bindValue(1, uid);
     query.exec();
@@ -333,7 +333,7 @@ QList < BonjourRecord* > BonjourSQL::getRecordsFor(QString friendUid) {
     QList < BonjourRecord * > list;
     QSqlQuery qry(QSqlDatabase::database());
 
-    if (!qry.prepare("SELECT * FROM Authorized_user WHERE id = ? AND Record_Service_User_uid = ?")) {
+    if (!qry.prepare("SELECT * FROM Authorized_user WHERE User_uid = ? AND Record_Service_User_uid = ?")) {
         qDebug() << "ERROR SQL " << qry.lastError();
         db.close(); qryMut.unlock();
         return list;
