@@ -127,11 +127,13 @@ void Proxy::gennewIP() {
         ifconfig->waitForStarted();
 
         // wait 6 seconds for ifconfig to fail
+        qDebug() << "Trying to create IP...";
         if (ifconfig->waitForFinished(6000)) {
             qDebug() << "new Duplicate! we generate an other one";
             u->removeQProcess(ifconfig);
             delete ifconfig;
         } else {
+            qDebug() << "New IP created!";
             newip.truncate(newip.length() - 3); // remove prefix
 
             // add to local cache!
