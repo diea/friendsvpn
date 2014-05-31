@@ -178,14 +178,11 @@ void RawSockets::writeBytes(QString srcIp, QString dstIp, int srcPort, const cha
             perror(0);
             exit(1);
         }
-        // Obtain the source MAC address, copy into Ethernet header and ARP request.
+        // Obtain the source MAC address, copy into Ethernet header
         if (ioctl(fd,SIOCGIFHWADDR,&ifr)==-1) {
             perror(0);
             close(fd);
             exit(1);
-        }
-        if (ifr.ifr_hwaddr.sa_family != ARPHRD_ETHER) {
-            fprintf(stderr,"not an Ethernet interface\n");
         }
 
         source_mac_addr = (unsigned char*)ifr.ifr_hwaddr.sa_data;
