@@ -1,4 +1,5 @@
 #!/bin/bash
+# builds the friendsvpn application
 
 command -v mysql >/dev/null 2>&1 || { echo >&2 "Mysql has to be installed to use the application.  Aborting."; exit 1; }
 command -v qmake >/dev/null 2>&1 || { echo >&2 "Did not find the qmake command.  Aborting."; exit 1; }

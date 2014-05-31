@@ -27,6 +27,8 @@ void sig_handler(int signal) {
 /**
  * usage: sockType ipProto port addr
  *
+ * needs to be run as root on linux only
+ *
  * return: 1 wrong arguments
  * return: 2 unable to create socket
  * return: 3 unable to bind
@@ -80,8 +82,7 @@ int main(int argc, char** argv) {
     /* on linux the "bind" trick does not work due to bind's implementation needing a "listen"
      * to accept connections, we will thus prevent the kernel from sending its RST using an ip6tables
      * rule
-     * we still bind on linux to avoid the ICMPv6 address unreachable message if we begin sending packets using this new
-     * IPv6 too quickly
+     * we still bind on linux to prevent other applications from binding on the same port
      */
 
     ip6tablesRule = malloc(400 * sizeof(char));

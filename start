@@ -1,3 +1,19 @@
 #!/bin/sh
-sudo killall pcapListen
-./friendsvpn.app/Contents/MacOS/friendsvpn
+# starts the friends vpn application and asks for cleaning if it crashed on previous run
+
+unamestr=$(uname)
+if [[ $unamestr == "Darwin" ]]; then
+	needClean=$(ps -e | grep pcapListen | wc -l)
+	if [[ $needClean -gt 1 ]]; then
+		read -p "Some pcapListeners were not killed during previous run, do you want to kill them (requires root password) ?[y/n]" -n 1
+		if [[ $REPLY =~ ^[Yy]$ ]]; then
+			echo "\n"
+			sudo killall pcapListen
+		fi
+	fi
+	./friendsvpn.app/Contents/MacOS/friendsvpn
+else
+	./friendsvpn
+fi
+
+
