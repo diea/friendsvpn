@@ -63,7 +63,7 @@ int main(int argc, char *argv[])
     QObject::connect(&discovererThread, SIGNAL(started()), disco, SLOT(discoverServices()));
     QObject::connect(u, SIGNAL(exiting()), &discovererThread, SLOT(quit()));
     discovererThread.start();
-    disco->discoverServices();
+    //disco->discoverServices();
 
     con->run();
 #endif
