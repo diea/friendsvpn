@@ -20,7 +20,6 @@ void XmlRPCParser::readFromString(QString xmlrpc) {
 	QString lastLine = textStream->readLine();
 	while((!lastLine.isNull()) && !header) {
 		headerString += lastLine + "\r\n";
-		qDebug() << lastLine;
 		if(lastLine == "") { // XXX it was but readLine removes it "\r\n") { /* http header end */
 			header = new QHttpRequestHeader(headerString);
 			if(!header->isValid()) {

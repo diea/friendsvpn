@@ -44,7 +44,6 @@ int UnixSignalHandler::setup_unix_signal_handlers() {
 
 void UnixSignalHandler::addQProcess(QProcess *p) {
     mutex.lock();
-    qDebug() << "adding q process and got into mutex";
     listOfProcessToKill.append(p);
     mutex.unlock();
 }
@@ -56,13 +55,10 @@ void UnixSignalHandler::removeQProcess(QProcess *p) {
 }
 
 void UnixSignalHandler::termSignalHandler(int) {
-    qDebug() << "terminating!";
     UnixSignalHandler* u = UnixSignalHandler::getInstance();
     mutex.lock(); // no need to unlock we exit
     emit u->exiting();
-    qDebug() << "got instance and there are " << u->listOfProcessToKill.length() << "processes to kill";
     foreach (QProcess* p, u->listOfProcessToKill) {
-        qDebug() << "Going once more in loop";
         if (p) {
             if ((p->state() != QProcess::NotRunning)) {
                 qDebug() << p->state();
