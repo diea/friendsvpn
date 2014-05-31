@@ -93,8 +93,6 @@ struct ip_mac_mapping IpResolver::getMapping(QString ip) {
 #elif __GNUC__
         ndp.start("ip -6 neigh");
         ndp.waitForReadyRead();
-        char buf[3000];
-        int length;
         while (ndp.waitForReadyRead(500)) {
             while ((length = ndp.readLine(buf, 3000))) {
                 QString curLine(buf);
