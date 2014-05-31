@@ -11,7 +11,6 @@ BonjourRegistrar::BonjourRegistrar(QObject *parent)
 
 BonjourRegistrar::~BonjourRegistrar()
 {
-    qDebug() << "freeing bonjour registrar";
     if (dnssref) {
         DNSServiceRefDeallocate(dnssref);
         dnssref = 0;
@@ -23,12 +22,6 @@ BonjourRegistrar::~BonjourRegistrar()
 }
 
 void BonjourRegistrar::registerService(const BonjourRecord &record) {
-    qDebug() << "registering " << record.hostname;
-    qDebug() << record.ips;
-    qDebug() << record.port;
-    qDebug() << record.registeredType;
-    qDebug() << record.replyDomain;
-    qDebug() << record.serviceName;
 #ifdef __APPLE__ /* register is not supported by AVAHI compatibility layer */
     if (dnssref || dnssref_pa) {
         qWarning("Already registered a service");
@@ -93,7 +86,6 @@ void BonjourRegistrar::registerService(const BonjourRecord &record) {
 
 void BonjourRegistrar::registerRecordCallback(DNSServiceRef, DNSRecordRef, const DNSServiceFlags flags,
                                               DNSServiceErrorType errorCode, void *context) {
-    qDebug() << "Callback!";
     BonjourRegistrar* registrar = static_cast<BonjourRegistrar*>(context);
     if (errorCode != kDNSServiceErr_NoError) {
         emit registrar->error(errorCode);

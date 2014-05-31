@@ -20,12 +20,9 @@ plane_mode AbstractPlaneConnection::getMode() {
 
 bool AbstractPlaneConnection::removeMode(plane_mode mode) {
     if (curMode == Closed) {
-        qDebug() << "curMode is  closed!";
         return false;
     }
     if ((curMode != Both) && (curMode != mode)) {
-        qDebug() << "remove mode fail since curMode is " << curMode
-                    << "and plane mode is " << mode;
         return false;
     }
 
@@ -37,7 +34,6 @@ bool AbstractPlaneConnection::removeMode(plane_mode mode) {
         }
     } else {
         curMode = Closed;
-        qDebug() << "Abstract plane connection disconnected!";
         emit disconnected();
     }
     return true;

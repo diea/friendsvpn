@@ -10,9 +10,6 @@ ProxyClient::ProxyClient(QByteArray md5, QByteArray servermd5,  QString serversr
     this->servermd5 = servermd5;
     this->serversrcIp = serversrcIp;
 
-    //qDebug() << "servermd5" << servermd5;
-    //qDebug() << BonjourDiscoverer::recordHashes;
-
     serverRecord = BonjourDiscoverer::recordHashes.value(servermd5);
     if (!serverRecord) {
         // no more available
@@ -32,19 +29,14 @@ void ProxyClient::run() {
 void ProxyClient::sendBytes(const char *buf, int len, QString) {
     // dstIp argument is unused by client, it's for the server to know to which client to send
 
-    qDebug() << "Client sending bytes to " << serverRecord->ips.at(0);
-    //timer.start(PROXYCLIENT_TIMEOUT); // restart timer
-
     // the srcPort is changed in the helper
     rawSocks->writeBytes(listenIp, serverRecord->ips.at(0), port, buf, sockType, len);
 }
 
 void ProxyClient::receiveBytes(const char* buf, int len, int sockType, QString&) {
-    qDebug() << "client sending bytes with srcIp" << serversrcIp;
     con->sendBytes(buf, len, servermd5, sockType, serversrcIp);
 }
 
 void ProxyClient::timeout() {
-    qDebug() << "proxy client timeout!";
     this->deleteLater(); // delete myself
 }

@@ -29,9 +29,7 @@ RawSockets::RawSockets(QObject *parent) :
                 QStringList arguments;
                 arguments.append(ifaptr->ifa_name);
                 r->process->start(QString(HELPERPATH) + "sendRaw", arguments);
-                qDebug() << "waiting for new raw socket start";
                 r->process->waitForStarted();
-                qDebug() << "insert!";
                 rawHelpers.insert(ifaptr->ifa_name, r);
             }
         }
@@ -47,7 +45,6 @@ RawSockets::RawSockets(QObject *parent) :
     QStringList arguments;
     arguments.append("lo0");
     r->process->start(QString(HELPERPATH) + "sendRaw", arguments);
-    qDebug() << "waiting for new raw socket start";
     r->process->waitForStarted();
     rawHelpers.insert("lo0", r);
 #elif __GNUC__ /* inspired by http://stackoverflow.com/questions/1779715/how-to-get-mac-address-of-your-machine-using-a-c-program */
@@ -82,9 +79,7 @@ RawSockets::RawSockets(QObject *parent) :
                     QStringList arguments;
                     arguments.append(ifr.ifr_ifrn.ifrn_name);
                     r->process->start(QString(HELPERPATH) + "sendRaw", arguments);
-                    qDebug() << "waiting for new raw socket start";
                     r->process->waitForStarted();
-                    qDebug() << "insert!";
                     rawHelpers.insert(ifr.ifr_ifrn.ifrn_name, r);
                 }
             }
@@ -103,7 +98,6 @@ RawSockets::RawSockets(QObject *parent) :
     QStringList arguments;
     arguments.append("lo");
     r->process->start(QString(HELPERPATH) + "sendRaw", arguments);
-    qDebug() << "waiting for new raw socket start";
     r->process->waitForStarted();
     rawHelpers.insert("lo", r);
 #endif
@@ -121,7 +115,6 @@ RawSockets* RawSockets::getInstance() {
 
 void RawSockets::writeBytes(QString srcIp, QString dstIp, int srcPort, const char *transAndPayload, int sockType, int packet_send_size) {
     IpResolver* r = IpResolver::getInstance();
-    qDebug() << "getting mapping for" << dstIp;
     struct ip_mac_mapping map = r->getMapping(dstIp);
 
     if (map.interface == "") {
@@ -129,12 +122,9 @@ void RawSockets::writeBytes(QString srcIp, QString dstIp, int srcPort, const cha
         return;
     }
 
-    qDebug() << "getting rawProcess for interface";
-    qDebug() << map.interface;
     struct rawProcess* p = rawHelpers.value(map.interface);
     QProcess* raw = p->process;
     if (!raw || raw->state() != 2) {
-        qDebug() << "raw state is " << raw->state() << "and interface " << map.interface;
         qFatal("No raw helper");
     }
 
@@ -173,7 +163,6 @@ void RawSockets::writeBytes(QString srcIp, QString dstIp, int srcPort, const cha
         }
         source_mac_addr = ptr;
 #elif __GNUC__
-        qDebug() << "got in here";
         struct ifreq ifr;
         size_t if_name_len=strlen(if_name);
         if (if_name_len<sizeof(ifr.ifr_name)) {
@@ -201,7 +190,6 @@ void RawSockets::writeBytes(QString srcIp, QString dstIp, int srcPort, const cha
 
         source_mac_addr = (unsigned char*)ifr.ifr_hwaddr.sa_data;
         close(fd);
-        qDebug() << "got out of here";
 #endif
 
         memcpy(rawHeader.linkHeader.ethernet.ether_shost, source_mac_addr, ETHER_ADDR_LEN);

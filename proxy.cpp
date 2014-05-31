@@ -18,27 +18,21 @@ QMutex Proxy::poolOfIpsMutex;
 
 Proxy::~Proxy() {
     while (!processes.empty()) {
-        qDebug() << "Deleting processes associated with proxy";
         QProcess* p = processes.pop();
-        qDebug() << "Process state" << p->state();
         p->terminate();
         p->waitForFinished(200);
         waitpid(p->pid(), NULL, WNOHANG);
         if (p->state() != QProcess::NotRunning) {
-            qDebug() << "Killing process";
             p->kill();
         }
-        qDebug() << "Delete p";
         UnixSignalHandler* u = UnixSignalHandler::getInstance();
         u->removeQProcess(p);
-        //delete p;
         if (p) {
             p->deleteLater();
         }
         p = NULL;
         proxyHashes.remove(idHash);
     }
-    qDebug() << "Got out of proxy!";
 }
 
 Proxy::Proxy(int srcPort, int sockType, QByteArray md5)
@@ -117,7 +111,6 @@ void Proxy::gennewIP() {
                 foreach (QString value, list) {
                     if (value.contains(newip)) {
                         newIp = false;
-                        qDebug() << "local duplicate!";
                     }
                 }
             }
@@ -134,11 +127,11 @@ void Proxy::gennewIP() {
         ifconfig->waitForStarted();
 
         // wait 6 seconds for ifconfig to fail
-        /*if (ifconfig->waitForFinished(6000)) {
+        if (ifconfig->waitForFinished(6000)) {
             qDebug() << "new Duplicate! we generate an other one";
             u->removeQProcess(ifconfig);
             delete ifconfig;
-        } else { TODO REMOVE COMMENT AND CHECK FOR DAD */
+        } else {
             newip.truncate(newip.length() - 3); // remove prefix
 
             // add to local cache!
@@ -152,7 +145,7 @@ void Proxy::gennewIP() {
             poolOfIps.enqueue(newip);
             poolOfIpsMutex.unlock();
             length++;
-        //}
+        }
     }
 }
 
@@ -319,14 +312,11 @@ void Proxy::sendRawFinish(int exitCode) {
 
 void Proxy::sendRawStandardError() {
     QProcess* sendRaw = dynamic_cast<QProcess*> (QObject::sender());
-    qDebug() << "SEND RAW ERROR";
+    qDebug() << "SendRaw ERROR:";
     qDebug() << sendRaw->readAllStandardError();
 }
 
 void Proxy::sendRawStandardOutput() {
-    QProcess* sendRaw = dynamic_cast<QProcess*> (QObject::sender());
-    qDebug() << "SEND RAW OUTPUT";
-    qDebug() << sendRaw->readAllStandardOutput();
 }
 
 void Proxy::readyRead() {
@@ -339,7 +329,6 @@ void Proxy::readyRead() {
 
         pcap->read(static_cast<char*>(static_cast<void*>(&pcapHeader)), sizeof(pcapHeader));
         while (pcap->bytesAvailable() < pcapHeader.len) {
-            qDebug() << "Not enough bytes we wait!";
             pcap->waitForReadyRead(); /* should not happen since we write everything in one fwrite in buffer */
         }
 
@@ -350,7 +339,6 @@ void Proxy::readyRead() {
             // first 16 bits = source Port of UDP and TCP
             quint16* dstPort = static_cast<quint16*>(static_cast<void*>(packet + 2)); // second 16 bits dstPort (or + 2 bytes)
             *dstPort = htons(listenPort); // restore the original port
-            //qDebug() << "dst Port!" << ntohs(*dstPort);
         }
 
         QString ipSrc(pcapHeader.ipSrcStr);
@@ -384,8 +372,6 @@ void Proxy::run_pcap() {
                 // loop again until IP is available but just sleep a moment
                 QThread::sleep(1);
             } else if (bindSocket->exitCode() == 3) {
-                qDebug() << "exit code!" << bindSocket->exitCode();
-                qDebug() << bindSocket->readAllStandardError();
                 if (port < 60000) {
                     port = 60001;
                 } else {
@@ -393,7 +379,7 @@ void Proxy::run_pcap() {
                 }
                 if (port >= 65535)
                     qFatal("Port escalation higher than 65535");
-                qDebug() << "Could not bind on port " << listenPort << "gonna use " << QString::number(port);
+                qDebug() << "Could not bind on port " << listenPort << "going to use " << QString::number(port);
                 bindSocket->deleteLater();
             } else {
                 qFatal("Error with the bind helper process");
@@ -411,21 +397,17 @@ void Proxy::run_pcap() {
         // listen for packets with pcap, forward on the secure UDP link
         QStringList args;
         QString ifa = listenInterfaces.pop();
-        qDebug() << "iface : " << ifa;
         args.append(ifa);
         QString transportStr;
         sockType == SOCK_DGRAM ? transportStr = "udp" : transportStr = "tcp";
         args.append("ip6 dst host " + listenIp + " and " + transportStr + " and dst port " + QString::number(port));
         QProcess* pcap = new QProcess(this);
         connect(pcap, SIGNAL(finished(int)), this, SLOT(pcapFinish(int)));
-        // TODO connect pcap to deleteLater ?
         connect(pcap, SIGNAL(readyReadStandardOutput()), this, SLOT(readyRead()));
-        qDebug() << args;
 
         processes.push(pcap);
         u->addQProcess(pcap); // add pcap to be killed when main is killed
 
-        qDebug() << "THREAD ADDING PCAP" << QThread::currentThreadId();
         pcap->start(QString(HELPERPATH) + "pcapListen", args);
         pcap->waitForStarted();
     }

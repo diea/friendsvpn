@@ -10,14 +10,12 @@ DataPlaneClient::DataPlaneClient(QHostAddress ip, DataPlaneConnection* con, QObj
 }
 
 void DataPlaneClient::run() {
-    qDebug() << "running new connection to " << ip;
     inet_pton(AF_INET6, ip.toString().toUtf8().data(), &remote_addr.s6.sin6_addr);
     remote_addr.s6.sin6_family = AF_INET6;
 #ifdef HAVE_SIN6_LEN
     remote_addr.s6.sin6_len = sizeof(struct sockaddr_in6);
 #endif
     remote_addr.s6.sin6_port = htons(DATAPLANEPORT);
-    qDebug() << "got here";
     fd = socket(remote_addr.ss.ss_family, SOCK_DGRAM, 0);
     if (fd < 0) {
         perror("socket");
@@ -32,7 +30,6 @@ void DataPlaneClient::run() {
     local_addr.s6.sin6_port = htons(0);
     OPENSSL_assert(remote_addr.ss.ss_family == local_addr.ss.ss_family);
     bind(fd, (const struct sockaddr *) &local_addr, sizeof(struct sockaddr_in6));
-    qDebug() << "got here";
     OpenSSL_add_ssl_algorithms();
     //SSL_load_error_strings();
     ctx = SSL_CTX_new(DTLSv1_client_method());
@@ -41,7 +38,6 @@ void DataPlaneClient::run() {
         fprintf(stderr, "ssl_ctx fail\n");
         return;
     }
-    qDebug() << "got here";
     // get certificate and key from SQL & use them
     ConnectionInitiator* i = ConnectionInitiator::getInstance();
     QSslCertificate cert = i->getLocalCertificate();
@@ -57,14 +53,12 @@ void DataPlaneClient::run() {
         qWarning() << "ERROR: no certificate found!";
         return;
     }
-    qDebug() << "got here";
     if (x != NULL) X509_free(x);
     if (bi != NULL) BIO_free(bi);
 
     QSslKey key = i->getPrivateKey();
     QByteArray keyBytesPEM = key.toPem();
     char* keyBuffer = keyBytesPEM.data();
-    qDebug() << "got here";
     bi = BIO_new_mem_buf(keyBuffer, keyBytesPEM.length());
     EVP_PKEY *pkey;
     pkey = PEM_read_bio_PrivateKey(bi, NULL, NULL, NULL);
@@ -73,7 +67,6 @@ void DataPlaneClient::run() {
         qWarning() << "ERROR: no private key found!";
         return;
     }
-    qDebug() << "got here";
     if (pkey != NULL) EVP_PKEY_free(pkey);
     if (bi != NULL) BIO_free(bi);
 
@@ -81,26 +74,21 @@ void DataPlaneClient::run() {
         qWarning() << "ERROR: invalid private key!";
         return;
     }
-    qDebug() << "got here84";
     SSL_CTX_set_verify_depth (ctx, 2);
     SSL_CTX_set_read_ahead(ctx, 1);
 
     ssl = SSL_new(ctx);
-    qDebug() << "got here89";
     /* Create BIO, connect and set to already connected */
     bio = BIO_new_dgram(fd, BIO_CLOSE);
     ::connect(fd, (struct sockaddr *) &remote_addr, sizeof(struct sockaddr_in6));
     BIO_ctrl(bio, BIO_CTRL_DGRAM_SET_CONNECTED, 0, &remote_addr.ss);
-    qDebug() << "got here94";
     SSL_set_bio(ssl, bio, bio);
-    qDebug() << "got here96";
     if (SSL_connect(ssl) < 0) {
         qDebug() << "SSL_Connect client error";
         perror("SSL_connect");
         //printf("%s\n", ERR_error_string(ERR_get_error(), buf));
         return;
     }
-    qDebug() << "got here103";
     /* Set and activate timeouts */
     struct timeval timeout;
     timeout.tv_sec = 3;
@@ -118,7 +106,6 @@ void DataPlaneClient::run() {
         printf ("\n------------------------------------------------------------\n\n");
     }
     fflush(stdout);
-    qDebug() << "new qsocket";
     notif = new QSocketNotifier(fd, QSocketNotifier::Read);
     connect(notif, SIGNAL(activated(int)), this, SLOT(readyRead(int)));
 
@@ -126,7 +113,6 @@ void DataPlaneClient::run() {
 }
 
 void DataPlaneClient::readyRead(int) {
-    qDebug() << "ready read client";
     size_t len;
     if (!(SSL_get_shutdown(ssl) & SSL_RECEIVED_SHUTDOWN)) {
         len = SSL_read(ssl, buf, sizeof(buf));
@@ -199,10 +185,7 @@ void DataPlaneClient::stop() {
     close(fd);
     SSL_free(ssl);
     ERR_remove_state(0);
-    qDebug() << "dataplane client stopped";
     this->deleteLater();
-    //QThread::currentThread()->exit(0); // stop any activity in the thread
-
 }
 
 DataPlaneClient::~DataPlaneClient() {

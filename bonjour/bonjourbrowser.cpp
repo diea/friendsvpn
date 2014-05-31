@@ -51,20 +51,15 @@ void BonjourBrowser::reply(DNSServiceRef , DNSServiceFlags flags,
         if (flags & kDNSServiceFlagsAdd) {
             if (!serviceBrowser->bonjourRecords.contains(bonjourRecord))
                 serviceBrowser->bonjourRecords.append(bonjourRecord);
-                qDebug() << "Appending " << QString(serviceName) << " " << QString(regType);
         } else { // delete the record
-            qDebug() << "Bonjour browser delete record" << serviceName << regType << replyDomain;
             QList<BonjourRecord*>::iterator it;
             int bjrIndex = 0;
             // iterate through list to find the record to delete
             foreach (BonjourRecord* oldBonjourRecord, serviceBrowser->bonjourRecords) {
                 if (*oldBonjourRecord == *bonjourRecord) {
                     serviceBrowser->bonjourRecords.removeAt(bjrIndex);
-                    qDebug() << "Removing " << QString(serviceName) << " " << QString(regType);
-                    qDebug() << "IP " << oldBonjourRecord->ips << " port " << oldBonjourRecord->port;
                     if (oldBonjourRecord->resolved) {
                         // delete record from bonjour discoverer global list
-                        qDebug() << "remove record from global QHash in bonjour discoverer";
                         BonjourDiscoverer::recordHashes.remove(oldBonjourRecord->md5);
                     }
                     delete oldBonjourRecord;
@@ -86,7 +81,6 @@ void BonjourBrowser::reply(DNSServiceRef , DNSServiceFlags flags,
 }
 
 void BonjourBrowser::recordIsReady(BonjourRecord* rec) {
-    qDebug() << "Ip list length " << rec->ips.length();
     qDebug() << "Record is Ready" << rec->hostname << " " <<
              rec->registeredType << " IP " <<  rec->ips << " " << rec->port;
 }

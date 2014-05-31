@@ -1,20 +1,11 @@
 #include <QApplication>
 #include "graphic/systray.h"
-#include "bonjour/bonjourbrowser.h"
 #include "bonjour/bonjourdiscoverer.h"
 #include "bonjoursql.h"
 #include "poller.h"
 #include "connectioninitiator.h"
-#include "controlplane/controlplaneserver.h"
-#include "controlplane/controlplaneclient.h"
-#include "bonjour/bonjourregistrar.h"
-#include "dataplane/dataplaneserver.h"
-#include "dataplane/dataplaneclient.h"
-#include "proxy.h"
-#include "proxyserver.h"
 #include "unixsignalhandler.h"
-#include "ipresolver.h"
-#include <QDebug>
+#include "proxy.h"
 #if QT_VERSION >= 0x50000 
 #include <QtConcurrent>
 #endif
@@ -27,8 +18,7 @@ int main(int argc, char *argv[])
     // init signal handler
     UnixSignalHandler* u = UnixSignalHandler::getInstance();
 
-#if 1
-#ifdef __APPLE__
+#ifdef __APPLE__ /* linux only in text mode */
     // start systray
     QThread sysTrayThread;
     SysTray* st = new SysTray();
@@ -63,9 +53,7 @@ int main(int argc, char *argv[])
     QObject::connect(&discovererThread, SIGNAL(started()), disco, SLOT(discoverServices()));
     QObject::connect(u, SIGNAL(exiting()), &discovererThread, SLOT(quit()));
     discovererThread.start();
-    //disco->discoverServices();
 
     con->run();
-#endif
     return a.exec();
 }

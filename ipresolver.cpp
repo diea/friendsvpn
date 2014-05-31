@@ -28,14 +28,12 @@ IpResolver* IpResolver::getInstance() {
 
 void IpResolver::addMapping(QString ip, QString mac, QString interface) {
     struct ip_mac_mapping newmap;
-    qDebug() << "add mapping " << ip << mac << interface;
     newmap.interface = interface;
     newmap.mac = mac;
     newmap.ip = ip;
 
     mutex.lock();
     mappings.insert(ip, newmap);
-    qDebug() << "insert was done!";
     mutex.unlock();
 }
 
@@ -50,7 +48,6 @@ struct ip_mac_mapping IpResolver::getMapping(QString ip) {
         char buf[3000];
         int length;
 
-        qDebug() << "going into ifconfig";
         // is it a local address ?
         QProcess testIfconfig;
         testIfconfig.start("/sbin/ifconfig");

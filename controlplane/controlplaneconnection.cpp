@@ -181,31 +181,25 @@ void ControlPlaneConnection::readBuffer(const char* buf, int len) {
         }
 
         if (!headerLength) {
-            qDebug() << "ERROR: this is packet when header 0";
-            qDebug() << buf + bufferPosition;
+            qDebug() << "ERROR: packet with header length 0";
             return;
         }
 
         ok_len -= headerLength + 4; // 4 count for the \r\n\r\n
 
-        qDebug() << "headerlength is " << headerLength;
         QString packet = QString::fromUtf8(buf + bufferPosition, headerLength);
         bufferPosition += headerLength + 4; // skip to the next packet
 
-        qDebug() << "packet before split" << packet;
         QStringList list = packet.split("\r\n");
 
-        qDebug() << "new bjr packet" << list;
         QString packetType = list.at(0);
         if (!gotHello && packetType == "HELLO") {
             QStringList disec = list.at(1).split(":");
             if (!(disec.length() < 2)) {
                 if (this->friendUid != disec.at(1)) {
-                    qDebug() << "receive wrong UID for connection!";
                     wasDisconnected();
                     return;
                 } else {
-                    qDebug() << "Got hello!";
                     gotHello = true;
                 }
             }
@@ -239,7 +233,6 @@ void ControlPlaneConnection::readBuffer(const char* buf, int len) {
                     return;
                 }
 
-                qDebug() << "Running new proxy!!";
                 ProxyServer* newProxy = NULL;
                 try {
                     newProxy = new ProxyServer(friendUid, name, type, "", hostname, QByteArray::fromHex(txt.toUtf8()), port, QByteArray::fromHex(md5.toUtf8()));
@@ -247,14 +240,13 @@ void ControlPlaneConnection::readBuffer(const char* buf, int len) {
                     newProxy->run();
                 } catch (int i) {
                     // proxy exists
-                    qDebug() << "proxy exists!";
                 }
             } else if (packetType == "PING") {
                 QString pong = "PONG\r\n\r\n";
                 sendPacket(pong);
             } else if (packetType == "PONG") {
             } else { // no need to analyze PONG, we just need a packet for the time :)
-                qDebug() << "not starting with BONJOUR or PING";
+                qDebug() << "Not starting with BONJOUR or PING";
                 qDebug() << packet;
             }
         }
@@ -262,10 +254,8 @@ void ControlPlaneConnection::readBuffer(const char* buf, int len) {
 
     // handle incomplete packets
     bytesReceived -= lastFullPacket;
-    qDebug() << "bytesReceived is at " << bytesReceived;
     if (bytesReceived > 0) {
         // we have an incomplete packet at the end
-        qDebug() << "going into memmove";
         memmove(inputBuffer, inputBuffer + lastFullPacket, bytesReceived); // move everything back at start of buffer
     }
 }
@@ -273,7 +263,6 @@ void ControlPlaneConnection::readBuffer(const char* buf, int len) {
 void ControlPlaneConnection::sendBonjour() {
     // get bonjour records from db & send them over the connection
     QList < BonjourRecord* > records = qSql->getRecordsFor(this->friendUid);
-    qDebug() << "Retrieved " << records.length() << " records!";
     foreach (BonjourRecord* rec, records) {  
         QString packet;
         packet = packet
@@ -290,8 +279,6 @@ void ControlPlaneConnection::sendBonjour() {
 
         packet = packet % "\r\n";
 
-        qDebug() << "Sending" << packet;
-
         sendPacket(packet);
     }
 
@@ -304,9 +291,7 @@ void ControlPlaneConnection::sendBonjour() {
 }
 
 void ControlPlaneConnection::wasDisconnected() {
-    qDebug() << "Geting init instance";
     ConnectionInitiator* init = ConnectionInitiator::getInstance();
-    qDebug() << "Removing myself from the list";
     init->removeConnection(this);
 
     while (!proxyServers.isEmpty()) {

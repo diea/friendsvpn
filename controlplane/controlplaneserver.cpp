@@ -37,7 +37,6 @@ void ControlPlaneServer::start() {
 }
 
 void ControlPlaneServer::newIncoming() {
-    qDebug() << "New incoming control Plane !";
     QTcpSocket* socket = tcpSrv->nextPendingConnection();
 
     SslSocket* sslSock = new SslSocket();
@@ -94,7 +93,6 @@ void ControlPlaneServer::sslSockReadyRead() {
 
 void ControlPlaneServer::sslDisconnected() {
     SslSocket* sslSock = qobject_cast<SslSocket*>(sender());
-    qDebug() << "sslSock disco";
     sslSockList.removeAll(sslSock);
     if (sslSock->isAssociated())
         sslSock->getControlPlaneConnection()->removeMode(Receiving);

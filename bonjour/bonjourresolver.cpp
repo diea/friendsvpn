@@ -148,19 +148,16 @@ void BonjourResolver::hostInfoReady(const QHostInfo &info) {
                 }
             }
             arp.close();
-            qDebug() << "arp table done, macs:" << macs;
             for (int i = 0; i < macs.length(); i++) {
                 // send an inverse neighbor discovery icmpv6 just in case no previous contact was made: DOES NOT WORK
                 // RFC 3122 is a proposed standard and not yet supported.
 
                 // we can however, send an ICMPv6 request to ff02::1 and the right mac address
-                qDebug() << "sending icmpReq";
                 QProcess icmpReq;
                 QStringList icmpReqArgs;
                 icmpReqArgs.append(ifaces.at(i));
                 icmpReqArgs.append(qSql->getLocalIP());
                 icmpReqArgs.append(macs.at(i));
-                qDebug() << icmpReqArgs;
                 icmpReq.start(QString(HELPERPATH) + "reqIp", icmpReqArgs);
                 icmpReq.waitForFinished(500);
 
@@ -196,7 +193,6 @@ void BonjourResolver::hostInfoReady(const QHostInfo &info) {
                 }
                 ndp.close();
         #elif __GNUC__
-                qDebug() << "Checking ip -6 neigh";
                 ndp.start("ip -6 neigh");
                 ndp.waitForReadyRead();
                 char buf[3000];
@@ -261,17 +257,5 @@ void BonjourResolver::hostInfoReady(const QHostInfo &info) {
     emit resolved(record);
 
     this->deleteLater();
-
-    /*qDebug() << "REGISTERING";
-    if (record->txt.contains("\r\n")) {
-        qDebug() << "contains\r\n";
-    } else {
-        qDebug() << "nope";
-    }
-    BonjourRecord rec = BonjourRecord("fvpn_" + record->hostname, record->registeredType, record->replyDomain,
-                        QString::number(QDateTime::currentMSecsSinceEpoch())+"_"+record->hostname,
-                        QStringList("::1"), record->port + 60000, record->txt);
-    BonjourRegistrar* r = new BonjourRegistrar();
-    r->registerService(rec);*/
 }
 

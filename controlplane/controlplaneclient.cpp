@@ -19,7 +19,6 @@ ControlPlaneClient::ControlPlaneClient(QSslCertificate servCert, QSslKey myKey,
 
 ControlPlaneClient::~ControlPlaneClient()
 {
-    qDebug() << "Destroy contorl plane client";
     sslClient->close();
 }
 
@@ -36,12 +35,11 @@ void ControlPlaneClient::run() {
     connect(sslClient, SIGNAL(encrypted()), this, SLOT(connectionReady()));
     connect(sslClient, SIGNAL(disconnected()), this, SLOT(sslDisconnected()));
 
-    qDebug() << "CONNECT TO HOST " << addr.toString() << ":" << port;
     sslClient->connectToHostEncrypted(addr.toString(), port);
 }
 
 void ControlPlaneClient::sslErrors(const QList<QSslError>& errors) {
-    qDebug() << "ssl error";
+    qDebug() << "SSL error:";
     qDebug() << errors;
 }
 
@@ -63,11 +61,8 @@ void ControlPlaneClient::sslClientReadyRead() {
 }
 
 void ControlPlaneClient::sslDisconnected() {
-    qDebug() << "Disco";
     if (sslClient->isAssociated()) {
-        qDebug() << "removing emitting mode from control plane";
         sslClient->getControlPlaneConnection()->removeMode(Emitting);
-        qDebug() << "control plane is now in mode" << sslClient->getControlPlaneConnection()->getMode();
     }
     sslClient->deleteLater();
 }

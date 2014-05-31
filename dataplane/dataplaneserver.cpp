@@ -46,7 +46,6 @@ void DataPlaneServer::start() {
     SSL_CTX_set_session_cache_mode(ctx, SSL_SESS_CACHE_OFF);
 
     // get certificate and key from SQL & use them
-#if 1
     ConnectionInitiator* i = ConnectionInitiator::getInstance();
     QSslCertificate cert = i->getLocalCertificate();
     QByteArray certBytesPEM = cert.toPem();
@@ -80,20 +79,6 @@ void DataPlaneServer::start() {
 
     if (pkey != NULL) EVP_PKEY_free(pkey);
     if (bi != NULL) BIO_free(bi);
-
-#elif 1
-    /* The way to go with Files */
-    qDebug() << QString(QCoreApplication::applicationDirPath() + "/testCerts/server-key.pem").toUtf8().data();
-
-    if (!SSL_CTX_use_certificate_file(ctx, QString(QCoreApplication::applicationDirPath() + "/testCerts/server-cert.pem").toUtf8().data(), SSL_FILETYPE_PEM)) {
-        qWarning() << "ERROR: no certificate found!";
-        exit(-1);
-    }
-    if (!SSL_CTX_use_PrivateKey_file(ctx, QString(QCoreApplication::applicationDirPath() + "/testCerts/server-key.pem").toUtf8().data(), SSL_FILETYPE_PEM)) {
-        qWarning() << "ERROR: no private key found!";
-        exit(-1);
-    }
-#endif
 
     if (!SSL_CTX_check_private_key (ctx)) {
         qWarning() << "ERROR: invalid private key!";
@@ -129,7 +114,6 @@ void DataPlaneServer::start() {
 }
 
 void DataPlaneServer::readyRead(int) {
-    qDebug() << "DATAPLANE Server readyRead";
     memset(&client_addr, 0, sizeof(struct sockaddr_storage));
 
     /* Create BIO */
@@ -154,8 +138,6 @@ void DataPlaneServer::readyRead(int) {
     addrUnion infClient_addr;
     memcpy(&infServer_addr, &server_addr, sizeof(struct sockaddr_storage));
     memcpy(&infClient_addr, &client_addr, sizeof(struct sockaddr_storage));
-
-    qDebug() << "Creating worker Thread";
 
     // get UID from friend using his IP to create worker thread
     // if IP is not in DB we close the connection
@@ -189,8 +171,6 @@ void DataPlaneServer::readyRead(int) {
     UnixSignalHandler* u = UnixSignalHandler::getInstance();
     connect(u, SIGNAL(exiting()), workerThread, SLOT(quit()));
     workerThread->start();
-
-    qDebug() << "Worked thread done";
 }
 
 int DataPlaneServer::dtls_verify_callback(int, X509_STORE_CTX *) {
