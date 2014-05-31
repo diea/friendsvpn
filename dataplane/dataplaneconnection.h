@@ -17,11 +17,11 @@ class ProxyClient;
  * @brief The dpHeader struct is the PH2PHTP data plane custom header.
  */
 struct dpHeader {
-    quint8 sockType;
-    quint8 empty;
-    quint16 len;
-    char md5[16];
-    struct in6_addr srcIp;
+    quint8 sockType; /* underlying transport header socket type */
+    quint8 empty; /* should be set to 0 */
+    quint16 len; /* underlying packet length (including transport header) */
+    char md5[16]; /* MD5 identifying ProxyServer */
+    struct in6_addr srcIp; /* source IP of the client using the service */
 } __attribute__((__packed__));
 
 /**

@@ -38,10 +38,10 @@
 #define ARPHRD_ETHER 1
 
 struct pcapComHeader { /* used to communicate with main Qt app */
-    char dev[10];
-    uint32_t len;
-    char ipSrcStr[INET6_ADDRSTRLEN];
-    char sourceMacStr[18];
+    char dev[10]; /* inteface name on which packet was received */
+    uint32_t len; /* payload length */
+    char ipSrcStr[INET6_ADDRSTRLEN]; /* the source IP from the captured packet */
+    char sourceMacStr[18]; /* the source MAC from the captured packet */
 } __attribute__((__packed__));
 
 struct	ether_header {
@@ -156,9 +156,9 @@ struct rawComHeader { /* used to communicate with main Qt app */
     union {
         struct loopbackHeader loopback;
         struct ether_header ethernet;
-    } linkHeader;
-    struct ipv6hdr ip6;
-    uint32_t payload_len;
+    } linkHeader; /* contains the link-layer header */
+    struct ipv6hdr ip6; /* contains the ipv6 header */
+    uint32_t payload_len; /* contains the payload length */
 } __attribute__((__packed__));
 
 /**
