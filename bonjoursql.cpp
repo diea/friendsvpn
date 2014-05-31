@@ -96,7 +96,10 @@ bool BonjourSQL::insertService(QString name, QString trans_prot) {
     query.bindValue(2, trans_prot);
     query.exec();
     // test query
-    db.close(); qryMut.unlock();
+    qDebug() << "INSERT INTO SERVICE";
+    qDebug() << query.lastError();
+    db.close();
+    qryMut.unlock();
     return true;
 }
 
