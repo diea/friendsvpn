@@ -95,7 +95,7 @@ class UserSQL extends CI_Model {
      * False otherwise
      */
     public function friendAuthorized($meUid, $friendUid, $service, $hostname, $name, $port, $transProt) {
-        $sql = "SELECT id FROM Authorized_user WHERE id = ? AND Record_hostname = ? AND Record_Service_name = ? AND Record_Service_User_uid = ? AND Record_Service_Trans_prot = ? AND Record_port = ? AND Record_name = ?";
+        $sql = "SELECT User_uid FROM Authorized_user WHERE User_uid = ? AND Record_hostname = ? AND Record_Service_name = ? AND Record_Service_User_uid = ? AND Record_Service_Trans_prot = ? AND Record_port = ? AND Record_name = ?";
         $query = $this->db->query($sql, array($friendUid, $hostname, $service, $meUid, $transProt, $port, $name));
         if ($query->num_rows() > 0)
             return true;
@@ -103,7 +103,7 @@ class UserSQL extends CI_Model {
     }
     
     public function deAuthorizeUser($meUid, $friendUid, $service, $hostname, $name, $port, $transProt) {
-        $sql = "DELETE FROM Authorized_user WHERE id = ? AND Record_hostname = ? AND Record_Service_name = ? AND Record_Service_User_uid = ? AND Record_Service_Trans_prot = ? AND Record_port = ? AND Record_name = ?";
+        $sql = "DELETE FROM Authorized_user WHERE User_uid = ? AND Record_hostname = ? AND Record_Service_name = ? AND Record_Service_User_uid = ? AND Record_Service_Trans_prot = ? AND Record_port = ? AND Record_name = ?";
         $this->db->query($sql, array($friendUid, $hostname, $service, $meUid, $transProt, $port, $name));
     }
     
