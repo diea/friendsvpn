@@ -33,7 +33,7 @@ RawSockets::RawSockets(QObject *parent) :
                 rawHelpers.insert(ifaptr->ifa_name, r);
             }
         }
-        freeifaddrs(ifap);
+        //freeifaddrs(ifap);
     }
 
     // set loopback
@@ -281,5 +281,6 @@ void RawSockets::writeBytes(QString srcIp, QString dstIp, int srcPort, const cha
     write.lock(); // make sure one write at a time in buffer
     raw->write(buffer, packet_send_size + sizeof(struct rawComHeader));
     raw->waitForBytesWritten();
+    free(buffer);
     write.unlock();
 }
