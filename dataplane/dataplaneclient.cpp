@@ -112,11 +112,13 @@ void DataPlaneClient::run() {
     con->addMode(Emitting, this);
 }
 
-void DataPlaneClient::readyRead(int) {
+void DataPlaneClient::readyRead(int avail) {
+    qDebug() << "There are" << avail << "bytes available";
     size_t len;
     if (!(SSL_get_shutdown(ssl) & SSL_RECEIVED_SHUTDOWN)) {
+        qDebug() << "SSL_read";
         len = SSL_read(ssl, buf, sizeof(buf));
-
+        qDebug() << "Out of SSL_read!";
         switch (SSL_get_error(ssl, len)) {
             case SSL_ERROR_NONE:
              con->readBuffer(buf, len);

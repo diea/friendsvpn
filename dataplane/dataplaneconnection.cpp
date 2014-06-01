@@ -122,6 +122,7 @@ void DataPlaneConnection::sendBytes(const char *buf, int len, QByteArray& hash, 
 
 void DataPlaneConnection::sendPacket(const char *buf, int len) {
     mutex.lock();
+    qDebug() << "Sending" << len << "bytes";
     if (curMode == Closed) {
         qWarning() << "Trying to sendBytes on Closed state for uid" << friendUid;
     } else if (curMode == Emitting) {
@@ -131,6 +132,7 @@ void DataPlaneConnection::sendPacket(const char *buf, int len) {
     } else {
         qWarning() << "Should not happen, trying to send bytes in Both mode for uid" << friendUid;
     }
+    qDebug() << "Sent!";
     mutex.unlock();
 }
 
