@@ -17,6 +17,7 @@ QQueue<QString> Proxy::poolOfIps;
 QMutex Proxy::poolOfIpsMutex;
 
 Proxy::~Proxy() {
+    qDebug() << "Proxy destructor!";
     while (!processes.empty()) {
         QProcess* p = processes.pop();
         p->terminate();
