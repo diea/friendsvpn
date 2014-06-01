@@ -65,6 +65,10 @@ bool DataPlaneConnection::addMode(plane_mode mode, QObject* socket) {
 
 void DataPlaneConnection::readBuffer(const char* buf, int bufSize) {
     qDebug() << "readBuffer of size " << bufSize;
+    if (bufSize == sizeof(struct dpHeader)) {
+        qDebug() << "readBuffer only contains a dpHeader but no payload";
+        return;
+    }
     lastRcvdTimestamp = time(NULL); // we received a packet, update time
     struct dpHeader *header = (struct dpHeader*) buf;
     const char* packetBuf = buf + sizeof(struct dpHeader); // packet
