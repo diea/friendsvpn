@@ -5,6 +5,7 @@ command -v mysql >/dev/null 2>&1 || { echo >&2 "Mysql has to be installed to use
 command -v qmake >/dev/null 2>&1 || { echo >&2 "Did not find the qmake command.  Aborting."; exit 1; }
 
 sslVersion=$(openssl version)
+unamestr=$(uname)
 
 if [[ $sslVersion != "OpenSSL 1.0.1g"* ]]
 then
@@ -17,7 +18,6 @@ then
 	    wget https://www.openssl.org/source/openssl-1.0.1g.tar.gz --no-check-certificate
 	    tar -xvf openssl-1.0.1g.tar.gz
 	    cd openssl-1.0.1g
-	    unamestr=$(uname)
 	    if [[ $unamestr == "Darwin" ]]; then
 			./Configure darwin64-x86_64-cc
 		else
@@ -49,7 +49,13 @@ gcc newSocket.c -o newSocket
 
 echo "Please provide root password for setting the setuid bit to the helpers, thank you"
 
-sudo chown root:wheel pcapListen sendRaw ifconfighelp reqIp
-sudo chmod u+s pcapListen sendRaw ifconfighelp reqIp
+if [[ $unamestr == "Darwin" ]]; then
+	sudo chown root:wheel pcapListen sendRaw ifconfighelp reqIp
+	sudo chmod u+s pcapListen sendRaw ifconfighelp reqIp
+else
+	sudo chown root:`whoami` pcapListen sendRaw ifconfighelp reqIp
+	sudo chmod u+s pcapListen sendRaw ifconfighelp reqIp
+fi
+
 
 cd ..
