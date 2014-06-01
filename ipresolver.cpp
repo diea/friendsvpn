@@ -57,6 +57,9 @@ struct ip_mac_mapping IpResolver::getMapping(QString ip) {
             QString curLine(buf);
             QStringList list = curLine.split(" ", QString::SkipEmptyParts);
             foreach (QString value, list) {
+#ifndef __APPLE__
+                value.chop(3);
+#endif
                 QHostAddress cmp(value);
                 qDebug() << value;
                 if (cmp == localIp) {
