@@ -331,6 +331,11 @@ void Proxy::readyRead() {
         }
 
         pcap->read(static_cast<char*>(static_cast<void*>(&pcapHeader)), sizeof(pcapHeader));
+
+        if (pcapHeader.len) {
+            qDebug() << "pcapComheader contains length 0";
+        }
+
         while (pcap->bytesAvailable() < pcapHeader.len) {
             pcap->waitForReadyRead(); /* should not happen since we write everything in one fwrite in buffer */
         }
