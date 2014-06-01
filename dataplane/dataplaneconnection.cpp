@@ -63,7 +63,8 @@ bool DataPlaneConnection::addMode(plane_mode mode, QObject* socket) {
     return true;
 }
 
-void DataPlaneConnection::readBuffer(const char* buf, int) {
+void DataPlaneConnection::readBuffer(const char* buf, int bufSize) {
+    qDebug() << "readBuffer of size " << bufSize;
     lastRcvdTimestamp = time(NULL); // we received a packet, update time
     struct dpHeader *header = (struct dpHeader*) buf;
     const char* packetBuf = buf + sizeof(struct dpHeader); // packet
