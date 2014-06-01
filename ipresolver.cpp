@@ -12,7 +12,7 @@ IpResolver::IpResolver() :
 #ifdef __APPLE__
     addMapping("::1", "", "lo0");
 #elif __GNUC__
-    addMapping("::1", "", "lo");
+    addMapping("::1", "", "eth0");
 #endif
 }
 
