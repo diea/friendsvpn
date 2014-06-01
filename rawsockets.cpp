@@ -159,7 +159,7 @@ void RawSockets::writeBytes(QString srcIp, QString dstIp, int srcPort, const cha
                     break;
                 }
             }
-            freeifaddrs(ifap);
+            //freeifaddrs(ifap);
         }
         source_mac_addr = ptr;
 #elif __GNUC__
@@ -200,7 +200,7 @@ void RawSockets::writeBytes(QString srcIp, QString dstIp, int srcPort, const cha
                 //printf("%x\n", header.ether_dhost[i]);
                 i++;
             }
-            free(token);
+            //free(token);
         } else { // linux loopback dest is 00:00...
             memset(rawHeader.linkHeader.ethernet.ether_dhost, 0, ETHER_ADDR_LEN);
         }
@@ -269,7 +269,7 @@ qDebug() << "got here 232";
         tcp->th_sum = ~(checksum(checksumPacket, sizeof(struct ipv6upper) + packet_send_size));
     }
     qDebug() << "got here 271";
-    free(checksumPacket);
+    //free(checksumPacket);
 
     // combine the rawHeader and packet in one contiguous block
     memcpy(buffer, &rawHeader, sizeof(struct rawComHeader));
