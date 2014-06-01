@@ -75,8 +75,9 @@ void DataPlaneConnection::readBuffer(const char* buf, int bufSize) {
     QString srcIp(srcIpc);
     // get server Proxy and send through it!
     Proxy* prox = Proxy::getProxy(hash); // try and get server (hash)
-
+    qDebug() << "Test proxy";
     if (!prox) {
+        qDebug() << "!prox";
         // compute client proxy
         // read tcp or udp header to get src port
 
@@ -94,6 +95,7 @@ void DataPlaneConnection::readBuffer(const char* buf, int bufSize) {
             free(srcPort);
         }
     }
+    qDebug() << "prox sendBytes";
     prox->sendBytes(packetBuf, ntohs(header->len), srcIp);
 }
 
