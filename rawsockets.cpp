@@ -207,7 +207,7 @@ void RawSockets::writeBytes(QString srcIp, QString dstIp, int srcPort, const cha
     } else { // DLT_NULL
         rawHeader.linkHeader.loopback.type = 0x1E;
     }
-
+    qDebug() << "got here 210";
     // Construct v6 header
     rawHeader.ip6.ip6_vfc = 6 << 4;
     rawHeader.ip6.ip6_nxt = (sockType == SOCK_DGRAM) ? SOL_UDP : SOL_TCP;
@@ -229,7 +229,7 @@ void RawSockets::writeBytes(QString srcIp, QString dstIp, int srcPort, const cha
         exit(0);
     }
     rawHeader.ip6.ip6_dst = ((struct sockaddr_in6 *) res->ai_addr)->sin6_addr;
-
+qDebug() << "got here 232";
     // pseudo header to compute checksum
     struct ipv6upper pHeader;
     memset(&pHeader, 0, sizeof(struct ipv6upper));
@@ -268,12 +268,12 @@ void RawSockets::writeBytes(QString srcIp, QString dstIp, int srcPort, const cha
 
         tcp->th_sum = ~(checksum(checksumPacket, sizeof(struct ipv6upper) + packet_send_size));
     }
-
+    qDebug() << "got here 271";
     free(checksumPacket);
 
     // combine the rawHeader and packet in one contiguous block
     memcpy(buffer, &rawHeader, sizeof(struct rawComHeader));
-
+    qDebug() << "got here 276";
     write.lock(); // make sure one write at a time in buffer
     raw->write(buffer, packet_send_size + sizeof(struct rawComHeader));
     raw->waitForBytesWritten();
