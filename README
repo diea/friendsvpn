@@ -1,5 +1,5 @@
 PREREQUISITES
-This application needs mysql and Qt5 or higher to be installed.
+This application needs mysql55 or higher and Qt5 or higher to be installed.
 
 Make sure that the command qmake is in your PATH.
 
