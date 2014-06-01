@@ -61,7 +61,7 @@ struct ip_mac_mapping IpResolver::getMapping(QString ip) {
 #ifdef __APPLE__
                     this->addMapping(ip, "", "lo0");
 #elif __GNUC__
-                    this->addMapping(ip, "", "lo");
+                    this->addMapping(ip, "", "eth0");
 #endif
                     testIfconfig.close();
                     return getMapping(ip);
