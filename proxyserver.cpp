@@ -34,7 +34,9 @@ void ProxyServer::run() {
 }
 
 void ProxyServer::sendBytes(const char *buf, int len, QString dstIp) {
+    qDebug() << "Server writing bytes";
     rawSocks->writeBytes(rec.ips.at(0), dstIp, port, buf, sockType, len);
+    qDebug() << "Bytes written!";
 }
 
 void ProxyServer::receiveBytes(const char* buf, int len, int sockType, QString& srcIp) {
