@@ -240,17 +240,18 @@ void RawSockets::writeBytes(QString srcIp, QString dstIp, int srcPort, const cha
     pHeader.ip6_src = rawHeader.ip6.ip6_src;
     pHeader.ip6_dst = rawHeader.ip6.ip6_dst;
     pHeader.nextHeader = rawHeader.ip6.ip6_nxt;
-
+    qDebug() << "got here 243";
     int nbBytes = packet_send_size;
     int padding = packet_send_size % 16;
 
     if (padding) {
         nbBytes = (packet_send_size / 16) * 16 + 16;
     }
+    qDebug() << "got here 250";
     int checksumBufSize = sizeof(struct ipv6upper) + nbBytes;
     char* checksumPacket = static_cast<char*>(malloc(checksumBufSize));
     memset(checksumPacket, 0, checksumBufSize);
-
+    qDebug() << "got here 254";
     if (sockType == SOCK_DGRAM) {
         struct sniff_udp* udp = static_cast<struct sniff_udp*>(static_cast<void*>(packet_send));
         udp->sport = htons(srcPort); // change udp src port
@@ -261,16 +262,19 @@ void RawSockets::writeBytes(QString srcIp, QString dstIp, int srcPort, const cha
 
         udp->udp_sum = ~(checksum(checksumPacket, sizeof(struct ipv6upper) + packet_send_size));
     } else {
+        qDebug() << "got here 265";
         pHeader.payload_len = htonl(packet_send_size);
 
         struct sniff_tcp* tcp = static_cast<struct sniff_tcp*>(static_cast<void*>(packet_send));
         tcp->th_sport = htons(srcPort); // change source port
+        qDebug() << "got here 270";
         memset(&(tcp->th_sum), 0, sizeof(u_short)); // checksum field to 0
 
         memcpy(checksumPacket, &pHeader, sizeof(struct ipv6upper));
         memcpy(checksumPacket + sizeof(struct ipv6upper), packet_send, packet_send_size);
-
+        qDebug() << "got here 275";
         tcp->th_sum = ~(checksum(checksumPacket, sizeof(struct ipv6upper) + packet_send_size));
+        qDebug() << "got here 280";
     }
     qDebug() << "got here 271";
     //free(checksumPacket);
