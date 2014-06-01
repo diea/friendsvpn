@@ -223,13 +223,17 @@ void RawSockets::writeBytes(QString srcIp, QString dstIp, int srcPort, const cha
         exit(0);
     }
     rawHeader.ip6.ip6_src = ((struct sockaddr_in6 *) res->ai_addr)->sin6_addr;
-    adret = getaddrinfo(dstIp.toUtf8().data(), NULL, &hints, &res);
+
+    struct addrinfo *res1;
+    memset(&hints, 0, sizeof(hints));
+    hints.ai_family = AF_INET6;
+    adret = getaddrinfo(dstIp.toUtf8().data(), NULL, &hints, &res1);
     if (adret) {
         fprintf(stderr, "%s\n", gai_strerror(adret));
         exit(0);
     }
-    rawHeader.ip6.ip6_dst = ((struct sockaddr_in6 *) res->ai_addr)->sin6_addr;
-qDebug() << "got here 232";
+    rawHeader.ip6.ip6_dst = ((struct sockaddr_in6 *) res1->ai_addr)->sin6_addr;
+    qDebug() << "got here 232";
     // pseudo header to compute checksum
     struct ipv6upper pHeader;
     memset(&pHeader, 0, sizeof(struct ipv6upper));
