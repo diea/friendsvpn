@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/bin/bash
 # starts the friends vpn application and asks for cleaning if it crashed on previous run
 
 unamestr=$(uname)
