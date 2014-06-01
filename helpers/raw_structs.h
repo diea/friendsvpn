@@ -28,7 +28,8 @@
 #define SIZE_NULL 4
 
 /* default snap length (maximum bytes per packet to capture) */
-#define SNAP_LEN 1518
+// #define SNAP_LEN 1518
+#define SNAP_LEN 70000
 
 /* ethernet headers are always exactly 14 bytes */
 #define SIZE_ETHERNET 14

@@ -12,7 +12,7 @@ IpResolver::IpResolver() :
 #ifdef __APPLE__
     addMapping("::1", "", "lo0");
 #elif __GNUC__
-    addMapping("::1", "", "eth0");
+    addMapping("::1", "", "lo");
 #endif
 }
 
@@ -39,7 +39,6 @@ void IpResolver::addMapping(QString ip, QString mac, QString interface) {
 
 struct ip_mac_mapping IpResolver::getMapping(QString ip) {
     QHostAddress localIp(ip);
-    qDebug() << "getting mapping for " << ip;
     mutex.lock();
     if (mappings.contains(ip)) {
         mutex.unlock();
@@ -57,16 +56,15 @@ struct ip_mac_mapping IpResolver::getMapping(QString ip) {
             QString curLine(buf);
             QStringList list = curLine.split(" ", QString::SkipEmptyParts);
             foreach (QString value, list) {
+                QHostAddress cmp(value);
 #ifndef __APPLE__
                 value.chop(3);
 #endif
-                QHostAddress cmp(value);
-                qDebug() << value;
                 if (cmp == localIp) {
 #ifdef __APPLE__
                     this->addMapping(ip, "", "lo0");
 #elif __GNUC__
-                    this->addMapping(ip, "08:00:27:a6:a2:75", "eth0");
+                    this->addMapping(ip, "", "lo");
 #endif
                     testIfconfig.close();
                     return getMapping(ip);
