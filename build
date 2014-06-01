@@ -53,8 +53,8 @@ if [[ $unamestr == "Darwin" ]]; then
 	sudo chown root:wheel pcapListen sendRaw ifconfighelp reqIp
 	sudo chmod u+s pcapListen sendRaw ifconfighelp reqIp
 else
-	sudo chown root:`whoami` pcapListen sendRaw ifconfighelp reqIp
-	sudo chmod u+s pcapListen sendRaw ifconfighelp reqIp
+	sudo chown root:`whoami pcapListen sendRaw ifconfighelp reqIp newSocket
+	sudo chmod u+s pcapListen sendRaw ifconfighelp reqIp newSocket
 fi
 
 
