@@ -2,9 +2,7 @@
 class Welcome extends MY_Controller {    
     public function __construct() {
         parent::__construct();
-        //parse_str($_SERVER['QUERY_STRING'], $_REQUEST); XXX
-        //$this->config->load("facebook", TRUE);
-        //$config = $this->config->item('facebook');
+
         $this->load->library('Facebook');//, $config);
         $this->load->model('UserSQL');
     }
@@ -25,11 +23,10 @@ class Welcome extends MY_Controller {
              */
             $this->UserSQL->initUser($userId);
             $data['userId'] = $userId;
-            // Get user's data and print it
-            //$user = $this->facebook->api('/me');
             $this->load->model("FacebookFQL");
-            $friends = $this->FacebookFQL->getFriends(); // need to exec a first command to init cookies etc.
-            //print_r($friends);
+            $this->FacebookFQL->getFriends();
+            
+            /* render home view */
             $this->render('home', $data);
         }
 	}

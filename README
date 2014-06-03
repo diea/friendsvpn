@@ -7,3 +7,6 @@ On OSX you can check that your Qt sql plugin points to the right sql library fil
 
 INSTALL
 To build the application use the script "build" by launching with the command ./build from within this folder.
+
+RUN
+Once the application is built, run it using the ./start script.

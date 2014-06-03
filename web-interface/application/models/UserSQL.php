@@ -3,6 +3,10 @@ class UserSQL extends CI_Model {
     function __construct() {
         parent::__construct();
     }
+    
+    /**
+     * Initializes a user of uid $uid; if not in the database the user is created, otherwise his IP is updated
+     */
     public function initUser($uid) {
         $userSQL = "SELECT uid, firstname, lastname FROM User WHERE uid = ?";
         $query = $this->db->query($userSQL, array($uid));
@@ -58,6 +62,9 @@ class UserSQL extends CI_Model {
         return false;
     }
     
+    /**
+     * Retrieves the hostnames of a given service for user $uid
+     */
     public function getHostNames($uid, $service) {
         $sql = "SELECT DISTINCT(hostname) FROM Record WHERE Service_User_uid = ? AND Service_name = ?";
         $query = $this->db->query($sql, array($uid, $service));
@@ -65,7 +72,9 @@ class UserSQL extends CI_Model {
             return $query->result_array();
         return false;
     }
-    
+    /**
+     * Retrieves $uid's services
+     */
     public function getServices($uid) {
         $sql = "SELECT DISTINCT name, trans_prot FROM Service WHERE user_uid = ?";
         $query = $this->db->query($sql, array($uid));
@@ -73,7 +82,9 @@ class UserSQL extends CI_Model {
             return $query->result_array();
         return false;
     }
-    
+    /**
+     * Retrieves the service's names and port for a given $uid and $hostname and $service which is the service's name
+     */
     public function getNamesAndPort($uid, $hostname, $service) {
         $sql = "SELECT name, port, Service_Trans_prot FROM Record WHERE Service_User_uid = ? AND hostname = ? AND Service_name = ?";
         $query = $this->db->query($sql, array($uid, $hostname, $service));
@@ -81,7 +92,9 @@ class UserSQL extends CI_Model {
             return $query->result_array();
         return false;
     }
-    
+    /**
+     * Returns true if $uid is in the database, false otherwise
+     */
     public function friendInDb($uid) {
         $sql = "SELECT uid FROM User WHERE uid = ?";
         $query = $this->db->query($sql, array($uid));
@@ -101,7 +114,9 @@ class UserSQL extends CI_Model {
             return true;
         return false;
     }
-    
+    /**
+     * De-authorize a user for a given service
+     */
     public function deAuthorizeUser($meUid, $friendUid, $service, $hostname, $name, $port, $transProt) {
         $sql = "DELETE FROM Authorized_user WHERE User_uid = ? AND Record_hostname = ? AND Record_Service_name = ? AND Record_Service_User_uid = ? AND Record_Service_Trans_prot = ? AND Record_port = ? AND Record_name = ?";
         $this->db->query($sql, array($friendUid, $hostname, $service, $meUid, $transProt, $port, $name));
@@ -111,7 +126,7 @@ class UserSQL extends CI_Model {
         $sql = "INSERT INTO Authorized_user VALUES(?, ?, ?, ?, ?, ?, ?)";
         $this->db->query($sql, array($friendUid, $hostname, $service, $meUid, $transProt, $name, $port));
     }
-    
+
     public function removeRecord($meUid, $friendUid, $service, $hostname, $name, $port, $transProt) {
         $sql = "DELETE FROM Authorized_user WHERE Record_hostname = ? AND Record_Service_name = ? AND Record_Service_User_uid = ? AND Record_Service_Trans_prot = ? AND Record_name = ? AND Record_port = ?";
         $this->db->query($sql, array($hostname, $service, $meUid, $transProt, $name, $port));

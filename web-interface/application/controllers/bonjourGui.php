@@ -9,7 +9,9 @@ class BonjourGui extends MY_Controller {
         $this->load->library('Facebook');
     }
     
-    
+    /**
+     * Shows the available services in a column
+     */
     public function services() {
         $data["services"] = $this->UserSQL->getServices($this->facebook->getUser());
         $this->load->view("bonjourGuiComponents/services.php", $data);
@@ -27,7 +29,9 @@ class BonjourGui extends MY_Controller {
         $this->load->view("bonjourGuiComponents/hostnames.php", $data);
     }
 
-
+    /**
+     * Shows the available services and names for the given service and hostname passed through POST data
+     */
     public function serviceNamePortList() {
         // get post data
         $service = $this->input->post("service");
@@ -36,7 +40,10 @@ class BonjourGui extends MY_Controller {
         $data["namePorts"] = $this->UserSQL->getNamesAndPort($this->facebook->getUser(), $hostname, $service);
         $this->load->view("bonjourGuiComponents/namePortList.php", $data);
     }
-
+    
+    /**
+     * Renders the "details" view for a given service
+     */
     public function details() {
         // get post data
         $service = $this->input->post("service");
