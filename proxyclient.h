@@ -4,7 +4,10 @@
 #include "proxy.h"
 
 class RawSockets;
-
+/**
+ * @brief The ProxyClient class acts as the client for the local service by injecting and capturing
+ * packets for and from the distant service client.
+ */
 class ProxyClient : public Proxy
 {
     Q_OBJECT
@@ -23,14 +26,26 @@ private:
 public:
     ProxyClient(QByteArray md5, QByteArray servermd5, QString serversrcIp, int sockType, int srcPort, DataPlaneConnection* con);
 
-    //ProxyClient* getProxyClient(QString md5, int sockType, int srcPort, DataPlaneConnection* con);
+    /**
+     * @brief receiveBytes pcap has captured a response which should be sent over the data plane
+     * connection
+     * @param buf
+     * @param len
+     * @param sockType
+     * @param srcIp
+     */
     void receiveBytes(const char* buf, int len, int sockType, QString& srcIp);
 
-signals:
 private slots:
     void timeout(); // called when QTimer times out
 public slots:
     void run();
+    /**
+     * @brief sendBytes injects the bytes buf and len on the local network
+     * @param buf
+     * @param len
+     * @param srcIp not used by ProxyClient, it's used by the ProxyServer to know to which client to send
+     */
     void sendBytes(const char *buf, int len, QString srcIp);
 
 };

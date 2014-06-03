@@ -1,3 +1,7 @@
+/**
+  * This file contains the structures used by the helpers. It also contains the communication
+  * headers to communicate with those helpers over stdin and stdout.
+  */
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -24,7 +28,7 @@
 #define TTL 255
 #define ICMPREQ_HOP 64
 
-/* loopback header */
+/* loopback header on OSX */
 #define SIZE_NULL 4
 
 /* default snap length (maximum bytes per packet to capture) */

@@ -22,7 +22,7 @@ private:
     QSocketNotifier* bonjourSocket;
     DatabaseHandler* qSql;
     /**
-      * @brief reply is the Callback function a DNSServiceBrowse request. In this case it will
+      * @brief reply is the callback function for a DNSServiceBrowse request. In this case it will
       * create the BonjourBrowsers for each service type.
       */
     static void DNSSD_API reply(DNSServiceRef dnsref, DNSServiceFlags flags,
@@ -38,19 +38,16 @@ public:
     QHash<QString, BonjourBrowser*> availableServices;
 
     /**
-     * @brief recordHashes holds the records by their md5 hash
+     * @brief recordHashes holds all the active records by using their md5 hash
      * md5(uid + name + regType + domaine + hostname + port)
-     * @return
      */
     static QHash<QByteArray, BonjourRecord*> recordHashes;
 
     static BonjourDiscoverer* getInstance(QObject* parent = NULL);
     ~BonjourDiscoverer();
 
-
     /**
      * @brief getAllActiveRecords returns a list of all records that are currently active
-     * @return
      */
     QList< BonjourRecord* > getAllActiveRecords();
 

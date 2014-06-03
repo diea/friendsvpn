@@ -197,7 +197,6 @@ void RawSockets::writeBytes(QString srcIp, QString dstIp, int srcPort, const cha
             int i = 0;
             while (((token = strsep(&dstMac, ":")) != NULL) && (i < 6)) {
                 rawHeader.linkHeader.ethernet.ether_dhost[i] = strtoul(token, NULL, 16);
-                //printf("%x\n", header.ether_dhost[i]);
                 i++;
             }
             free(token);

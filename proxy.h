@@ -21,10 +21,8 @@ struct prefix {
 };
 
 /**
- * @brief The Proxy class
- * Generates a new IPv6 for this host, then registers an associated bonjour service
- * It will create an IP_SOCKRAW for this service and forward the [TransportHeader|Payload] on
- * the secure UDP connection to the corresponding friend
+ * @brief The Proxy class acts as an abstract class that can is extended by the ProxyServer
+ * and ProxyClient to proxy a service (as a server or as a client).
  */
 class Proxy : public QObject
 {
@@ -33,18 +31,19 @@ private:
     static IpResolver* resolver;
     static RawSockets* rawSockets;
 
-    QStack<QProcess*> processes;
+    QStack<QProcess*> processes; // QProcesses associated with this Proxy
 
 protected:
-    QString listenIp;
+    QString listenIp; // the new IP on which this proxy listens for answers
     int listenPort; // the prefered listen port
 
-    int port; // the active listen port
+    int port; // the active listen port, which may differ when the listen port was not available
+    // the listenPort will then replace the port in the packets sent over the data plane connection
 
     int sockType; // to know if SOCK_STREAM or SOCK_DATAGRAM
     int ipProto; // again, TCP or UDP
 
-    QByteArray idHash;
+    QByteArray idHash; // the proxy's 128bit long identifier
 
     /**
      * @brief con the associated connection
@@ -68,9 +67,9 @@ protected:
     static QString defaultIface;
 
     static QMutex poolOfIpsMutex;
-    static QQueue<QString> poolOfIps;
+    static QQueue<QString> poolOfIps; /* IPs which are ready to ``bind" on */
 
-    static char intToHexChar(int i);
+    static char intToHexChar(int i); // transforms an integer (< 16) into its hexadecimal representation
 
     /**
      * @brief stripIp
@@ -79,6 +78,10 @@ protected:
      * @return the ip "stripped", meaning the prefix's IP.
      */
     static QString stripIp(QString ip, int prefix);
+    /**
+     * @brief getPrefix get the default's interface IPv6 prefix
+     * @return
+     */
     static struct prefix getPrefix();
 
     /**
@@ -119,6 +122,11 @@ public:
     static void gennewIP();
     static QString getDefaultInterface();
 
+    /**
+     * @brief getProxy static method that returns the Proxy* identified by the md5
+     * @param md5
+     * @return
+     */
     static Proxy* getProxy(QByteArray md5);
 
 private slots:
@@ -127,6 +135,9 @@ private slots:
     void sendRawStandardOutput();
 protected slots:
     void pcapFinish(int exitCode);
+    /**
+     * @brief readyRead pcap has captured a packet and it is ready to be served
+     */
     void readyRead();
 
 public slots:

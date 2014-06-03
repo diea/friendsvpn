@@ -7,7 +7,6 @@
 #include "databasehandler.h"
 #include <netinet/in.h>
 #include <arpa/inet.h>
-//#include <sys/socket.h>
 #include <openssl/ssl.h>
 #include <openssl/rand.h>
 #include <openssl/bio.h>
@@ -61,8 +60,19 @@ public:
      */
     void stop();
 signals:
+    /**
+     * @brief bufferReady can be emitted when buffer is ready
+     *
+     * @deprecated not used anymore but rather a direct reference for speed reasons
+     * @param buf
+     * @param len
+     */
     void bufferReady(const char* buf, int len);
 private slots:
+    /**
+     * @brief readyRead used by the QSocketNotifier when new data is available on the ssl connection
+     * @param fd
+     */
     void readyRead(int fd);
 public slots:
     void run();

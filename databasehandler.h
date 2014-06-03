@@ -110,10 +110,6 @@ public:
      * @return
      */
     QList< BonjourRecord* > getRecordsFor(QString friendUid);
-signals:
-
-public slots:
-
 };
 
 #endif // BONJOURSQL_H

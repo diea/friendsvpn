@@ -8,7 +8,9 @@
 #include <QSystemTrayIcon>
 #include <QMenu>
 #include <QIcon>
-
+/**
+ * @brief The SysTray class creates the system tray icon and the available actions for it.
+ */
 class SysTray : public QWidget
 {
     Q_OBJECT
@@ -24,10 +26,6 @@ private slots:
     void createActions();
     void createTrayIcon();
     void quit();
-signals:
-
-public slots:
-
 };
 
 #endif // SYSTRAY_H

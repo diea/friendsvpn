@@ -44,10 +44,23 @@ public:
      */
     void browseForServiceType(const QString &serviceType);
 
+    /**
+     * @brief currentRecords
+     * @return the list of currently active records
+     */
     inline QList<BonjourRecord*> currentRecords() const { return bonjourRecords; }
+    /**
+     * @brief serviceType
+     * @return the service type for which this bonjour browser is currently being used
+     */
     inline QString serviceType() const { return browsingType; }
 
 signals:
+    /**
+     * @brief currentBonjourRecordsChanged is emitted whenever the current list of active records
+     * is modified
+     * @param list is the list of current active records
+     */
     void currentBonjourRecordsChanged(const QList<BonjourRecord*> &list);
     void error(DNSServiceErrorType err);
 

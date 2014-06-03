@@ -6,8 +6,9 @@
 #include <QMutex>
 
 /**
- * @brief The ipResolver class will hold the local mappings of MAC - IPs and do a Neighbor Solicitation
- * according to RFC 4861 if needed using helpers.
+ * @brief The ipResolver class will hold the local mappings of MAC - IPs. It will resolve the MAC
+ * of a given IP if needed by checking the neighbor cache or if that fails by trying a sort
+ * of inverse neighbor discovery.
  */
 
 struct ip_mac_mapping {

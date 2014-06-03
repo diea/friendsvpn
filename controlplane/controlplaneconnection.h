@@ -15,18 +15,21 @@ class ControlPlaneConnection : public AbstractPlaneConnection
 {
     Q_OBJECT
 private:
+    /**
+     * These are the two SslSockets associated to this control plane connection
+     */
     SslSocket* serverSock;
     SslSocket* clientSock;
 
     DatabaseHandler* qSql;
 
     /**
-     * @brief mutex used to protect the current mode before sending!
+     * @brief mutex used to protect the current mode before sending
      */
     QMutex mutex;
 
     /**
-     * @brief lastRcvdTimestap contains the timestamp of the last received packet
+     * @brief lastRcvdTimestamp contains the timestamp of the last received packet
      */
     uint lastRcvdTimestamp;
 
@@ -36,10 +39,23 @@ private:
      */
     QStack<ProxyServer*> proxyServers;
 
+    /**
+     * @brief removeConnection is called when the connected arrives in Both mode. The Facebook
+     * UID's will be compared and the if we have a lower UID than the distant host we become "client",
+     * otherwise we "server"
+     */
     void removeConnection();
 
+    /**
+     * @brief sendPacket sends the message "pack" over the control plane connection
+     * @param pack
+     */
     void sendPacket(QString& pack);
 
+    /**
+     * As the control plane connection is a stream, an inputBuffer is used to buffer received
+     * bytes until a full message has been received. (i.e. until two CR,LF sequences have been received)
+     */
     char* inputBuffer;
     int bytesReceived;
     int lastFullPacket;
@@ -58,20 +74,23 @@ public:
     bool addMode(plane_mode mode, QObject* socket);
 
     /**
-     * @brief readBuffer will read a buffer received by the server or client
-     * @param buf
+     * @brief readBuffer will read a buffer of lenght len received by the server or client
      */
     void readBuffer(const char* buf, int len);
-signals:
-    /**
-     * @brief uid_received emitted when the connection leaves the Wait_uid plane_state
-     */
-    void uid_received();
 private slots:
     void wasDisconnected();
+
+    /**
+     * @brief aliveTimeout is called when the "alive" timer has timed out, this calls the abstract
+     * "wasDisconnected" method.
+     */
     void aliveTimeout();
 
 public slots:
+    /**
+     * @brief The sendBonjour method will send the BONJOUR messages corresponding to the
+     * currently active records which are authorized for the distant host.
+     */
     void sendBonjour();
     void alive();
 };

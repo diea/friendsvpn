@@ -47,6 +47,10 @@ private:
 
 public:
     static ConnectionInitiator* getInstance();
+
+    /**
+     * @brief run runs the ConnectionInitiator, may be used to launch it in a QThread.
+     */
     void run();
 
     /**
@@ -76,10 +80,6 @@ public:
 
     QSslKey getPrivateKey();
     QSslCertificate getLocalCertificate();
-signals:
-
-public slots:
-
 };
 
 #endif // CONNECTIONINITIATOR_H

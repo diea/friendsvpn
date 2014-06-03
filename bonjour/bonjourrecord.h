@@ -14,11 +14,12 @@ public:
     QString registeredType;
     QString replyDomain;
 
+    bool resolved; /* if this boolean is false only the three upper QStrings are initialized
+                    * otherwise, the information below is complete */
     // resolved information, using BonjourResolver
     QString hostname;
     QList<QString> ips; // list of ips, begins with ipv6s and ends with v4s
     quint16 port;
-    bool resolved;
     QByteArray md5; /* md5 computed by the bonjourResolver */
     QByteArray txt;
 

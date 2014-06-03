@@ -12,8 +12,8 @@
 struct rawProcess {
     QProcess* process;
     u_char mac[ETHER_ADDR_LEN];
-    int linkType;
-};
+    int linkType; /* DLT_EN10MB or DLT_NULL */
+}; /* represents a raw socket helper */
 
 class RawSockets : public QObject
 {
@@ -32,12 +32,17 @@ private:
 public:
     static RawSockets* getInstance();
 
+    /**
+     * @brief writeBytes will inject the transAndPayload packet using the source IP, destination IP
+     * and sockType in the IPv6 header fields
+     * @param srcIp
+     * @param dstIp
+     * @param srcPort
+     * @param transAndPayload
+     * @param sockType
+     * @param packet_send_size
+     */
     void writeBytes(QString srcIp, QString dstIp, int srcPort, const char *transAndPayload, int sockType, int packet_send_size);
-
-signals:
-
-public slots:
-
 };
 
 #endif // RAWSOCKETS_H

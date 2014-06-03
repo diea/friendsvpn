@@ -24,10 +24,6 @@ public:
      * @return TRUE if this SslSocket is associated with a ControlPlaneConnection.
      */
     bool isAssociated();
-signals:
-
-public slots:
-
 };
 
 #endif // SSLSOCKET_H

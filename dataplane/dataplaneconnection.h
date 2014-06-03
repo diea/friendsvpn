@@ -48,14 +48,32 @@ private:
 
     void removeConnection();
 
+    /**
+     * @brief sendPacket sends a packet containg buf of length len on the data plane connection
+     * @param buf
+     * @param len
+     */
     void sendPacket(const char* buf, int len);
 public:
     explicit DataPlaneConnection(QString uid, AbstractPlaneConnection *parent = 0);
 
     bool addMode(plane_mode, QObject* socket);
 
+    /**
+     * @brief sendBytes sends the buffer of length len by setting the right data plane header
+     * @param buf
+     * @param len
+     * @param hash => unique bit string to be set in the MD5 field of the data plane header
+     * @param sockType
+     * @param srcIp => client address in dp header
+     */
     void sendBytes(const char* buf, int len, QByteArray& hash, int sockType, QString& srcIp);
 public slots:
+    /**
+     * @brief readBuffer reads the buffer coming from a data plane connection
+     * @param buf
+     * @param len
+     */
     void readBuffer(const char* buf, int len);
 
     void disconnect();

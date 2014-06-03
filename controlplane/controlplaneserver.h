@@ -38,7 +38,7 @@ signals:
 
 public slots:
     /**
-     * @brief start will start the server
+     * @brief start will start the server (hint: use this to start into new QThread)
      */
     void start();
 private slots:

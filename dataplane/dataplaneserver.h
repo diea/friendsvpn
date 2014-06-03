@@ -6,7 +6,10 @@
 #include "dataplaneconfig.h"
 #include "serverworker.h"
 #include "connectioninitiator.h"
-
+/**
+ * @brief The DataPlaneServer class waits and accepts (if connection is from a friend)
+ * incoming data plane connections.
+ */
 class DataPlaneServer : public QObject
 {
     Q_OBJECT
@@ -37,6 +40,11 @@ private:
 public:
     static DataPlaneServer* getInstance(QObject *parent = 0);
 private slots:
+    /**
+     * @brief readyRead a new incoming connection, creates a ServerWorker to accept this new
+     * connection
+     * @param fd
+     */
     void readyRead(int fd);
 public slots:
     void start();

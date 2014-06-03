@@ -20,7 +20,7 @@ private:
     DatabaseHandler* qSql;
     /**
       * @brief resolveReply is a callback function to DNSServiceResolve. It will fill in the
-      * missing information in a record->
+      * missing information in a record
       */
     static void DNSSD_API resolveReply(DNSServiceRef sdRef,
                              DNSServiceFlags flags,
@@ -36,11 +36,15 @@ private:
 public:
     explicit BonjourResolver(BonjourRecord* record, QObject *parent = 0);
 
+    /**
+     * @brief resolve has to be called to actually resolve the record that was
+     * passed as argument in the constructor
+     */
     void resolve();
 signals:
     void error(DNSServiceErrorType err);
     /**
-     * @brief resolved is emitted when the record was fully resolved
+     * @brief resolved is emitted when the record was resolved
      */
     void resolved(BonjourRecord*);
 

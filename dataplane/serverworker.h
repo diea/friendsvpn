@@ -23,8 +23,18 @@ public:
     void stop();
     void sendBytes(const char* buf, int len);
 signals:
+    /**
+     * @brief bufferReady used to signal that buffer buf has been read
+     * @deprecated not used, direct reference to the dp connection is used to gain speed
+     * @param buf
+     * @param len
+     */
     void bufferReady(const char* buf, int len);
 private slots:
+    /**
+     * @brief readyRead bytes are ready on the data plane connection
+     * @param fd
+     */
     void readyRead(int fd);
 public slots:
     void connection_handle();
