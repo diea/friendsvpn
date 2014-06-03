@@ -50,7 +50,6 @@ DatabaseHandler::~DatabaseHandler() {
 
 void DatabaseHandler::uidOK() {
     while (uid == NULL) {
-#ifdef __APPLE__
         qDebug() << "Waiting for facebook ID, make sure the facebook interface is open in a web browser";
         QThread::sleep(1);
     }
