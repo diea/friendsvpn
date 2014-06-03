@@ -278,4 +278,6 @@ void RawSockets::writeBytes(QString srcIp, QString dstIp, int srcPort, const cha
     raw->write(buffer, packet_send_size + sizeof(struct rawComHeader));
     raw->waitForBytesWritten();
     write.unlock();
+
+    free(buffer);
 }
