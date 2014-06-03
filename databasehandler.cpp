@@ -51,24 +51,7 @@ DatabaseHandler::~DatabaseHandler() {
 void DatabaseHandler::uidOK() {
     while (uid == NULL) {
 #ifdef __APPLE__
-        /*QMessageBox msgBox;
-        msgBox.setText("Make sure the facebook application is open and retry (it may take a few seconds before your ID can be determined)");
-        msgBox.setStandardButtons(QMessageBox::Retry | QMessageBox::Abort);
-        msgBox.setDefaultButton(QMessageBox::Retry);
-        int ret = msgBox.exec();
-        switch (ret) {
-            case QMessageBox::Retry:
-                continue;
-            case QMessageBox::Abort:
-                qDebug() << "Abort !!";
-                exit(0);
-                break;
-        }*/
         qDebug() << "Waiting for facebook ID, make sure the facebook interface is open in a web browser";
-#elif __GNUC__
-        qWarning() << "Your facebook ID was not determined, please retry";
-        getchar();
-#endif
         QThread::sleep(1);
     }
 }
