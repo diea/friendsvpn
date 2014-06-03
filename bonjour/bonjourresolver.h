@@ -2,7 +2,7 @@
 #define BONJOURRESOLVER_H
 #include "bonjourrecord.h"
 #include "dns_sd.h"
-#include "bonjoursql.h"
+#include "databasehandler.h"
 #include <QObject>
 #include <QSocketNotifier>
 #include <QHostInfo>
@@ -17,7 +17,7 @@ private:
     DNSServiceRef dnsref;
     QSocketNotifier* bonjourSocket;
     BonjourRecord* record;
-    BonjourSQL* qSql;
+    DatabaseHandler* qSql;
     /**
       * @brief resolveReply is a callback function to DNSServiceResolve. It will fill in the
       * missing information in a record->

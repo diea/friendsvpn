@@ -1,14 +1,14 @@
-#include "bonjoursql.h"
+#include "databasehandler.h"
 #include "bonjour/bonjourdiscoverer.h"
 
-BonjourSQL* BonjourSQL::instance = NULL;
+DatabaseHandler* DatabaseHandler::instance = NULL;
 
-BonjourSQL::BonjourSQL(QObject *parent) :
+DatabaseHandler::DatabaseHandler(QObject *parent) :
     QObject(parent)
 {
 #ifdef TEST
 #ifdef __APPLE__
-    uid = "1086104828"; // TODO REMOVE
+    uid = "1086104828";
 #elif __GNUC__
     uid = "100008078109463";
 #endif
@@ -34,21 +34,21 @@ BonjourSQL::BonjourSQL(QObject *parent) :
     }
 }
 
-BonjourSQL* BonjourSQL::getInstance() {
+DatabaseHandler* DatabaseHandler::getInstance() {
     static QMutex mutex;
     mutex.lock();
     if (!instance) {
-        instance = new BonjourSQL();
+        instance = new DatabaseHandler();
     }
     mutex.unlock();
     return instance;
 }
 
-BonjourSQL::~BonjourSQL() {
-    qDebug() << "BonjourSQL destructor called!";
+DatabaseHandler::~DatabaseHandler() {
+    qDebug() << "DatabaseHandler destructor called!";
 }
 
-void BonjourSQL::uidOK() {
+void DatabaseHandler::uidOK() {
     while (uid == NULL) {
 #ifdef __APPLE__
         /*QMessageBox msgBox;
@@ -73,7 +73,7 @@ void BonjourSQL::uidOK() {
     }
 }
 
-void BonjourSQL::initDB() {
+void DatabaseHandler::initDB() {
     QSqlDatabase db = QSqlDatabase::addDatabase("QMYSQL");
     db.setHostName(DBHOST);
     db.setDatabaseName(DBNAME);
@@ -81,7 +81,7 @@ void BonjourSQL::initDB() {
     db.setPassword(DBPASS);
 }
 
-bool BonjourSQL::insertService(QString name, QString trans_prot) {
+bool DatabaseHandler::insertService(QString name, QString trans_prot) {
     qryMut.lock();
     QSqlDatabase db = QSqlDatabase::database();
     while (!db.isOpen()) {
@@ -100,7 +100,7 @@ bool BonjourSQL::insertService(QString name, QString trans_prot) {
     return true;
 }
 
-bool BonjourSQL::insertDevice(QString hostname, int port, QString service_name, QString service_trans_prot, QString record_name) {
+bool DatabaseHandler::insertDevice(QString hostname, int port, QString service_name, QString service_trans_prot, QString record_name) {
     qryMut.lock();
     QSqlDatabase db = QSqlDatabase::database();
     while (!db.isOpen()) {
@@ -122,7 +122,7 @@ bool BonjourSQL::insertDevice(QString hostname, int port, QString service_name, 
     return true;
 }
 
-QString BonjourSQL::fetchXmlRpc() {
+QString DatabaseHandler::fetchXmlRpc() {
     qryMut.lock();
     QSqlDatabase db = QSqlDatabase::database();
     while (!db.isOpen()) {
@@ -144,7 +144,7 @@ QString BonjourSQL::fetchXmlRpc() {
 
         // remove local addresses, only used global ones and ipv4
         if (!stringAddr.contains(":") ||
-                stringAddr.startsWith("::") || stringAddr.startsWith("fe80")) { // TODO more precise
+                stringAddr.startsWith("::") || stringAddr.startsWith("fe80")) {
             skipOr = true;
             continue;
         } else skipOr = false;
@@ -174,7 +174,7 @@ QString BonjourSQL::fetchXmlRpc() {
 }
 
 
-QList< User* > BonjourSQL::getFriends() {
+QList< User* > DatabaseHandler::getFriends() {
     qryMut.lock();
     QSqlDatabase db = QSqlDatabase::database();
     while (!db.isOpen()) {
@@ -221,7 +221,7 @@ QList< User* > BonjourSQL::getFriends() {
     return list;
 }
 
-void BonjourSQL::pushCert(const QSslCertificate& cert) {
+void DatabaseHandler::pushCert(const QSslCertificate& cert) {
     qryMut.lock();
     QSqlDatabase db = QSqlDatabase::database();
     while (!db.isOpen()) {
@@ -237,11 +237,11 @@ void BonjourSQL::pushCert(const QSslCertificate& cert) {
     qryMut.unlock();
 }
 
-QString BonjourSQL::getLocalUid() {
+QString DatabaseHandler::getLocalUid() {
     return uid;
 }
 
-QString BonjourSQL::getLocalIP() {
+QString DatabaseHandler::getLocalIP() {
     qryMut.lock();
     QSqlDatabase db = QSqlDatabase::database();
     while (!db.isOpen()) {
@@ -262,11 +262,11 @@ QString BonjourSQL::getLocalIP() {
         // error
         qDebug() << "No ipv6 for user " << uid;
         db.close(); qryMut.unlock();
-        return "::1"; // TODO handle this case
+        return "::1";
     }
 }
 
-QString BonjourSQL::getName(QString uid) {
+QString DatabaseHandler::getName(QString uid) {
     qryMut.lock();
     QSqlDatabase db = QSqlDatabase::database();
     while (!db.isOpen()) {
@@ -294,7 +294,7 @@ QString BonjourSQL::getName(QString uid) {
     }
 }
 
-QString BonjourSQL::getUidFromIP(QString IP) {
+QString DatabaseHandler::getUidFromIP(QString IP) {
     qryMut.lock();
     QSqlDatabase db = QSqlDatabase::database();
     while (!db.isOpen()) {
@@ -322,7 +322,7 @@ QString BonjourSQL::getUidFromIP(QString IP) {
 }
 
 
-QList < BonjourRecord* > BonjourSQL::getRecordsFor(QString friendUid) {
+QList < BonjourRecord* > DatabaseHandler::getRecordsFor(QString friendUid) {
     qryMut.lock();
     QSqlDatabase db = QSqlDatabase::database();
     while (!db.isOpen()) {
@@ -350,7 +350,7 @@ QList < BonjourRecord* > BonjourSQL::getRecordsFor(QString friendUid) {
         BonjourRecord newRecord(qry.value("Record_name").toString(),
                                 // using the bonjour service name notation
                                 qry.value("Record_Service_name").toString() + "._" + qry.value("Record_Service_Trans_prot").toString() + ".",
-                                "local."); // TODO Do some research here, should store in DB ?
+                                "local.");
 
         foreach (BonjourRecord* rec, allActiveRecords) { // if record found in active record, save it
             if (*rec == newRecord) {

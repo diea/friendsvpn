@@ -3,7 +3,7 @@
 Poller::Poller(QObject *parent) :
     QObject(parent)
 {
-    this->qSql = BonjourSQL::getInstance();
+    this->qSql = DatabaseHandler::getInstance();
     server = new XmlRPCTextServer(this);
     server->addMethod("setUid", this, "setUid");
 }

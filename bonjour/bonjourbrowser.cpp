@@ -5,7 +5,7 @@
 BonjourBrowser::BonjourBrowser(QObject *parent)
 {
     setParent(parent);
-    this->qSql = BonjourSQL::getInstance();
+    this->qSql = DatabaseHandler::getInstance();
     dnsref = 0;
     bonjourSocket = 0;
 }

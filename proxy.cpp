@@ -92,7 +92,7 @@ void Proxy::gennewIP() {
     poolOfIpsMutex.unlock();
 
     UnixSignalHandler* u = UnixSignalHandler::getInstance();
-    while (length < IP_BUFFER_LENGTH) { // TODO add more IPs.
+    while (length < IP_BUFFER_LENGTH) {
         bool newIp = true; // the new IP has not been assigned to iface yet or is not a duplicate
         QString newip;
         do {

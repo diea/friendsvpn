@@ -4,7 +4,7 @@
 #include <QObject>
 #include <QMutex>
 #include "user.h"
-#include "bonjoursql.h"
+#include "databasehandler.h"
 
 class ControlPlaneConnection;
 class DataPlaneConnection;
@@ -20,7 +20,7 @@ class ConnectionInitiator : public QObject
 {
     Q_OBJECT
 private:
-    BonjourSQL* qSql;
+    DatabaseHandler* qSql;
 
     QSslCertificate cert;
     QSslKey key;

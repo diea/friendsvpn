@@ -53,7 +53,7 @@ void ControlPlaneServer::newIncoming() {
 void ControlPlaneServer::sslSockReady() {
     SslSocket* sslSock = qobject_cast<SslSocket*>(sender());
 
-    BonjourSQL* qSql = BonjourSQL::getInstance();
+    DatabaseHandler* qSql = DatabaseHandler::getInstance();
 
     Q_IPV6ADDR addr = sslSock->peerAddress().toIPv6Address();
     char v6string[INET6_ADDRSTRLEN];

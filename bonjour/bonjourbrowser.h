@@ -2,7 +2,7 @@
 #define BONJOURBROWSER_H
 #include "bonjourrecord.h"
 #include "bonjourresolver.h"
-#include "bonjoursql.h"
+#include "databasehandler.h"
 #include <dns_sd.h>
 #include <QObject>
 #include <QSocketNotifier>
@@ -16,7 +16,7 @@ class BonjourBrowser : public QObject
 {
     Q_OBJECT
 private:
-    BonjourSQL* qSql;
+    DatabaseHandler* qSql;
     DNSServiceRef dnsref;
     QSocketNotifier *bonjourSocket;
     QString browsingType;

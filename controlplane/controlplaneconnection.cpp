@@ -41,7 +41,7 @@ char * strrstr(char *string, const char *find, size_t len) {
 ControlPlaneConnection::ControlPlaneConnection(QString uid, AbstractPlaneConnection *parent) :
     AbstractPlaneConnection(uid, parent), lastRcvdTimestamp(time(NULL))
 {
-    qSql = BonjourSQL::getInstance();
+    qSql = DatabaseHandler::getInstance();
     this->connect(this, SIGNAL(disconnected()), SLOT(wasDisconnected()));
     this->connect(this, SIGNAL(connected()), SLOT(sendBonjour()));
     this->connect(this, SIGNAL(connected()), SLOT(alive()));
@@ -285,7 +285,7 @@ void ControlPlaneConnection::sendBonjour() {
         QTimer::singleShot(10000, this, SLOT(sendBonjour())); // first call, let the time to the Bonjour discoverer
         first = false;
     }
-    QTimer::singleShot(BONJOUR_DELAY, this, SLOT(sendBonjour())); // TODO make button to force!
+    QTimer::singleShot(BONJOUR_DELAY, this, SLOT(sendBonjour()));
 }
 
 void ControlPlaneConnection::wasDisconnected() {

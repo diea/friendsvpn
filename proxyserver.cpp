@@ -16,7 +16,7 @@ ProxyServer::ProxyServer(const QString &friendUid, const QString &name, const QS
     ip.append(newip);
     // we prepend "friendsvpn_" in front of names so we know when scanning to ignore those
     // we append the current ms time to hostname to avoid name collision
-    QString username = BonjourSQL::getInstance()->getName(friendUid);
+    QString username = DatabaseHandler::getInstance()->getName(friendUid);
     rec = BonjourRecord("fvpn_" + username + "_" + name, regType, domain,
                         QString::number(QDateTime::currentMSecsSinceEpoch())+"_"+hostname, ip, port, txt);
 

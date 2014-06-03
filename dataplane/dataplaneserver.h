@@ -2,7 +2,7 @@
 #define DataPlaneServer_H
 
 #include <QObject>
-#include "bonjoursql.h"
+#include "databasehandler.h"
 #include "dataplaneconfig.h"
 #include "serverworker.h"
 #include "connectioninitiator.h"
@@ -12,7 +12,7 @@ class DataPlaneServer : public QObject
     Q_OBJECT
 private:
     QList<QThread*> threads;
-    BonjourSQL* qSql;
+    DatabaseHandler* qSql;
 
     union {
         struct sockaddr_storage ss;

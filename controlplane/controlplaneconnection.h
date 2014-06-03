@@ -2,7 +2,7 @@
 #define CONTROLPLANECONNECTION_H
 
 #include <QObject>
-#include "bonjoursql.h"
+#include "databasehandler.h"
 #include "abstractplaneconnection.h"
 #include "proxyserver.h"
 
@@ -18,7 +18,7 @@ private:
     SslSocket* serverSock;
     SslSocket* clientSock;
 
-    BonjourSQL* qSql;
+    DatabaseHandler* qSql;
 
     /**
      * @brief mutex used to protect the current mode before sending!

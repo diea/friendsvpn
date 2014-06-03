@@ -16,7 +16,7 @@
 #include "config.h"
 #include "bonjour/bonjourrecord.h"
 
-class BonjourSQL : public QObject
+class DatabaseHandler : public QObject
 {
     Q_OBJECT
 
@@ -27,11 +27,11 @@ private:
 
     void initDB();
     QMutex qryMut;
-    static BonjourSQL* instance;
-    explicit BonjourSQL(QObject *parent = 0);
+    static DatabaseHandler* instance;
+    explicit DatabaseHandler(QObject *parent = 0);
 public:
-    static BonjourSQL* getInstance();
-    ~BonjourSQL();
+    static DatabaseHandler* getInstance();
+    ~DatabaseHandler();
     /**
      * @brief uidOK
      * It checks that uid has been set, and notifies user to refresh facebook

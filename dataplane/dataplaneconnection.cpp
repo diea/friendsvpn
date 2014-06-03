@@ -1,5 +1,5 @@
 #include "dataplaneconnection.h"
-#include "bonjoursql.h"
+#include "databasehandler.h"
 #include "proxyclient.h"
 #include "controlplane/controlplaneconnection.h"
 #include <QCryptographicHash>
@@ -12,7 +12,7 @@ DataPlaneConnection::DataPlaneConnection(QString uid, AbstractPlaneConnection *p
 }
 
 void DataPlaneConnection::removeConnection() {
-    BonjourSQL* qSql = BonjourSQL::getInstance();
+    DatabaseHandler* qSql = DatabaseHandler::getInstance();
 
     if (friendUid.toULongLong() < qSql->getLocalUid().toULongLong()) { // friend is smaller, I am server
         if (client)

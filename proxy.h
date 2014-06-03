@@ -10,7 +10,7 @@
 #include <netdb.h>
 
 #include "bonjour/bonjourrecord.h"
-#include "bonjoursql.h"
+#include "databasehandler.h"
 #include "dataplane/dataplaneconnection.h"
 #include "ipresolver.h"
 #include "rawsockets.h"

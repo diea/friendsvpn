@@ -4,7 +4,7 @@
 #include <QObject>
 #include "dataplaneconfig.h"
 #include "bonjour/bonjourrecord.h"
-#include "bonjoursql.h"
+#include "databasehandler.h"
 #include <netinet/in.h>
 #include <arpa/inet.h>
 //#include <sys/socket.h>

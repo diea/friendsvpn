@@ -21,7 +21,7 @@ void DataPlaneClient::run() {
         perror("socket");
         throw "Not able to create new socket";
     }
-    BonjourSQL* qSql = BonjourSQL::getInstance();
+    DatabaseHandler* qSql = DatabaseHandler::getInstance();
     inet_pton(AF_INET6, qSql->getLocalIP().toUtf8().data(), &local_addr.s6.sin6_addr);
     local_addr.s6.sin6_family = AF_INET6;
 #ifdef HAVE_SIN6_LEN

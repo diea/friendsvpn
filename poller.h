@@ -3,7 +3,7 @@
 
 #include <QObject>
 #include "libmaia/xmlRPCTextServer.h"
-#include "bonjoursql.h"
+#include "databasehandler.h"
 
 /**
  * @brief The Poller class is responsible to poll the web interface to see
@@ -14,7 +14,7 @@ class Poller : public QObject
     Q_OBJECT
 private:
     XmlRPCTextServer* server;
-    BonjourSQL* qSql;
+    DatabaseHandler* qSql;
 
 public:
     explicit Poller(QObject *parent = 0);

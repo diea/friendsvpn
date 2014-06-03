@@ -13,7 +13,7 @@ ConnectionInitiator* ConnectionInitiator::instance = NULL;
 ConnectionInitiator::ConnectionInitiator(QObject *parent) :
     QObject(parent)
 {
-    this->qSql = BonjourSQL::getInstance();
+    this->qSql = DatabaseHandler::getInstance();
 
     // generate self-signed certificate
     // this bit is inspired by http://stackoverflow.com/questions/256405/programmatically-create-x509-certificate-using-openssl
@@ -132,7 +132,6 @@ void ConnectionInitiator::startClients() {
         ControlPlaneConnection* controlPlane = this->getConnection(QString(*(frien_d->uid)));
         connect(controlPlane, SIGNAL(connected()), dcThread, SLOT(start()));
 
-        // TODO delete user?
         delete frien_d;
     }
 }

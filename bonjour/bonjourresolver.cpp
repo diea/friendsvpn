@@ -7,7 +7,7 @@
 BonjourResolver::BonjourResolver(BonjourRecord* record, QObject *parent) :
     QObject(parent)
 {
-    this->qSql = BonjourSQL::getInstance();
+    this->qSql = DatabaseHandler::getInstance();
     this->record = record;
     dnsref = 0;
 }
@@ -116,7 +116,6 @@ void BonjourResolver::hostInfoReady(const QHostInfo &info) {
             QList<QString> ifaces; // for each mac we need to know on which interface it was
             QProcess arp;
 
-            // TODO make a quick ping before checking arp table
             qDebug() << "checking arp table";
             arp.start("arp -an");
             int length;

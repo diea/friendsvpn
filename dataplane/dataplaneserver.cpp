@@ -15,7 +15,7 @@ DataPlaneServer* DataPlaneServer::instance = NULL;
 DataPlaneServer::DataPlaneServer(QObject *parent) :
     QObject(parent)
 {
-    qSql = BonjourSQL::getInstance();
+    qSql = DatabaseHandler::getInstance();
 }
 
 DataPlaneServer* DataPlaneServer::getInstance(QObject* parent) {

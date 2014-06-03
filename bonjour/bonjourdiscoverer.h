@@ -4,7 +4,7 @@
 #include <QObject>
 #include "dns_sd.h"
 #include "bonjourbrowser.h"
-#include "bonjoursql.h"
+#include "databasehandler.h"
 /**
  * @brief The BonjourDiscoverer class will discover the bonjour service types available on a given
  * network using the _services._dns-sd_udp.local request. It will then use BonjourBrowser to
@@ -20,7 +20,7 @@ private:
     static BonjourDiscoverer* instance;
     DNSServiceRef dnsref;
     QSocketNotifier* bonjourSocket;
-    BonjourSQL* qSql;
+    DatabaseHandler* qSql;
     /**
       * @brief reply is the Callback function a DNSServiceBrowse request. In this case it will
       * create the BonjourBrowsers for each service type.

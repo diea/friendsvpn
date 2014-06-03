@@ -1,7 +1,7 @@
 #include <QApplication>
 #include "graphic/systray.h"
 #include "bonjour/bonjourdiscoverer.h"
-#include "bonjoursql.h"
+#include "databasehandler.h"
 #include "poller.h"
 #include "connectioninitiator.h"
 #include "unixsignalhandler.h"
@@ -29,7 +29,7 @@ int main(int argc, char *argv[])
 #endif
 
     // connect to sql database
-    BonjourSQL* qSql = BonjourSQL::getInstance();
+    DatabaseHandler* qSql = DatabaseHandler::getInstance();
 
     // create facebook app xmlrpc poller
     QThread pollerThread;
