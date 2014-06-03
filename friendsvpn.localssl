@@ -16,7 +16,6 @@ SOURCES += main.cpp \
     bonjour/bonjourbrowser.cpp \
     bonjour/bonjourdiscoverer.cpp \
     bonjour/bonjourresolver.cpp \
-    bonjoursql.cpp \
     poller.cpp \
     connectioninitiator.cpp \
     controlplane/controlplaneclient.cpp \
@@ -36,7 +35,8 @@ SOURCES += main.cpp \
     proxyclient.cpp \
     ipresolver.cpp \
     rawsockets.cpp \
-    helpers/raw_structs.cpp
+    helpers/raw_structs.cpp \
+    databasehandler.cpp
 
 HEADERS  += \
     graphic/systray.h \
@@ -44,7 +44,6 @@ HEADERS  += \
     bonjour/bonjourrecord.h \
     bonjour/bonjourdiscoverer.h \
     bonjour/bonjourresolver.h \
-    bonjoursql.h \
     config.h \
     poller.h \
     connectioninitiator.h \
@@ -66,7 +65,8 @@ HEADERS  += \
     proxyclient.h \
     ipresolver.h \
     helpers/raw_structs.h \
-    rawsockets.h
+    rawsockets.h \
+    databasehandler.h
 
 INCLUDEPATH += $$_PRO_FILE_PWD_/libmaia
 LIBS += $$_PRO_FILE_PWD_/libmaia/libmaia.a
