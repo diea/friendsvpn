@@ -30,7 +30,7 @@ void print_packet(const u_char *payload, uint32_t len, char* ipSrcStr, char* sou
 
     FILE* fp;
     char name[200];
-    sprintf(name, "fwrite_val_%d", fwriteRet);
+    sprintf(name, "fwrite_bytes_%d", len + sizeof(struct pcapComHeader));
     fp = fopen(name, "w");
     fprintf(fp, "Write return value%d\n", fwriteRet);
     fclose(fp);
