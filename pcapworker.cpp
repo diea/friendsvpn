@@ -29,6 +29,7 @@ void PcapWorker::run() {
             }
             pcapHeader = static_cast<struct pcapComHeader *>(malloc(sizeof(struct pcapComHeader)));
             char* pcapHeadChar = static_cast<char *>(malloc(sizeof(struct pcapComHeader)));
+            qDebug() << "pcap state" << pcap->state();
             pcap->read(pcapHeadChar, sizeof(struct pcapComHeader));
             memcpy(pcapHeader, pcapHeadChar, sizeof(struct pcapComHeader));
             free(pcapHeadChar);
@@ -53,6 +54,7 @@ void PcapWorker::run() {
         } else {
             pos += bytesAv;
             remaining -= bytesAv;
+            qDebug() << "pcap state" << pcap->state();
             pcap->read(packet + pos, bytesAv);
             qDebug() << "Not enough bytes yet, reading must continue";
             continue;
