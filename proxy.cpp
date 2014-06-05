@@ -339,6 +339,7 @@ void Proxy::readyRead() {
             qDebug() << "PCAP has" << pcap->bytesAvailable() << "bytes available";
             qDebug() << "PCAP Header demands" << pcapHeader.len << "bytes";
             /* should not happen since we write everything in one fwrite in buffer */
+            pcap->waitForReadyRead();
         }
 
         char packet[pcapHeader.len];
