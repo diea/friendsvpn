@@ -2,6 +2,8 @@
   * This file contains the structures used by the helpers. It also contains the communication
   * headers to communicate with those helpers over stdin and stdout.
   */
+#ifndef RAWSTRUCTS_H
+#define RAWSTRUCTS_H
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -171,3 +173,5 @@ struct rawComHeader { /* used to communicate with main Qt app */
  * This function's code is from http://stackoverflow.com/questions/14936518/calculating-checksum-of-icmpv6-packet-in-c
  */
 uint16_t checksum (void * buffer, int bytes);
+
+#endif

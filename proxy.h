@@ -15,6 +15,8 @@
 #include "ipresolver.h"
 #include "rawsockets.h"
 
+#include "pcapworker.h"
+
 struct prefix {
     QString str;
     int len;
@@ -27,10 +29,12 @@ struct prefix {
 class Proxy : public QObject
 {
     Q_OBJECT
+    friend class PcapWorker;
 private:
     static IpResolver* resolver;
     static RawSockets* rawSockets;
 
+    QStack<PcapWorker*> pcapWorkers;
     QStack<QProcess*> processes; // QProcesses associated with this Proxy
 
     QMutex readyReadMut;
@@ -38,8 +42,6 @@ private:
     qint64 pos;
     qint64 remaining;
     struct pcapComHeader pcapHeader;
-
-
 
 protected:
     QString listenIp; // the new IP on which this proxy listens for answers

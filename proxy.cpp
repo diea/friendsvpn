@@ -17,7 +17,7 @@ QQueue<QString> Proxy::poolOfIps;
 QMutex Proxy::poolOfIpsMutex;
 
 Proxy::~Proxy() {
-    while (!processes.empty()) {
+    /*while (!processes.empty()) {
         QProcess* p = processes.pop();
         p->terminate();
         p->waitForFinished(200);
@@ -32,7 +32,7 @@ Proxy::~Proxy() {
         }
         p = NULL;
         proxyHashes.remove(idHash);
-    }
+    }*/ // TODO
 }
 
 Proxy::Proxy(int srcPort, int sockType, QByteArray md5)
@@ -278,7 +278,6 @@ QString Proxy::randomIP() {
 
     // we don't bother with bits but just use blocks of bytes after the "prefix"
     int nbLeft = (128 - p.len) / 4; // divide by 4 since each char represents 4 bits in hex
-    //int nbLeft = 40 - strlen(prefixBuff);
     int index = p.str.length();
 
     int column = 0;
@@ -297,7 +296,7 @@ QString Proxy::randomIP() {
     v6buf[index] = '\0';
 
     QString toRet(v6buf);
-    toRet.truncate(toRet.length()); // XXX investigate why "-2"
+    toRet.truncate(toRet.length());
 
     toRet = toRet % "/" + QString::number(p.len);
 
@@ -391,7 +390,6 @@ void Proxy::run_pcap() {
         QStringList bindSocketArgs;
         bindSocketArgs.append(QString::number(sockType));
         bindSocketArgs.append(QString::number(ipProto));
-        //port = 45940;
         bindSocketArgs.append(QString::number(port));
         bindSocketArgs.append(listenIp);
         bindSocket->start(QString(HELPERPATH) + "newSocket", bindSocketArgs);
@@ -430,15 +428,24 @@ void Proxy::run_pcap() {
         QString transportStr;
         sockType == SOCK_DGRAM ? transportStr = "udp" : transportStr = "tcp";
         args.append("ip6 dst host " + listenIp + " and " + transportStr + " and dst port " + QString::number(port));
-        QProcess* pcap = new QProcess(this);
-        connect(pcap, SIGNAL(finished(int)), this, SLOT(pcapFinish(int)));
-        connect(pcap, SIGNAL(readyReadStandardOutput()), this, SLOT(readyRead()));
 
-        processes.push(pcap);
+        QThread* pcapWorkerThread = new QThread();
+        PcapWorker* pcapWorker = new PcapWorker(args, this);
+        pcapWorker->moveToThread(pcapWorkerThread);
+        connect(pcapWorkerThread, SIGNAL(started()), pcapWorker, SLOT(run()));
+        connect(pcapWorkerThread, SIGNAL(finished()), pcapWorkerThread, SLOT(deleteLater()));
+        pcapWorkers.push(pcapWorker);
+        pcapWorkerThread->start();
+
+        /*QProcess* pcap = new QProcess(this);
+        connect(pcap, SIGNAL(finished(int)), this, SLOT(pcapFinish(int)));
+        connect(pcap, SIGNAL(readyReadStandardOutput()), this, SLOT(readyRead()));*/
+
+/*        processes.push(pcap);
         u->addQProcess(pcap); // add pcap to be killed when main is killed
 
         pcap->start(QString(HELPERPATH) + "pcapListen", args);
-        pcap->waitForStarted();
+        pcap->waitForStarted();*/
     }
 }
 
