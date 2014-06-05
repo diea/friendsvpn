@@ -135,7 +135,7 @@ void RawSockets::writeBytes(QString srcIp, QString dstIp, int srcPort, const cha
     }
 #endif
 
-    char* buffer = static_cast<char*>(malloc(packet_send_size + sizeof(struct rawComHeader)));
+    char buffer[packet_send_size + sizeof(struct rawComHeader)];
     memcpy(buffer + sizeof(struct rawComHeader), transAndPayload, packet_send_size);
 
     char* packet_send = buffer + sizeof(struct rawComHeader);
@@ -275,15 +275,10 @@ void RawSockets::writeBytes(QString srcIp, QString dstIp, int srcPort, const cha
 
     write.lock(); // make sure one write at a time in buffer
     qDebug() << "Raw is in state" << raw->state();
-    printf("bufferaddr : %p\n", buffer);
-
-    char localBuffer[20000];
-    memcpy(localBuffer, buffer, packet_send_size + sizeof(struct rawComHeader));
-
-    raw->write(localBuffer, packet_send_size + sizeof(struct rawComHeader));
+    qDebug() << "going into write";
+    raw->write(buffer, packet_send_size + sizeof(struct rawComHeader));
+    qDebug() << "got out of write";
     raw->waitForBytesWritten();
+    qDebug() << "wait for bytes written";
     write.unlock();
-
-    free(buffer);
-    buffer = NULL;
 }
