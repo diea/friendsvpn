@@ -18,7 +18,7 @@ private:
     char* packet;
     qint64 pos;
     qint64 remaining;
-    struct pcapComHeader pcapHeader;
+    struct pcapComHeader* pcapHeader;
 public:
     /**
      * @brief PcapWorker handles a pcap process inside a QThread and hands the data back to
