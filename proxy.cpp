@@ -326,6 +326,7 @@ void Proxy::readyRead() {
     while (pcap->bytesAvailable()) {
         struct pcapComHeader pcapHeader;
         if (pcap->bytesAvailable() < qint64(sizeof(pcapComHeader))) {
+            qDebug() << "PCAP header was not available, not enough bytes to be read";
             return; // wait for more!
         }
 

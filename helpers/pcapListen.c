@@ -15,7 +15,7 @@ struct bpf_program fp;
 /**
  * will print the bytes of tcp/udp header + payload so that main app can use those
  */
-void print_packet(const u_char *payload, int len, char* ipSrcStr, char* sourceMacStr) {
+void print_packet(const u_char *payload, uint32_t len, char* ipSrcStr, char* sourceMacStr) {
     struct pcapComHeader pcapHeader;
     memset(&pcapHeader, 0, sizeof(struct pcapComHeader));
     strcpy(pcapHeader.dev, dev);
@@ -42,7 +42,7 @@ void print_packet(const u_char *payload, int len, char* ipSrcStr, char* sourceMa
 
     FILE* fp;
     char name[200];
-    sprintf(name, "pcap_helper_capture_%d", len);
+    sprintf(name, "pcap_helper_capture_%d", pcapHeader.len);
     fp = fopen(name, "w");
     fwrite(payload, 1, len, fp);
     fclose(fp);
@@ -66,7 +66,7 @@ void got_packet(u_char* args, const struct pcap_pkthdr *header, const u_char *pa
     int size_datalink;
     int size_ipv6 = 40; /* ipv6 header has fixed size of 40 bytes */
     int size_tcp;
-    int size_payload;
+    uint32_t size_payload;
 
     if (datalink == DLT_EN10MB) {
         /* define ethernet header */
