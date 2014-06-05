@@ -28,6 +28,12 @@ void print_packet(const u_char *payload, int len, char* ipSrcStr, char* sourceMa
     memcpy(printBuf + sizeof(struct pcapComHeader), payload, len);
     fwrite(printBuf, 1, len + sizeof(struct pcapComHeader), stdout);
 
+    if (len == 0) {
+        FILE* fp;
+        fp = fopen("got_empty_on_helper", "w");
+        fclose(fp);
+    }
+
     FILE* fp;
     char name[200];
     sprintf(name, "pcap_helper_capture_%d", len);
@@ -100,7 +106,6 @@ void sig_handler(int sig) {
 }
 
 int main(int argc, char** argv) {
-
     struct sigaction sa;
     memset(&sa, 0, sizeof(struct sigaction));
     sa.sa_handler = &sig_handler;
