@@ -12,7 +12,6 @@ class PcapWorker : public QObject
 {
     Q_OBJECT
 private:
-    QProcess* pcap;
     Proxy* p;
     QStringList args; // args for the pcap QProcess
     char* packet;

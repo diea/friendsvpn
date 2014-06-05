@@ -11,34 +11,34 @@ PcapWorker::PcapWorker(QStringList args, Proxy* p, QObject *parent) :
 }
 
 void PcapWorker::run() {
-    pcap = new QProcess(this);
-    connect(pcap, SIGNAL(finished(int)), this, SLOT(pcapFinish(int)));
+    QProcess pcap;
+    connect(&pcap, SIGNAL(finished(int)), this, SLOT(pcapFinish(int)));
 
     //UnixSignalHandler* u = UnixSignalHandler::getInstance();
     //u->addQProcess(pcap); // add pcap to be killed when main is killed
 
-    pcap->start(QString(HELPERPATH) + "pcapListen", args);
-    pcap->waitForStarted();
+    pcap.start(QString(HELPERPATH) + "pcapListen", args);
+    pcap.waitForStarted();
 
-    while (pcap->waitForReadyRead()) {
-        qDebug() << "Before reading header PCAP has" << pcap->bytesAvailable() << "bytes available";
+    while (pcap.waitForReadyRead()) {
+        qDebug() << "Before reading header PCAP has" << pcap.bytesAvailable() << "bytes available";
         if (remaining <= 0) {
-            if (pcap->bytesAvailable() < qint64(sizeof(pcapComHeader))) {
+            if (pcap.bytesAvailable() < qint64(sizeof(pcapComHeader))) {
                 qDebug() << "PCAP header was not available, not enough bytes to be read";
                 continue; // wait for more!
             }
             pcapHeader = static_cast<struct pcapComHeader *>(malloc(sizeof(struct pcapComHeader)));
             char pcapHeadChar[5000];
-            qDebug() << "pcap state" << pcap->state();
+            qDebug() << "pcap state" << pcap.state();
             printf("packet addr : %p\n", packet);
-            pcap->read(pcapHeadChar, sizeof(struct pcapComHeader));
+            pcap.read(pcapHeadChar, sizeof(struct pcapComHeader));
             memcpy(pcapHeader, pcapHeadChar, sizeof(struct pcapComHeader));
             packet = static_cast<char*>(malloc(pcapHeader->len * sizeof(char)));
             remaining = pcapHeader->len;
         }
-        qint64 bytesAv = pcap->bytesAvailable();
+        qint64 bytesAv = pcap.bytesAvailable();
 
-       // qDebug() << "PCAP has" << pcap->bytesAvailable() << "bytes available";
+       // qDebug() << "PCAP has" << pcap.bytesAvailable() << "bytes available";
         qDebug() << "PCAP Header demands" << pcapHeader->len << "bytes";
         qDebug() << "BytesAv" << bytesAv << "and remaining" << remaining << "and pos" << pos;
         /* should not happen since we write everything in one fwrite in buffer */
@@ -50,7 +50,7 @@ void PcapWorker::run() {
         if (bytesAv >= remaining) {
             char readBuf[20000];
             qDebug() << "got in read 1";
-            pcap->read(readBuf, remaining);
+            pcap.read(readBuf, remaining);
             qDebug() << "got out of read";
             memcpy(packet+pos, readBuf, remaining);
             remaining = 0;
@@ -58,11 +58,11 @@ void PcapWorker::run() {
         } else {
             pos += bytesAv;
             remaining -= bytesAv;
-            qDebug() << "pcap state" << pcap->state();
+            qDebug() << "pcap state" << pcap.state();
             printf("packet addr : %p\n", packet);
             char readBuf[20000];
             qDebug() << "got in read 2";
-            pcap->read(readBuf, bytesAv);
+            pcap.read(readBuf, bytesAv);
             qDebug() << "got out of read";
             memcpy(packet+pos, readBuf, bytesAv);
             qDebug() << "Not enough bytes yet, reading must continue";
