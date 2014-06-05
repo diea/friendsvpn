@@ -56,7 +56,6 @@ void PcapWorker::run() {
 
         QString ipSrc(pcapHeader->ipSrcStr);
 
-
         p->receiveBytes(packet, pcapHeader->len, p->sockType, ipSrc);
 
         free(pcapHeader);

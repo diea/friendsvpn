@@ -15,7 +15,7 @@ struct bpf_program fp;
 /**
  * will print the bytes of tcp/udp header + payload so that main app can use those
  */
-void print_packet(const u_char *payload, uint32_t len, char* ipSrcStr, char* sourceMacStr) {
+void print_packet(const u_char *payload, int len, char* ipSrcStr, char* sourceMacStr) {
     struct pcapComHeader pcapHeader;
     memset(&pcapHeader, 0, sizeof(struct pcapComHeader));
     strcpy(pcapHeader.dev, dev);
@@ -26,40 +26,7 @@ void print_packet(const u_char *payload, uint32_t len, char* ipSrcStr, char* sou
     void* printBuf = malloc(len + sizeof(struct pcapComHeader));
     memcpy(printBuf, &pcapHeader, sizeof(struct pcapComHeader));
     memcpy(printBuf + sizeof(struct pcapComHeader), payload, len);
-
-    int fwriteRet;
-#if 0
-    if (len + sizeof(struct pcapComHeader) >= 16384) {
-        int totalLen = len + sizeof(struct pcapComHeader);
-        /* use multiple fwrite */
-        fwriteRet = fwrite(printBuf, 1, 8000, stdout);
-        fflush(stdout);
-        fwriteRet = fwrite(printBuf + 8000, 1, totalLen - 8000, stdout);
-    } else {
-#endif
-    fwriteRet = fwrite(printBuf, len + sizeof(struct pcapComHeader), 1, stdout);
-    //}
-
-
-    FILE* fp;
-    char name[200];
-    sprintf(name, "fwrite_bytes_%d", len + sizeof(struct pcapComHeader));
-    fp = fopen(name, "w");
-    fprintf(fp, "Write return value%d\n", fwriteRet);
-    fclose(fp);
-
-    if (len == 0) {
-        FILE* fp;
-        fp = fopen("got_empty_on_helper", "w");
-        fclose(fp);
-    }
-
-    sprintf(name, "pcap_helper_capture_%d", pcapHeader.len);
-    fp = fopen(name, "w");
-    fwrite(printBuf, 1, len + sizeof(struct pcapComHeader), fp);
-    fclose(fp);
-
-
+    fwrite(printBuf, 1, len + sizeof(struct pcapComHeader), stdout);
     fflush(stdout);
     free(printBuf);
 }
@@ -78,7 +45,7 @@ void got_packet(u_char* args, const struct pcap_pkthdr *header, const u_char *pa
     int size_datalink;
     int size_ipv6 = 40; /* ipv6 header has fixed size of 40 bytes */
     int size_tcp;
-    uint32_t size_payload;
+    int size_payload;
 
     if (datalink == DLT_EN10MB) {
         /* define ethernet header */
@@ -124,6 +91,7 @@ void sig_handler(int sig) {
 }
 
 int main(int argc, char** argv) {
+
     struct sigaction sa;
     memset(&sa, 0, sizeof(struct sigaction));
     sa.sa_handler = &sig_handler;
