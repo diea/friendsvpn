@@ -67,7 +67,9 @@ void PcapWorker::run() {
         QString ipSrc(pcapHeader->ipSrcStr);
 
         qDebug() << "Receiving" << pcapHeader->len << "bytes from PCAP!";
-        //p->receiveBytes(packet, pcapHeader->len, p->sockType, ipSrc);
+        if (pcapHeader->len < 1518) {
+            p->receiveBytes(packet, pcapHeader->len, p->sockType, ipSrc);
+        }
 
         free(packet);
         free (pcapHeader);
