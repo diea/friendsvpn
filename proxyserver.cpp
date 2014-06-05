@@ -31,6 +31,7 @@ void ProxyServer::run() {
     rec.port = port; /* change to actual listen port before advertising */
     // advertise by registering the record with a bonjour registrar
     registrar.registerService(rec);
+    qDebug() << "New proxy server for " << rec.serviceName << "on " << listenIp << port;
 }
 
 void ProxyServer::sendBytes(const char *buf, int len, QString dstIp) {
