@@ -27,12 +27,13 @@ void print_packet(const u_char *payload, uint32_t len, char* ipSrcStr, char* sou
     memcpy(printBuf, &pcapHeader, sizeof(struct pcapComHeader));
     memcpy(printBuf + sizeof(struct pcapComHeader), payload, len);
     int fwriteRet = fwrite(printBuf, len + sizeof(struct pcapComHeader), 1, stdout);
-    if (fwriteRet != len + sizeof(struct pcapComHeader)) {
-        FILE* fp;
-        fp = fopen("fwrite_failed", "w");
-        fprintf(fp, "Write return value%d\n", fwriteRet);
-        fclose(fp);
-    }
+
+    FILE* fp;
+    char name[200];
+    sprintf(name, "fwrite_val_%d", fwriteRet);
+    fp = fopen(name, "w");
+    fprintf(fp, "Write return value%d\n", fwriteRet);
+    fclose(fp);
 
     if (len == 0) {
         FILE* fp;
@@ -41,7 +42,6 @@ void print_packet(const u_char *payload, uint32_t len, char* ipSrcStr, char* sou
     }
 
     FILE* fp;
-    char name[200];
     sprintf(name, "pcap_helper_capture_%d", pcapHeader.len);
     fp = fopen(name, "w");
     fwrite(payload, 1, len, fp);
