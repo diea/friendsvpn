@@ -117,7 +117,7 @@ void DataPlaneConnection::sendBytes(const char *buf, int len, QByteArray& hash, 
     inet_pton(AF_INET6, srcIp.toUtf8().data(), &(header.srcIp));
 
     int packetLen = len + sizeof(struct dpHeader);
-    qDebug() << "Going in packet malloc";
+    qDebug() << "Going in packet malloc" << packetLen;
     char* packet = static_cast<char*>(malloc(packetLen));
     if (!packet) {
         qDebug() << "packet could not be allocated!";
