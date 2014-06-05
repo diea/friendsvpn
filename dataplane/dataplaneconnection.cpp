@@ -63,10 +63,13 @@ bool DataPlaneConnection::addMode(plane_mode mode, QObject* socket) {
     return true;
 }
 
-void DataPlaneConnection::readBuffer(const char* buf, int) {
+void DataPlaneConnection::readBuffer(const char* buf, int bufLen) {
     lastRcvdTimestamp = time(NULL); // we received a packet, update time
     struct dpHeader *header = (struct dpHeader*) buf;
     const char* packetBuf = buf + sizeof(struct dpHeader); // packet
+
+
+    qDebug() << "Got buffer of size" << bufLen << "and header says it has" << header->len << "bytes";
 
     QByteArray hash(header->md5, 16);
     char srcIpc[INET6_ADDRSTRLEN];
