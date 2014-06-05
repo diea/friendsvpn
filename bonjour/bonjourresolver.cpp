@@ -82,7 +82,10 @@ void BonjourResolver::hostInfoReady(const QHostInfo &info) {
     qDebug() << "Full list of addresses " << info.addresses();
     foreach(QHostAddress adr, info.addresses()) {
         if (adr.protocol() == QAbstractSocket::IPv6Protocol) {
-            v6.append(adr.toString());
+            QString adrstr = adr.toString();
+            if (!adrstr.startsWith("fe80")) {
+                v6.append(adrstr);
+            }
         } else if (adr.protocol() == QAbstractSocket::IPv4Protocol) {
             v4.append(adr.toString());
         }
