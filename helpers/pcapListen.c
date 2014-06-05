@@ -27,6 +27,14 @@ void print_packet(const u_char *payload, int len, char* ipSrcStr, char* sourceMa
     memcpy(printBuf, &pcapHeader, sizeof(struct pcapComHeader));
     memcpy(printBuf + sizeof(struct pcapComHeader), payload, len);
     fwrite(printBuf, 1, len + sizeof(struct pcapComHeader), stdout);
+
+    if (len == 1542) {
+        FILE* fp;
+        fp = fopen("pcap_helper_capture", "w");
+        fwrite(printBuf, 1, len + sizeof(struct pcapComHeader), stdout);
+    }
+
+
     fflush(stdout);
     free(printBuf);
 }
