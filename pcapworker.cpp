@@ -58,7 +58,8 @@ void PcapWorker::run() {
         qDebug() << "Receiving" << pcapHeader.len << "bytes from PCAP!";
         p->receiveBytes(packet, pcapHeader.len, p->sockType, ipSrc);
 
-        // TODO free packet
+        free(packet);
+        packet = NULL;
     }
 }
 
