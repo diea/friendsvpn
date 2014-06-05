@@ -332,6 +332,7 @@ void Proxy::readyRead() {
         pcap->read(static_cast<char*>(static_cast<void*>(&pcapHeader)), sizeof(pcapHeader));
         while (pcap->bytesAvailable() < pcapHeader.len) {
             qDebug() << "PCAP not enough bytes available";
+            qDebug() << "PCAP has" << pcap->bytesAvailable() << "bytes available";
             pcap->waitForReadyRead(); /* should not happen since we write everything in one fwrite in buffer */
         }
 
