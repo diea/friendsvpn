@@ -324,6 +324,7 @@ void Proxy::sendRawStandardOutput() {
 void Proxy::readyRead() {
     readyReadMut.lock();
     QProcess* pcap = dynamic_cast<QProcess*> (QObject::sender());
+    qDebug() << "Before reading header PCAP has" << pcap->bytesAvailable() << "bytes available";
     while (pcap->bytesAvailable()) {
         struct pcapComHeader pcapHeader;
         if (pcap->bytesAvailable() < qint64(sizeof(pcapComHeader))) {
@@ -332,7 +333,7 @@ void Proxy::readyRead() {
             return; // wait for more!
         }
 
-        pcap->read(static_cast<char*>(static_cast<void*>(&pcapHeader)), sizeof(pcapHeader));
+        pcap->read(static_cast<char*>(static_cast<void*>(&pcapHeader)), sizeof(struct pcapComHeader));
         while (pcap->bytesAvailable() < pcapHeader.len) {
             qDebug() << "PCAP not enough bytes available";
             qDebug() << "PCAP has" << pcap->bytesAvailable() << "bytes available";
