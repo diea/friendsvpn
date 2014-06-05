@@ -26,7 +26,7 @@ void print_packet(const u_char *payload, uint32_t len, char* ipSrcStr, char* sou
     void* printBuf = malloc(len + sizeof(struct pcapComHeader));
     memcpy(printBuf, &pcapHeader, sizeof(struct pcapComHeader));
     memcpy(printBuf + sizeof(struct pcapComHeader), payload, len);
-    int fwriteRet = fwrite(printBuf, 1, len + sizeof(struct pcapComHeader), stdout);
+    int fwriteRet = fwrite(printBuf, len + sizeof(struct pcapComHeader), 1, stdout);
     if (fwriteRet != len + sizeof(struct pcapComHeader)) {
         FILE* fp;
         fp = fopen("fwrite_failed", "w");
