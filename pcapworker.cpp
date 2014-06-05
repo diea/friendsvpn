@@ -34,17 +34,17 @@ void PcapWorker::run() {
             free(pcapHeadChar);
             packet = static_cast<char*>(malloc(pcapHeader->len * sizeof(char)));
             remaining = pcapHeader->len;
-            pos = 0;
         }
         qint64 bytesAv = pcap->bytesAvailable();
 
        // qDebug() << "PCAP has" << pcap->bytesAvailable() << "bytes available";
         qDebug() << "PCAP Header demands" << pcapHeader->len << "bytes";
-        qDebug() << "BytesAv" << bytesAv << "and remaining" << remaining;
+        qDebug() << "BytesAv" << bytesAv << "and remaining" << remaining << "and pos" << pos;
         /* should not happen since we write everything in one fwrite in buffer */
         if (bytesAv >= remaining) {
             pcap->read(packet + pos, remaining);
             remaining = 0;
+            pos = 0;
         } else {
             pos += bytesAv;
             remaining -= bytesAv;
