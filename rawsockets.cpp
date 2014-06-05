@@ -275,10 +275,11 @@ void RawSockets::writeBytes(QString srcIp, QString dstIp, int srcPort, const cha
 
     write.lock(); // make sure one write at a time in buffer
     qDebug() << "Raw is in state" << raw->state();
-    qDebug() << "buffer addr" << &buffer;
+    qDebug() << "buffer addr" << buffer;
     raw->write(buffer, packet_send_size + sizeof(struct rawComHeader));
     raw->waitForBytesWritten();
     write.unlock();
 
     free(buffer);
+    buffer = NULL;
 }
