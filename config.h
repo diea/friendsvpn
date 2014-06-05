@@ -36,6 +36,7 @@
 #define IP_BUFFER_LENGTH 8 /* The number of IPs prepared in advance */
 #define BONJOUR_DELAY 30000 /* BONJOUR messages are sent every * ms */
 #define TIMEOUT_DELAY 10000 /* A PH2PHTP connection times out after * s */
+#define MAX_PACKET_SIZE 65536
 
 #define DTLS_ENCRYPT "eNULL:NULL" /* used to debug the dataplane connection, disables the encryption */
 //#define DTLS_ENCRYPT "DEFAULT" /* enables encryption using "default" algorithms on the DTLS connection */

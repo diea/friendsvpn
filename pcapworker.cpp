@@ -7,7 +7,6 @@ PcapWorker::PcapWorker(QStringList args, Proxy* p, QObject *parent) :
     pos = 0;
     remaining = 0;
     pcapHeader = NULL;
-    packet = NULL;
 }
 
 void PcapWorker::run() {
@@ -29,24 +28,18 @@ void PcapWorker::run() {
             }
             pcapHeader = static_cast<struct pcapComHeader *>(malloc(sizeof(struct pcapComHeader)));
             char pcapHeadChar[5000];
-            qDebug() << "pcap state" << pcap.state();
-            printf("packet addr : %p\n", packet);
             pcap.read(pcapHeadChar, sizeof(struct pcapComHeader));
             memcpy(pcapHeader, pcapHeadChar, sizeof(struct pcapComHeader));
-            packet = static_cast<char*>(malloc(pcapHeader->len * sizeof(char)));
+            memset(&packet, 0, MAX_PACKET_SIZE);
             remaining = pcapHeader->len;
         }
         qint64 bytesAv = pcap.bytesAvailable();
 
-       // qDebug() << "PCAP has" << pcap.bytesAvailable() << "bytes available";
         qDebug() << "PCAP Header demands" << pcapHeader->len << "bytes";
         qDebug() << "BytesAv" << bytesAv << "and remaining" << remaining << "and pos" << pos;
-        /* should not happen since we write everything in one fwrite in buffer */
-
         if (bytesAv >= 16000) {
             bytesAv = 16000;
         }
-
         if (bytesAv >= remaining) {
             char readBuf[20000];
             qDebug() << "got in read 1";
@@ -83,11 +76,9 @@ void PcapWorker::run() {
         }
 
         qDebug() << "going in free";
-        //free(packet);
-        //free (pcapHeader);
+        free(pcapHeader);
         qDebug() << "got out of free";
         pcapHeader = NULL;
-        packet = NULL;
     }
 }
 

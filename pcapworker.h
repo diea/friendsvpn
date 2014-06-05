@@ -14,7 +14,7 @@ class PcapWorker : public QObject
 private:
     Proxy* p;
     QStringList args; // args for the pcap QProcess
-    char* packet;
+    char packet[MAX_PACKET_SIZE];
     qint64 pos;
     qint64 remaining;
     struct pcapComHeader* pcapHeader;
