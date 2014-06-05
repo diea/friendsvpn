@@ -10,6 +10,9 @@
 #include <QtConcurrent>
 #endif
 
+/* used for test */
+#include "proxyserver.h"
+
 int main(int argc, char *argv[])
 {
     QApplication a(argc, argv);
@@ -17,6 +20,13 @@ int main(int argc, char *argv[])
 
     // init signal handler
     UnixSignalHandler* u = UnixSignalHandler::getInstance();
+
+#if 1
+    /* test pcap */
+
+#endif
+
+#if 0
 
 #ifdef __APPLE__ /* linux only in text mode */
     // start systray
@@ -55,5 +65,6 @@ int main(int argc, char *argv[])
     discovererThread.start();
 
     con->run();
+#endif
     return a.exec();
 }
