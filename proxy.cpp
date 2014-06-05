@@ -324,6 +324,7 @@ void Proxy::sendRawStandardOutput() {
 void Proxy::readyRead() {
     readyReadMut.lock();
     QProcess* pcap = dynamic_cast<QProcess*> (QObject::sender());
+    //disconnect(pcap, SIGNAL(readyReadStandardOutput()), this, SLOT(readyRead()));
     qDebug() << "Before reading header PCAP has" << pcap->bytesAvailable() << "bytes available";
     while (pcap->bytesAvailable()) {
         struct pcapComHeader pcapHeader;
@@ -339,7 +340,7 @@ void Proxy::readyRead() {
             qDebug() << "PCAP has" << pcap->bytesAvailable() << "bytes available";
             qDebug() << "PCAP Header demands" << pcapHeader.len << "bytes";
             /* should not happen since we write everything in one fwrite in buffer */
-            pcap->waitForReadyRead();
+            QThread::sleep(1);
         }
 
         char packet[pcapHeader.len];
@@ -358,6 +359,7 @@ void Proxy::readyRead() {
         qDebug() << "Receiving" << pcapHeader.len << "bytes from PCAP!";
         this->receiveBytes(packet, pcapHeader.len, sockType, ipSrc);
     }
+    //connect(pcap, SIGNAL(readyReadStandardOutput()), this, SLOT(readyRead()));
     readyReadMut.unlock(); /* TODO remove, used for debug */
 }
 
