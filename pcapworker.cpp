@@ -33,32 +33,18 @@ void PcapWorker::run() {
             memset(&packet, 0, MAX_PACKET_SIZE);
             remaining = pcapHeader->len;
         }
-        qint64 bytesAv = pcap.bytesAvailable();
 
-        qDebug() << "PCAP Header demands" << pcapHeader->len << "bytes";
-        qDebug() << "BytesAv" << bytesAv << "and remaining" << remaining << "and pos" << pos;
-        if (bytesAv >= 16000) {
-            bytesAv = 16000;
-        }
+        qint64 bytesAv = pcap.bytesAvailable();
+        /*qDebug() << "PCAP Header demands" << pcapHeader->len << "bytes";
+        qDebug() << "BytesAv" << bytesAv << "and remaining" << remaining << "and pos" << pos;*/
         if (bytesAv >= remaining) {
-            char readBuf[20000];
-            qDebug() << "got in read 1";
-            pcap.read(readBuf, remaining);
-            qDebug() << "got out of read";
-            memcpy(packet+pos, readBuf, remaining);
+            pcap.read(packet + pos, remaining);
             remaining = 0;
             pos = 0;
         } else {
+            pcap.read(packet + pos, bytesAv);
             pos += bytesAv;
             remaining -= bytesAv;
-            qDebug() << "pcap state" << pcap.state();
-            printf("packet addr : %p\n", packet);
-            char readBuf[20000];
-            qDebug() << "got in read 2";
-            pcap.read(readBuf, bytesAv);
-            qDebug() << "got out of read";
-            memcpy(packet+pos, readBuf, bytesAv);
-            qDebug() << "Not enough bytes yet, reading must continue";
             continue;
         }
 
@@ -70,14 +56,10 @@ void PcapWorker::run() {
 
         QString ipSrc(pcapHeader->ipSrcStr);
 
-        qDebug() << "Receiving" << pcapHeader->len << "bytes from PCAP!";
-        if (pcapHeader->len < 1518) {
-            p->receiveBytes(packet, pcapHeader->len, p->sockType, ipSrc);
-        }
 
-        qDebug() << "going in free";
+        p->receiveBytes(packet, pcapHeader->len, p->sockType, ipSrc);
+
         free(pcapHeader);
-        qDebug() << "got out of free";
         pcapHeader = NULL;
     }
 }
