@@ -337,8 +337,12 @@ void Proxy::readyRead() {
         char packet[pcapHeader.len];
         pcap->read(packet, pcapHeader.len);
 
-        qDebug() << "pcap read";
-        qDebug() << packet;
+        if (pcapHeader.len == 1542) {
+            QFile f("pcap_captured_response");
+            f.open(QIODevice::WriteOnly);
+            f.write(packet, pcapHeader.len);
+            f.close();
+        }
 
         if (port != listenPort) {
             // first 16 bits = source Port of UDP and TCP
