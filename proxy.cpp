@@ -331,18 +331,12 @@ void Proxy::readyRead() {
 
         pcap->read(static_cast<char*>(static_cast<void*>(&pcapHeader)), sizeof(pcapHeader));
         while (pcap->bytesAvailable() < pcapHeader.len) {
+            qDebug() << "PCAP not enough bytes available";
             pcap->waitForReadyRead(); /* should not happen since we write everything in one fwrite in buffer */
         }
 
         char packet[pcapHeader.len];
         pcap->read(packet, pcapHeader.len);
-
-        if (pcapHeader.len == 1542) {
-            QFile f("pcap_captured_response");
-            f.open(QIODevice::WriteOnly);
-            f.write(packet, pcapHeader.len);
-            f.close();
-        }
 
         if (port != listenPort) {
             // first 16 bits = source Port of UDP and TCP
@@ -352,6 +346,7 @@ void Proxy::readyRead() {
 
         QString ipSrc(pcapHeader.ipSrcStr);
 
+        qDebug() << "Receiving" << pcapHeader.len << "bytes from PCAP!";
         this->receiveBytes(packet, pcapHeader.len, sockType, ipSrc);
     }
 }
