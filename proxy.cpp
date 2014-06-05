@@ -357,8 +357,8 @@ void Proxy::readyRead() {
 
         qDebug() << "Receiving" << pcapHeader.len << "bytes from PCAP!";
         this->receiveBytes(packet, pcapHeader.len, sockType, ipSrc);
-        readyReadMut.unlock(); /* TODO remove, used for debug */
     }
+    readyReadMut.unlock(); /* TODO remove, used for debug */
 }
 
 void Proxy::pcapFinish(int exitCode) {
