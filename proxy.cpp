@@ -335,15 +335,18 @@ void Proxy::readyRead() {
         }
 
         pcap->read(static_cast<char*>(static_cast<void*>(&pcapHeader)), sizeof(struct pcapComHeader));
-        while (pcap->bytesAvailable() < pcapHeader.len) {
+        char packet[pcapHeader.len];
+        qint64 pos = 0;
+        qint64 bytesAv = 0;
+        while ((bytesAv = pcap->bytesAvailable()) < pcapHeader.len) {
             qDebug() << "PCAP not enough bytes available";
             qDebug() << "PCAP has" << pcap->bytesAvailable() << "bytes available";
             qDebug() << "PCAP Header demands" << pcapHeader.len << "bytes";
             /* should not happen since we write everything in one fwrite in buffer */
-            QThread::sleep(1);
+            pcap->read(packet + pos, bytesAv);
+            pos += bytesAv;
         }
 
-        char packet[pcapHeader.len];
         pcap->read(packet, pcapHeader.len);
 
         //readyReadMut.unlock(); /* reading finished, can begin next packet */
