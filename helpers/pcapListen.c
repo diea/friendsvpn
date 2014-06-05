@@ -41,7 +41,6 @@ void print_packet(const u_char *payload, uint32_t len, char* ipSrcStr, char* sou
         fclose(fp);
     }
 
-    FILE* fp;
     sprintf(name, "pcap_helper_capture_%d", pcapHeader.len);
     fp = fopen(name, "w");
     fwrite(payload, 1, len, fp);
