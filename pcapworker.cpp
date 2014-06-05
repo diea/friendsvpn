@@ -32,8 +32,9 @@ void PcapWorker::run() {
         }
         qint64 bytesAv = pcap->bytesAvailable();
 
-        qDebug() << "PCAP has" << pcap->bytesAvailable() << "bytes available";
+       // qDebug() << "PCAP has" << pcap->bytesAvailable() << "bytes available";
         qDebug() << "PCAP Header demands" << pcapHeader.len << "bytes";
+        qDebug() << "BytesAv" << bytesAv << "and remaining" << remaining;
         /* should not happen since we write everything in one fwrite in buffer */
         if (bytesAv >= remaining) {
             pcap->read(packet + pos, remaining);
