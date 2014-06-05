@@ -28,12 +28,11 @@ void PcapWorker::run() {
                 continue; // wait for more!
             }
             pcapHeader = static_cast<struct pcapComHeader *>(malloc(sizeof(struct pcapComHeader)));
-            char* pcapHeadChar = static_cast<char *>(malloc(sizeof(struct pcapComHeader)));
+            char pcapHeadChar[5000];
             qDebug() << "pcap state" << pcap->state();
             printf("packet addr : %p\n", packet);
             pcap->read(pcapHeadChar, sizeof(struct pcapComHeader));
             memcpy(pcapHeader, pcapHeadChar, sizeof(struct pcapComHeader));
-            free(pcapHeadChar);
             packet = static_cast<char*>(malloc(pcapHeader->len * sizeof(char)));
             remaining = pcapHeader->len;
         }
