@@ -34,6 +34,10 @@ private:
     QStack<QProcess*> processes; // QProcesses associated with this Proxy
 
     QMutex readyReadMut;
+    char* packet;
+    qint64 pos;
+    qint64 remaining;
+    struct pcapComHeader pcapHeader;
 
 
 

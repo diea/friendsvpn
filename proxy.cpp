@@ -48,6 +48,9 @@ Proxy::Proxy(int srcPort, int sockType, QByteArray md5)
 
     if (sockType == SOCK_STREAM) ipProto = IPPROTO_TCP;
     else ipProto = IPPROTO_UDP;
+
+    pos = 0;
+    remaining = 0;
 }
 
 Proxy::Proxy(int srcPort, const QString& regType, QByteArray md5) : listenPort(srcPort)
@@ -327,24 +330,33 @@ void Proxy::readyRead() {
     //disconnect(pcap, SIGNAL(readyReadStandardOutput()), this, SLOT(readyRead()));
     qDebug() << "Before reading header PCAP has" << pcap->bytesAvailable() << "bytes available";
     while (pcap->bytesAvailable()) {
-        struct pcapComHeader pcapHeader;
-        if (pcap->bytesAvailable() < qint64(sizeof(pcapComHeader))) {
-            qDebug() << "PCAP header was not available, not enough bytes to be read";
-            readyReadMut.unlock();
-            return; // wait for more!
+        if (remaining <= 0) {
+            if (pcap->bytesAvailable() < qint64(sizeof(pcapComHeader))) {
+                qDebug() << "PCAP header was not available, not enough bytes to be read";
+                readyReadMut.unlock();
+                return; // wait for more!
+            }
+            pcap->read(static_cast<char*>(static_cast<void*>(&pcapHeader)), sizeof(struct pcapComHeader));
+            //char packet[pcapHeader.len];
+            packet = static_cast<char*>(malloc(pcapHeader.len * sizeof(char)));
+            remaining = pcapHeader.len;
+            pos = 0;
         }
-
-        pcap->read(static_cast<char*>(static_cast<void*>(&pcapHeader)), sizeof(struct pcapComHeader));
-        char packet[pcapHeader.len];
-        qint64 pos = 0;
         qint64 bytesAv = 0;
-        while ((bytesAv = pcap->bytesAvailable()) < pcapHeader.len) {
+        while ((bytesAv = pcap->bytesAvailable()) < remaining) {
             qDebug() << "PCAP not enough bytes available";
             qDebug() << "PCAP has" << pcap->bytesAvailable() << "bytes available";
             qDebug() << "PCAP Header demands" << pcapHeader.len << "bytes";
             /* should not happen since we write everything in one fwrite in buffer */
-            pcap->read(packet + pos, bytesAv);
+            if (bytesAv > remaining)
+                pcap->read(packet + pos, remaining);
+            else
+                pcap->read(packet + pos, bytesAv);
+
             pos += bytesAv;
+            remaining -= bytesAv;
+            readyReadMut.unlock();
+            return;
         }
 
         pcap->read(packet, pcapHeader.len);

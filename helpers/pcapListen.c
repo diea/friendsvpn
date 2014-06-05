@@ -28,6 +28,7 @@ void print_packet(const u_char *payload, uint32_t len, char* ipSrcStr, char* sou
     memcpy(printBuf + sizeof(struct pcapComHeader), payload, len);
 
     int fwriteRet;
+#if 0
     if (len + sizeof(struct pcapComHeader) >= 16384) {
         int totalLen = len + sizeof(struct pcapComHeader);
         /* use multiple fwrite */
@@ -35,8 +36,9 @@ void print_packet(const u_char *payload, uint32_t len, char* ipSrcStr, char* sou
         fflush(stdout);
         fwriteRet = fwrite(printBuf + 8000, 1, totalLen - 8000, stdout);
     } else {
-        fwriteRet = fwrite(printBuf, len + sizeof(struct pcapComHeader), 1, stdout);
-    }
+#endif
+    fwriteRet = fwrite(printBuf, len + sizeof(struct pcapComHeader), 1, stdout);
+    //}
 
 
     FILE* fp;
