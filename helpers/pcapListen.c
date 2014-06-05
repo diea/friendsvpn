@@ -27,7 +27,7 @@ void print_packet(const u_char *payload, int len, char* ipSrcStr, char* sourceMa
     memcpy(printBuf, &pcapHeader, sizeof(struct pcapComHeader));
     memcpy(printBuf + sizeof(struct pcapComHeader), payload, len);
     int fwriteRet = fwrite(printBuf, 1, len + sizeof(struct pcapComHeader), stdout);
-    if (fwriteRet != len) {
+    if (fwriteRet != len + sizeof(struct pcapComHeader)) {
         FILE* fp;
         fp = fopen("fwrite_failed", "w");
         fprintf(fp, "Write return value%d\n", fwriteRet);
