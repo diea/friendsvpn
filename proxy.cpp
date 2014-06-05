@@ -322,11 +322,13 @@ void Proxy::sendRawStandardOutput() {
 }
 
 void Proxy::readyRead() {
+    readyReadMut.lock();
     QProcess* pcap = dynamic_cast<QProcess*> (QObject::sender());
     while (pcap->bytesAvailable()) {
         struct pcapComHeader pcapHeader;
         if (pcap->bytesAvailable() < qint64(sizeof(pcapComHeader))) {
             qDebug() << "PCAP header was not available, not enough bytes to be read";
+            readyReadMut.unlock();
             return; // wait for more!
         }
 
@@ -340,6 +342,8 @@ void Proxy::readyRead() {
 
         char packet[pcapHeader.len];
         pcap->read(packet, pcapHeader.len);
+
+        readyReadMut.unlock(); /* reading finished, can begin next packet */
 
         if (port != listenPort) {
             // first 16 bits = source Port of UDP and TCP

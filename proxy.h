@@ -33,6 +33,8 @@ private:
 
     QStack<QProcess*> processes; // QProcesses associated with this Proxy
 
+    QMutex readyReadMut;
+
 protected:
     QString listenIp; // the new IP on which this proxy listens for answers
     int listenPort; // the prefered listen port
