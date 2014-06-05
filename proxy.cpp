@@ -324,7 +324,7 @@ void Proxy::sendRawStandardOutput() {
 }
 
 void Proxy::readyRead() {
-    qFatal() << "got in proxy ready read, should not happen";
+    qFatal("got in proxy ready read, should not happen");
 #if 0
     readyReadMut.lock();
     QProcess* pcap = dynamic_cast<QProcess*> (QObject::sender());
