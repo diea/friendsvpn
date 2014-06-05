@@ -14,8 +14,8 @@ void PcapWorker::run() {
     pcap = new QProcess(this);
     connect(pcap, SIGNAL(finished(int)), this, SLOT(pcapFinish(int)));
 
-    UnixSignalHandler* u = UnixSignalHandler::getInstance();
-    u->addQProcess(pcap); // add pcap to be killed when main is killed
+    //UnixSignalHandler* u = UnixSignalHandler::getInstance();
+    //u->addQProcess(pcap); // add pcap to be killed when main is killed
 
     pcap->start(QString(HELPERPATH) + "pcapListen", args);
     pcap->waitForStarted();
@@ -67,7 +67,7 @@ void PcapWorker::run() {
         QString ipSrc(pcapHeader->ipSrcStr);
 
         qDebug() << "Receiving" << pcapHeader->len << "bytes from PCAP!";
-        p->receiveBytes(packet, pcapHeader->len, p->sockType, ipSrc);
+        //p->receiveBytes(packet, pcapHeader->len, p->sockType, ipSrc);
 
         free(packet);
         free (pcapHeader);
