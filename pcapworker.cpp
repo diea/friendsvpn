@@ -82,8 +82,10 @@ void PcapWorker::run() {
             p->receiveBytes(packet, pcapHeader->len, p->sockType, ipSrc);
         }
 
-        free(packet);
-        free (pcapHeader);
+        qDebug() << "going in free";
+        //free(packet);
+        //free (pcapHeader);
+        qDebug() << "got out of free";
         pcapHeader = NULL;
         packet = NULL;
     }
