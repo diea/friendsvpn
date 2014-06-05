@@ -345,7 +345,7 @@ void Proxy::readyRead() {
         char packet[pcapHeader.len];
         pcap->read(packet, pcapHeader.len);
 
-        readyReadMut.unlock(); /* reading finished, can begin next packet */
+        //readyReadMut.unlock(); /* reading finished, can begin next packet */
 
         if (port != listenPort) {
             // first 16 bits = source Port of UDP and TCP
@@ -357,6 +357,7 @@ void Proxy::readyRead() {
 
         qDebug() << "Receiving" << pcapHeader.len << "bytes from PCAP!";
         this->receiveBytes(packet, pcapHeader.len, sockType, ipSrc);
+        readyReadMut.unlock(); /* TODO remove, used for debug */
     }
 }
 
