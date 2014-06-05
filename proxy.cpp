@@ -80,7 +80,7 @@ QString Proxy::newIP() {
     QString newIp = poolOfIps.dequeue();
     int length = poolOfIps.length();
     poolOfIpsMutex.unlock();
-    if (length < IP_BUFFER_LENGTH) {
+    if (length < IP_BUFFER_LENGTH / 2) {
         QtConcurrent::run(gennewIP);
     }
     return newIp;

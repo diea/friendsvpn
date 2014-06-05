@@ -37,7 +37,7 @@
 #define BONJOUR_DELAY 30000 /* BONJOUR messages are sent every * ms */
 #define TIMEOUT_DELAY 10000 /* A PH2PHTP connection times out after * s */
 
-//#define DTLS_ENCRYPT "eNULL:NULL" /* used to debug the dataplane connection, disables the encryption */
-#define DTLS_ENCRYPT "DEFAULT" /* enables encryption using "default" algorithms on the DTLS connection */
+#define DTLS_ENCRYPT "eNULL:NULL" /* used to debug the dataplane connection, disables the encryption */
+//#define DTLS_ENCRYPT "DEFAULT" /* enables encryption using "default" algorithms on the DTLS connection */
 
 #endif // CONFIG_H
