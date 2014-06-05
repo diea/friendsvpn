@@ -101,6 +101,7 @@ void DataPlaneConnection::readBuffer(const char* buf, int bufLen) {
 
 void DataPlaneConnection::sendBytes(const char *buf, int len, QByteArray& hash, int sockType, QString& srcIp) {
     if (time(NULL) - lastRcvdTimestamp > TIMEOUT_DELAY) {
+        qDebug() << "Testing ALIVE";
         // is distant host still alive ?
         // get controlplaneconnection and ask it
         ConnectionInitiator* in = ConnectionInitiator::getInstance();
@@ -112,14 +113,21 @@ void DataPlaneConnection::sendBytes(const char *buf, int len, QByteArray& hash, 
     struct dpHeader header;
     header.sockType = sockType;
     header.len = htons(qint16(len));
-    memcpy(header.md5, hash, 16); // 16 bytes
+    memcpy(header.md5, hash.data(), 16); // 16 bytes
     inet_pton(AF_INET6, srcIp.toUtf8().data(), &(header.srcIp));
 
-    char* packet = static_cast<char*>(malloc(len + sizeof(struct dpHeader)));
+    int packetLen = len + sizeof(struct dpHeader);
+    qDebug() << "Going in packet malloc";
+    char* packet = static_cast<char*>(malloc(packetLen));
+    if (!packet) {
+        qDebug() << "packet could not be allocated!";
+        return;
+    }
+    qDebug() << "Got out of malloc";
     memcpy(packet, &header, sizeof(struct dpHeader));
     memcpy(packet + sizeof(struct dpHeader), buf, len);
 
-    sendPacket(packet, len + sizeof(struct dpHeader));
+    sendPacket(packet, packetLen);
     free(packet);
 }
 
