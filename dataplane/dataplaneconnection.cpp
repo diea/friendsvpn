@@ -69,7 +69,7 @@ void DataPlaneConnection::readBuffer(const char* buf, int bufLen) {
     const char* packetBuf = buf + sizeof(struct dpHeader); // packet
 
 
-    qDebug() << "Got buffer of size" << bufLen << "and header says it has" << header->len << "bytes";
+    qDebug() << "Got buffer of size" << bufLen << "and header says it has" << ntohs(header->len) << "bytes";
 
     QByteArray hash(header->md5, 16);
     char srcIpc[INET6_ADDRSTRLEN];
