@@ -41,6 +41,11 @@ void PcapWorker::run() {
         qDebug() << "PCAP Header demands" << pcapHeader->len << "bytes";
         qDebug() << "BytesAv" << bytesAv << "and remaining" << remaining << "and pos" << pos;
         /* should not happen since we write everything in one fwrite in buffer */
+
+        if (bytesAv >= 16000) {
+            bytesAv = 16000;
+        }
+
         if (bytesAv >= remaining) {
             pcap->read(packet + pos, remaining);
             remaining = 0;
