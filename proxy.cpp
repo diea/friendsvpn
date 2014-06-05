@@ -337,6 +337,9 @@ void Proxy::readyRead() {
         char packet[pcapHeader.len];
         pcap->read(packet, pcapHeader.len);
 
+        qDebug() << "pcap read";
+        qDebug() << packet;
+
         if (port != listenPort) {
             // first 16 bits = source Port of UDP and TCP
             quint16* dstPort = static_cast<quint16*>(static_cast<void*>(packet + 2)); // second 16 bits dstPort (or + 2 bytes)
