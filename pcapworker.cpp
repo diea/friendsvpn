@@ -49,7 +49,11 @@ void PcapWorker::run() {
         }
 
         if (bytesAv >= remaining) {
-            pcap->read(packet + pos, remaining);
+            char readBuf[20000];
+            qDebug() << "got in read 1";
+            pcap->read(readBuf, remaining);
+            qDebug() << "got out of read";
+            memcpy(packet+pos, readBuf, remaining);
             remaining = 0;
             pos = 0;
         } else {
@@ -57,7 +61,11 @@ void PcapWorker::run() {
             remaining -= bytesAv;
             qDebug() << "pcap state" << pcap->state();
             printf("packet addr : %p\n", packet);
-            pcap->read(packet + pos, bytesAv);
+            char readBuf[20000];
+            qDebug() << "got in read 2";
+            pcap->read(readBuf, bytesAv);
+            qDebug() << "got out of read";
+            memcpy(packet+pos, readBuf, bytesAv);
             qDebug() << "Not enough bytes yet, reading must continue";
             continue;
         }
