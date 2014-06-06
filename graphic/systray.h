@@ -27,10 +27,13 @@ private slots:
     void createActions();
     void createTrayIcon();
     void quit();
+    void sendBjrSlot();
 public:
     static SysTray* getInstance();
     void closeEvent(QCloseEvent *event);
     QAction* getSendBonjour();
+signals:
+    void sendBonjour();
 };
 
 #endif // SYSTRAY_H

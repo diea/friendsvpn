@@ -37,6 +37,11 @@ void SysTray::createActions()
     sendBjr = new QAction(tr("&Send bonjour"), this);
     quitAction = new QAction(tr("&Exit"), this);
     this->connect(quitAction, SIGNAL(triggered()), this, SLOT(quit()));
+    this->connect(sendBjr, SIGNAL(triggered()), this, SLOT(sendBjrSlot()));
+}
+
+void SysTray::sendBjrSlot() {
+    emit sendBonjour();
 }
 
 void SysTray::quit() {

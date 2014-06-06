@@ -47,9 +47,7 @@ ControlPlaneConnection::ControlPlaneConnection(QString uid, AbstractPlaneConnect
     this->connect(this, SIGNAL(connected()), SLOT(sendBonjour()));
     this->connect(this, SIGNAL(connected()), SLOT(alive()));
 
-    SysTray* stray = SysTray::getInstance();
-    connect(stray->getSendBonjour(), SIGNAL(triggered()), this, SLOT(sendBonjour()));
-
+    connect(SysTray::getInstance(), SIGNAL(sendBonjour()), this, SLOT(sendBonjour()));
     serverSock = NULL;
     clientSock = NULL;
     inputBuffer = static_cast<char*>(malloc(100000 * sizeof(char)));
