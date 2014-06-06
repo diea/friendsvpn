@@ -113,10 +113,9 @@ void DataPlaneClient::run() {
 }
 
 void DataPlaneClient::readyRead(int) {
+    notif->setEnabled(false);
     size_t len;
-    if (!(SSL_get_shutdown(ssl) & SSL_RECEIVED_SHUTDOWN)) {
-        len = SSL_read(ssl, buf, sizeof(buf));
-
+    while (!(SSL_get_shutdown(ssl) & SSL_RECEIVED_SHUTDOWN) && ((len = SSL_read(ssl, buf, sizeof(buf))) > 0)) {
         switch (SSL_get_error(ssl, len)) {
             case SSL_ERROR_NONE:
              con->readBuffer(buf, len);
@@ -147,6 +146,7 @@ void DataPlaneClient::readyRead(int) {
              break;
         }
     }
+    notif->setEnabled(true);
 }
 
 void DataPlaneClient::sendBytes(const char *bytes, socklen_t len) {
