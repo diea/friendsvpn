@@ -44,6 +44,8 @@ private:
 
     QSocketNotifier* notif;
 
+    QMutex closeProtect; // locked when in close to prevent reading closed connection
+
 public:
     /**
      * @brief DataPlaneClient

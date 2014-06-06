@@ -17,7 +17,7 @@ QQueue<QString> Proxy::poolOfIps;
 QMutex Proxy::poolOfIpsMutex;
 
 Proxy::~Proxy() {
-    /*while (!processes.empty()) {
+    while (!processes.empty()) {
         QProcess* p = processes.pop();
         p->terminate();
         p->waitForFinished(200);
@@ -32,7 +32,7 @@ Proxy::~Proxy() {
         }
         p = NULL;
         proxyHashes.remove(idHash);
-    }*/ // TODO
+    }
 }
 
 Proxy::Proxy(int srcPort, int sockType, QByteArray md5)
@@ -48,9 +48,6 @@ Proxy::Proxy(int srcPort, int sockType, QByteArray md5)
 
     if (sockType == SOCK_STREAM) ipProto = IPPROTO_TCP;
     else ipProto = IPPROTO_UDP;
-
-    pos = 0;
-    remaining = 0;
 }
 
 Proxy::Proxy(int srcPort, const QString& regType, QByteArray md5) : listenPort(srcPort)
@@ -156,7 +153,7 @@ void Proxy::gennewIP() {
 
 
 /**
- * undefined if i >= 16
+ * if i >= 16 (returns 'a')
  */
 char Proxy::intToHexChar(int i) {
     if (i < 10)
@@ -308,78 +305,6 @@ Proxy* Proxy::getProxy(QByteArray md5) {
         return proxyHashes.value(md5);
     }
     return NULL;
-}
-
-void Proxy::sendRawFinish(int exitCode) {
-    qWarning() << "sendRaw helper had an error " << exitCode;
-}
-
-void Proxy::sendRawStandardError() {
-    QProcess* sendRaw = dynamic_cast<QProcess*> (QObject::sender());
-    qDebug() << "SendRaw ERROR:";
-    qDebug() << sendRaw->readAllStandardError();
-}
-
-void Proxy::sendRawStandardOutput() {
-}
-
-void Proxy::readyRead() {
-    qFatal("got in proxy ready read, should not happen");
-#if 0
-    readyReadMut.lock();
-    QProcess* pcap = dynamic_cast<QProcess*> (QObject::sender());
-    //disconnect(pcap, SIGNAL(readyReadStandardOutput()), this, SLOT(readyRead()));
-    qDebug() << "Before reading header PCAP has" << pcap->bytesAvailable() << "bytes available";
-    if (remaining <= 0) {
-        if (pcap->bytesAvailable() < qint64(sizeof(pcapComHeader))) {
-            qDebug() << "PCAP header was not available, not enough bytes to be read";
-            readyReadMut.unlock();
-            return; // wait for more!
-        }
-        pcap->read(static_cast<char*>(static_cast<void*>(&pcapHeader)), sizeof(struct pcapComHeader));
-        //char packet[pcapHeader.len];
-        packet = static_cast<char*>(malloc(pcapHeader.len * sizeof(char)));
-        remaining = pcapHeader.len;
-        pos = 0;
-    }
-    qint64 bytesAv = bytesAv = pcap->bytesAvailable();
-
-    qDebug() << "PCAP has" << pcap->bytesAvailable() << "bytes available";
-    qDebug() << "PCAP Header demands" << pcapHeader.len << "bytes";
-    /* should not happen since we write everything in one fwrite in buffer */
-    if (bytesAv >= remaining) {
-        pcap->read(packet + pos, remaining);
-        remaining = 0;
-    } else {
-        pos += bytesAv;
-        remaining -= bytesAv;
-        pcap->read(packet + pos, bytesAv);
-        readyReadMut.unlock();
-        return;
-    }
-
-    //pcap->read(packet, pcapHeader.len);
-
-    if (port != listenPort) {
-        // first 16 bits = source Port of UDP and TCP
-        quint16* dstPort = static_cast<quint16*>(static_cast<void*>(packet + 2)); // second 16 bits dstPort (or + 2 bytes)
-        *dstPort = htons(listenPort); // restore the original port
-    }
-
-    QString ipSrc(pcapHeader.ipSrcStr);
-
-    qDebug() << "Receiving" << pcapHeader.len << "bytes from PCAP!";
-    this->receiveBytes(packet, pcapHeader.len, sockType, ipSrc);
-
-    readyReadMut.unlock(); /* reading finished, can begin next packet */
-
-    //connect(pcap, SIGNAL(readyReadStandardOutput()), this, SLOT(readyRead()));
-    //readyReadMut.unlock(); /* TODO remove, used for debug */
-#endif
-}
-
-void Proxy::pcapFinish(int exitCode) {
-    qWarning() << "pcap exited with exit code " << exitCode;
 }
 
 void Proxy::run_pcap(const char* dstIp) {

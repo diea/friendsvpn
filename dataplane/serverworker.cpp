@@ -66,39 +66,44 @@ void ServerWorker::readyRead(int) {
     notif->setEnabled(false);
     char buf[BUFFER_SIZE];
     size_t len;
-    while ((!(SSL_get_shutdown(ssl) & SSL_RECEIVED_SHUTDOWN)) && ((len = SSL_read(ssl, buf, sizeof(buf))) > 0)) {
-        switch (SSL_get_error(ssl, len)) {
-            case SSL_ERROR_NONE:
-             con->readBuffer(buf, len);
-             //emit bufferReady(buf, len);
-             break;
-            case SSL_ERROR_WANT_READ:
-             /* Handle socket timeouts */
-             if (BIO_ctrl(SSL_get_rbio(ssl), BIO_CTRL_DGRAM_GET_RECV_TIMER_EXP, 0, NULL)) {
-                 //num_timeouts++;
-             }
-             /* Just try again */
-             break;
-            case SSL_ERROR_ZERO_RETURN:
-             break;
-            case SSL_ERROR_SYSCALL:
-             printf("Socket read error: ");
-             //if (!handle_socket_error()) goto cleanup;
-             //exit(-1);
-             break;
-            case SSL_ERROR_SSL:
-             printf("SSL read error: ");
-             printf("%s (%d)\n", ERR_error_string(ERR_get_error(), buf), SSL_get_error(ssl, len));
-             break;
-            default:
-             printf("Unexpected error while reading!\n");
-             break;
+    while ((!(SSL_get_shutdown(ssl) & SSL_RECEIVED_SHUTDOWN))) {
+        closeProtect.lock();
+        if ((len = SSL_read(ssl, buf, sizeof(buf))) > 0) {
+            switch (SSL_get_error(ssl, len)) {
+                case SSL_ERROR_NONE:
+                 con->readBuffer(buf, len);
+                 //emit bufferReady(buf, len);
+                 break;
+                case SSL_ERROR_WANT_READ:
+                 /* Handle socket timeouts */
+                 if (BIO_ctrl(SSL_get_rbio(ssl), BIO_CTRL_DGRAM_GET_RECV_TIMER_EXP, 0, NULL)) {
+                     //num_timeouts++;
+                 }
+                 /* Just try again */
+                 break;
+                case SSL_ERROR_ZERO_RETURN:
+                 break;
+                case SSL_ERROR_SYSCALL:
+                 printf("Socket read error: ");
+                 //if (!handle_socket_error()) goto cleanup;
+                 //exit(-1);
+                 break;
+                case SSL_ERROR_SSL:
+                 printf("SSL read error: ");
+                 printf("%s (%d)\n", ERR_error_string(ERR_get_error(), buf), SSL_get_error(ssl, len));
+                 break;
+                default:
+                 printf("Unexpected error while reading!\n");
+                 break;
+            }
         }
+        closeProtect.unlock();
     }
     notif->setEnabled(true);
 }
 
 void ServerWorker::stop() {
+    closeProtect.lock();
     notif->setEnabled(false);
     SSL_shutdown(ssl);
     close(fd);
@@ -107,7 +112,6 @@ void ServerWorker::stop() {
     printf("done, server worker connection closed.\n");
     fflush(stdout);
     this->deleteLater();
-    //QThread::currentThread()->exit(0); // stop any activity in the thread
 }
 
 void ServerWorker::sendBytes(const char* buf, int len) {

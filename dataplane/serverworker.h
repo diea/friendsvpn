@@ -17,6 +17,8 @@ private:
     DataPlaneConnection *con;
 
     QSocketNotifier* notif;
+
+    QMutex closeProtect; // protect close procedure to prevent SIGSEGV in read
 public:
     ~ServerWorker();
     explicit ServerWorker(addrUnion server_addr, addrUnion client_addr, SSL* ssl, DataPlaneConnection* con, QObject *parent = 0);

@@ -37,12 +37,6 @@ private:
     QStack<PcapWorker*> pcapWorkers;
     QStack<QProcess*> processes; // QProcesses associated with this Proxy
 
-    QMutex readyReadMut;
-    char* packet;
-    qint64 pos;
-    qint64 remaining;
-    struct pcapComHeader pcapHeader;
-
 protected:
     QString listenIp; // the new IP on which this proxy listens for answers
     int listenPort; // the prefered listen port
@@ -139,17 +133,6 @@ public:
      * @return
      */
     static Proxy* getProxy(QByteArray md5);
-
-private slots:
-    void sendRawFinish(int);
-    void sendRawStandardError();
-    void sendRawStandardOutput();
-protected slots:
-    void pcapFinish(int exitCode);
-    /**
-     * @brief readyRead pcap has captured a packet and it is ready to be served
-     */
-    void readyRead();
 
 public slots:
     /**
