@@ -34,6 +34,7 @@ void logOutput(QtMsgType type, const QMessageLogContext&, const QString &msg)
     case QtFatalMsg:
         debugdate += "[F]";
     }
+
     out << debugdate << " " << msg << endl;
 
     if (QtFatalMsg == type)
@@ -55,7 +56,7 @@ int main(int argc, char *argv[])
     QString fileName = "friendsvpn.log";
     QFile *log = new QFile(fileName);
     if (log->open(QIODevice::WriteOnly | QIODevice::Append | QIODevice::Text)) {
-        //out = QTextStream(log);
+        //out = new QTextStream(log);
         out.setDevice(log);
         qInstallMessageHandler(&logOutput);
     } else {

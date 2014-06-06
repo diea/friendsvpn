@@ -136,8 +136,7 @@ void RawSockets::writeBytes(QString srcIp, QString dstIp, int srcPort, const cha
 #endif
 
     int bufferSize = packet_send_size + sizeof(struct rawComHeader);
-    //char buffer[bufferSize];
-    char buffer[65535];
+    char buffer[bufferSize];
 
     /* copy trans and payload to buffer, after where the rawComHeader is going */
     memcpy(buffer + sizeof(struct rawComHeader), transAndPayload, packet_send_size);
