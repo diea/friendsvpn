@@ -313,6 +313,7 @@ void Proxy::run_pcap(const char* dstIp) {
 
     bool bound = false;
     while (!bound) {
+        qDebug() << "Proxy client not bound yet";
         // create socket and bind for the kernel
         QProcess* bindSocket = new QProcess(this);
         QStringList bindSocketArgs;
@@ -320,8 +321,12 @@ void Proxy::run_pcap(const char* dstIp) {
         bindSocketArgs.append(QString::number(ipProto));
         bindSocketArgs.append(QString::number(port));
         bindSocketArgs.append(listenIp);
+        qDebug() << "Start bind socket process";
         bindSocket->start(QString(HELPERPATH) + "newSocket", bindSocketArgs);
+        qDebug() << "Wait for started";
+        bindSocket->waitForStarted();
 
+        qDebug() << "Wait for finished";
         if (bindSocket->waitForFinished(400)) { // 200ms should be plenty enough for the process to fail on bind
             if (bindSocket->exitCode() == EADDRNOTAVAIL) {
                 // loop again until IP is available but just sleep a moment
