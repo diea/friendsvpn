@@ -108,8 +108,9 @@ protected:
 
     /**
      * @brief run_pcap will run the pcap processes for this proxy
+     * @param dstIp is used by ProxyClient to know on which iface to start the pcap helper
      */
-    void run_pcap();
+    void run_pcap(const char* dstIp = 0);
 
     /**
      * @brief receiveBytes

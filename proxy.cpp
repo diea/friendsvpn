@@ -382,7 +382,7 @@ void Proxy::pcapFinish(int exitCode) {
     qWarning() << "pcap exited with exit code " << exitCode;
 }
 
-void Proxy::run_pcap() {
+void Proxy::run_pcap(const char* dstIp) {
     port = listenPort;
     UnixSignalHandler* u = UnixSignalHandler::getInstance();
 
@@ -422,7 +422,20 @@ void Proxy::run_pcap() {
         }
     }
 
-    QStack<QString> listenInterfaces = resolver->getActiveInterfaces();
+    qDebug() << "going to seek listen iface";
+    QStack<QString> listenInterfaces;
+    if (dstIp != 0) {
+        struct ip_mac_mapping map = resolver->getMapping(dstIp);
+        if (map.interface == "") {
+            qDebug() << "No mapping for" << dstIp;
+            return;
+        }
+        listenInterfaces.push(map.interface);
+    } else {
+        listenInterfaces = resolver->getActiveInterfaces();
+    }
+
+
     while (!listenInterfaces.empty()) {
         // listen for packets with pcap, forward on the secure UDP link
         QStringList args;
@@ -439,16 +452,6 @@ void Proxy::run_pcap() {
         connect(pcapWorkerThread, SIGNAL(finished()), pcapWorkerThread, SLOT(deleteLater()));
         pcapWorkers.push(pcapWorker);
         pcapWorkerThread->start();
-
-        /*QProcess* pcap = new QProcess(this);
-        connect(pcap, SIGNAL(finished(int)), this, SLOT(pcapFinish(int)));
-        connect(pcap, SIGNAL(readyReadStandardOutput()), this, SLOT(readyRead()));*/
-
-/*        processes.push(pcap);
-        u->addQProcess(pcap); // add pcap to be killed when main is killed
-
-        pcap->start(QString(HELPERPATH) + "pcapListen", args);
-        pcap->waitForStarted();*/
     }
 }
 
