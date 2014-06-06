@@ -19,7 +19,8 @@ void PcapWorker::run() {
     pcap.start(QString(HELPERPATH) + "pcapListen", args);
     pcap.waitForStarted();
 
-    while (pcap.waitForReadyRead()) {
+    while (1) {
+        pcap.waitForReadyRead(400);
         qDebug() << "Before reading header PCAP has" << pcap.bytesAvailable() << "bytes available";
         if (remaining <= 0) {
             if (pcap.bytesAvailable() < qint64(sizeof(pcapComHeader))) {
@@ -35,8 +36,6 @@ void PcapWorker::run() {
         }
 
         qint64 bytesAv = pcap.bytesAvailable();
-        /*qDebug() << "PCAP Header demands" << pcapHeader->len << "bytes";
-        qDebug() << "BytesAv" << bytesAv << "and remaining" << remaining << "and pos" << pos;*/
         if (bytesAv >= remaining) {
             pcap.read(packet + pos, remaining);
             remaining = 0;
