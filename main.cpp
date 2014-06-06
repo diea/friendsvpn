@@ -18,6 +18,7 @@ QTextStream *out = 0;
 
 void logOutput(QtMsgType type, const QMessageLogContext&, const QString &msg)
 {
+    printf("Logoutput\n");
     QString debugdate = QDateTime::currentDateTime().toString("yyyy.MM.dd hh:mm:ss");
     switch (type)
     {
@@ -39,6 +40,9 @@ void logOutput(QtMsgType type, const QMessageLogContext&, const QString &msg)
     {
         abort();
     }
+    printf("Finished logoutput\n");
+    fflush(stdout);
+    return;
 }
 #endif
 
