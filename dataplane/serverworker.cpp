@@ -50,11 +50,11 @@ void ServerWorker::connection_handle() {
     BIO_ctrl(SSL_get_rbio(ssl), BIO_CTRL_DGRAM_SET_RECV_TIMEOUT, 0, &timeout);
 
     qDebug() << "Accepted connection";
-    printf ("------------------------------------------------------------\n");
-    X509_NAME_print_ex_fp(stdout, X509_get_subject_name(SSL_get_peer_certificate(ssl)),
-                          1, XN_FLAG_MULTILINE);
-    printf("\n\n Cipher: %s", SSL_CIPHER_get_name(SSL_get_current_cipher(ssl)));
-    printf ("\n------------------------------------------------------------\n\n");
+    qDebug("------------------------------------------------------------\n");
+    /*X509_NAME_print_ex_fp(stdout, X509_get_subject_name(SSL_get_peer_certificate(ssl)),
+                          1, XN_FLAG_MULTILINE);*/
+    qDebug() << "\n\n Cipher: " << SSL_CIPHER_get_name(SSL_get_current_cipher(ssl));
+    qDebug("\n------------------------------------------------------------\n\n");
 
     notif = new QSocketNotifier(fd, QSocketNotifier::Read);
     connect(notif, SIGNAL(activated(int)), this, SLOT(readyRead(int)));

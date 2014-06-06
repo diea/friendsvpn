@@ -95,15 +95,14 @@ void DataPlaneClient::run() {
     timeout.tv_usec = 0;
     BIO_ctrl(bio, BIO_CTRL_DGRAM_SET_RECV_TIMEOUT, 0, &timeout);
 
-    printf ("\nConnected to %s\n",
-             inet_ntop(AF_INET6, &remote_addr.s6.sin6_addr, addrbuf, INET6_ADDRSTRLEN));
+    qDebug() <<  "\nConnected to \n" << inet_ntop(AF_INET6, &remote_addr.s6.sin6_addr, addrbuf, INET6_ADDRSTRLEN);
 
     if (SSL_get_peer_certificate(ssl)) {
-        printf ("------------------------------------------------------------\n");
-        X509_NAME_print_ex_fp(stdout, X509_get_subject_name(SSL_get_peer_certificate(ssl)),
-                              1, XN_FLAG_MULTILINE);
-        printf("\n\n Cipher: %s", SSL_CIPHER_get_name(SSL_get_current_cipher(ssl)));
-        printf ("\n------------------------------------------------------------\n\n");
+        qDebug("------------------------------------------------------------\n");
+        /*X509_NAME_print_ex_fp(stdout, X509_get_subject_name(SSL_get_peer_certificate(ssl)),
+                              1, XN_FLAG_MULTILINE);*/
+        qDebug() << "\n\n Cipher: " << SSL_CIPHER_get_name(SSL_get_current_cipher(ssl));
+        qDebug("\n------------------------------------------------------------\n\n");
     }
     fflush(stdout);
     notif = new QSocketNotifier(fd, QSocketNotifier::Read);
