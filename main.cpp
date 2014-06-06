@@ -52,6 +52,7 @@ int main(int argc, char *argv[])
 {
     QApplication a(argc, argv);
 
+#if 0
 #ifndef QT_NO_DEBUG_OUTPUT /* used to log timestamps test */
     QString fileName = "friendsvpn.log";
     QFile *log = new QFile(fileName);
@@ -63,7 +64,7 @@ int main(int argc, char *argv[])
         qDebug() << "Error opening log file '" << fileName << "'. All debug output redirected to console.";
     }
 #endif
-
+#endif
     a.setQuitOnLastWindowClosed(false);
 
     // init signal handler

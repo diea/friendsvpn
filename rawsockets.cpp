@@ -118,7 +118,7 @@ void RawSockets::writeBytes(QString srcIp, QString dstIp, int srcPort, const cha
     struct ip_mac_mapping map = r->getMapping(dstIp);
 
     if (map.interface == "") {
-        qDebug() << "Mapping not found, cannot send packet!";
+        qWarning() << "Mapping not found, cannot send packet!";
         return;
     }
 
