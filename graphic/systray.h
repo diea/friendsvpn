@@ -14,18 +14,23 @@
 class SysTray : public QWidget
 {
     Q_OBJECT
-public:
-    explicit SysTray(QWidget *parent = 0);
-    void closeEvent(QCloseEvent *event);
 private:
     QSystemTrayIcon* trayIcon;
     QMenu* trayIconMenu;
-    QAction* restoreAction;
+    QAction* sendBjr;
     QAction* quitAction;
+
+    static SysTray* instance;
+    SysTray(QWidget *parent = 0);
+
 private slots:
     void createActions();
     void createTrayIcon();
     void quit();
+public:
+    static SysTray* getInstance();
+    void closeEvent(QCloseEvent *event);
+    QAction* getSendBonjour();
 };
 
 #endif // SYSTRAY_H

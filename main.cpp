@@ -73,7 +73,7 @@ int main(int argc, char *argv[])
 #ifdef __APPLE__ /* linux only in text mode */
     // start systray
     QThread sysTrayThread;
-    SysTray* st = new SysTray();
+    SysTray* st = SysTray::getInstance();
     QObject::connect(&sysTrayThread, SIGNAL(started()), st, SLOT(createActions()));
     QObject::connect(&sysTrayThread, SIGNAL(started()), st, SLOT(createTrayIcon()));
     sysTrayThread.start();

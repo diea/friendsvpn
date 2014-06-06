@@ -2,6 +2,7 @@
 #include "connectioninitiator.h"
 #include "proxyserver.h"
 #include "sslsocket.h"
+#include "graphic/systray.h"
 #include <time.h>
 #include <QDebug>
 
@@ -45,9 +46,13 @@ ControlPlaneConnection::ControlPlaneConnection(QString uid, AbstractPlaneConnect
     this->connect(this, SIGNAL(disconnected()), SLOT(wasDisconnected()));
     this->connect(this, SIGNAL(connected()), SLOT(sendBonjour()));
     this->connect(this, SIGNAL(connected()), SLOT(alive()));
+
+    SysTray* stray = SysTray::getInstance();
+    connect(stray->getSendBonjour(), SIGNAL(triggered()), this, SLOT(sendBonjour()));
+
     serverSock = NULL;
     clientSock = NULL;
-    inputBuffer = static_cast<char*>(malloc(40000 * sizeof(char)));
+    inputBuffer = static_cast<char*>(malloc(100000 * sizeof(char)));
     gotHello = false;
     lastFullPacket = 0;
     bytesReceived = 0;
@@ -280,12 +285,14 @@ void ControlPlaneConnection::sendBonjour() {
         sendPacket(packet);
     }
 
+#ifdef TEST
     static bool first = true;
     if (first) {
         QTimer::singleShot(10000, this, SLOT(sendBonjour())); // first call, let the time to the Bonjour discoverer
         first = false;
     }
     QTimer::singleShot(BONJOUR_DELAY, this, SLOT(sendBonjour()));
+#endif
 }
 
 void ControlPlaneConnection::wasDisconnected() {
