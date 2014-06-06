@@ -118,7 +118,7 @@ void DataPlaneConnection::sendBytes(const char *buf, int len, QByteArray& hash, 
     struct dpHeader header;
     header.sockType = sockType;
     header.len = htons(qint16(len));
-    memcpy(header.md5, hash.data(), 16); // 16 bytes
+    memcpy(header.md5, hash.data(), sizeof(char) * 16); // 16 bytes
     inet_pton(AF_INET6, srcIp.toUtf8().data(), &(header.srcIp));
 
     int packetLen = len + sizeof(struct dpHeader);

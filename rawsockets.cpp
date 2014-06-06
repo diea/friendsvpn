@@ -196,18 +196,17 @@ void RawSockets::writeBytes(QString srcIp, QString dstIp, int srcPort, const cha
         // set dst mac
         char* dstMac = map.mac.toUtf8().data();
         if (!map.mac.isEmpty()) {
-            char* token = static_cast<char*>(malloc(sizeof(char)));
+            char token;
             int i = 0;
-            while (((token = strsep(&dstMac, ":")) != NULL) && (i < 6)) {
-                rawHeader.linkHeader.ethernet.ether_dhost[i] = strtoul(token, NULL, 16);
+            while (((&token = strsep(&dstMac, ":")) != NULL) && (i < 6)) {
+                rawHeader.linkHeader.ethernet.ether_dhost[i] = strtoul(&token, NULL, 16);
                 i++;
             }
-            free(token);
         } else { // linux loopback dest is 00:00...
             memset(rawHeader.linkHeader.ethernet.ether_dhost, 0, ETHER_ADDR_LEN);
         }
     } else { // DLT_NULL
-        rawHeader.linkHeader.loopback.type = 0x1E;
+        rawHeader.linkHeader.loopback.type = 0x1E; // IPv6 traffic
     }
 
     // Construct v6 header
@@ -225,12 +224,16 @@ void RawSockets::writeBytes(QString srcIp, QString dstIp, int srcPort, const cha
         exit(0);
     }
     rawHeader.ip6.ip6_src = ((struct sockaddr_in6 *) res->ai_addr)->sin6_addr;
-    adret = getaddrinfo(dstIp.toUtf8().data(), NULL, &hints, &res);
+
+    struct addrinfo *res1;
+    memset(&hints, 0, sizeof(hints));
+    hints.ai_family = AF_INET6;
+    adret = getaddrinfo(dstIp.toUtf8().data(), NULL, &hints, &res1);
     if (adret) {
         fprintf(stderr, "%s\n", gai_strerror(adret));
         exit(0);
     }
-    rawHeader.ip6.ip6_dst = ((struct sockaddr_in6 *) res->ai_addr)->sin6_addr;
+    rawHeader.ip6.ip6_dst = ((struct sockaddr_in6 *) res1->ai_addr)->sin6_addr;
 
     // pseudo header to compute checksum
     struct ipv6upper pHeader;
@@ -241,7 +244,6 @@ void RawSockets::writeBytes(QString srcIp, QString dstIp, int srcPort, const cha
 
     int nbBytes = packet_send_size;
     int padding = packet_send_size % 16;
-
     if (padding) {
         nbBytes = (packet_send_size / 16) * 16 + 16;
     }
@@ -278,7 +280,7 @@ void RawSockets::writeBytes(QString srcIp, QString dstIp, int srcPort, const cha
 
     write.lock(); // make sure one write at a time in buffer
     qDebug() << "raw write";
-    raw->write(buffer, packet_send_size + sizeof(struct rawComHeader));
+    raw->write(buffer, bufferSize);
     raw->waitForBytesWritten();
     qDebug() << "raw written";
     write.unlock();
