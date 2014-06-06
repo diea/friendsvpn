@@ -283,7 +283,7 @@ void ControlPlaneConnection::sendBonjour() {
         sendPacket(packet);
     }
 
-#ifdef TEST
+#ifndef TEST
     static bool first = true;
     if (first) {
         QTimer::singleShot(10000, this, SLOT(sendBonjour())); // first call, let the time to the Bonjour discoverer
