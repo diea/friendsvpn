@@ -88,11 +88,14 @@ void DataPlaneConnection::readBuffer(const char* buf, int bufLen) {
         *srcPort = ntohs(*srcPort);
 
         QByteArray clientHash = QCryptographicHash::hash(QString(hash + srcIp + QString::number(*srcPort)).toUtf8(), QCryptographicHash::Md5);
+        qDebug() << "Get proxy";
         prox = Proxy::getProxy(clientHash);
         if (!prox) {
+            qDebug() << "New client";
             prox = new ProxyClient(clientHash, hash, srcIp, header->sockType, *srcPort, this);
             prox->run();
             clientProxys.push(dynamic_cast<ProxyClient*>(prox));
+            qDebug() << "Client OK";
             free(srcPort);
         }
     }
