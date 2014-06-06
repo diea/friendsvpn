@@ -17,9 +17,8 @@ void PcapWorker::run() {
     pcap.closeWriteChannel();
     pcap.setReadChannel(QProcess::StandardOutput);
 
-    while (1) {
+    while (pcap.waitForReadyRead(-1)) {
         qDebug() << "Waiting for ready read";
-        pcap.waitForReadyRead(-1);
         qDebug() << "Before reading header PCAP has" << pcap.bytesAvailable() << "bytes available";
 
         while (pcap.bytesAvailable() > qint64(sizeof(pcapComHeader))) {
