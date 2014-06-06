@@ -20,7 +20,7 @@ void PcapWorker::run() {
     pcap.waitForStarted();
 
     while (1) {
-        pcap.waitForReadyRead(400);
+        pcap.waitForReadyRead();
         qDebug() << "Before reading header PCAP has" << pcap.bytesAvailable() << "bytes available";
         if (remaining <= 0) {
             if (pcap.bytesAvailable() < qint64(sizeof(pcapComHeader))) {
