@@ -14,7 +14,7 @@
 #include "proxyserver.h"
 #ifndef QT_NO_DEBUG_OUTPUT
 
-QTextStream *out = 0;
+QTextStream out;
 
 void logOutput(QtMsgType type, const QMessageLogContext&, const QString &msg)
 {
@@ -34,7 +34,7 @@ void logOutput(QtMsgType type, const QMessageLogContext&, const QString &msg)
     case QtFatalMsg:
         debugdate += "[F]";
     }
-    (*out) << debugdate << " " << msg << endl;
+    out << debugdate << " " << msg << endl;
 
     if (QtFatalMsg == type)
     {
@@ -55,7 +55,8 @@ int main(int argc, char *argv[])
     QString fileName = "friendsvpn.log";
     QFile *log = new QFile(fileName);
     if (log->open(QIODevice::WriteOnly | QIODevice::Append | QIODevice::Text)) {
-        out = new QTextStream(log);
+        //out = QTextStream(log);
+        out.setDevice(log);
         qInstallMessageHandler(&logOutput);
     } else {
         qDebug() << "Error opening log file '" << fileName << "'. All debug output redirected to console.";
