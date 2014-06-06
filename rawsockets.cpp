@@ -196,10 +196,10 @@ void RawSockets::writeBytes(QString srcIp, QString dstIp, int srcPort, const cha
         // set dst mac
         char* dstMac = map.mac.toUtf8().data();
         if (!map.mac.isEmpty()) {
-            char token;
+            char* token;
             int i = 0;
-            while (((&token = strsep(&dstMac, ":")) != NULL) && (i < 6)) {
-                rawHeader.linkHeader.ethernet.ether_dhost[i] = strtoul(&token, NULL, 16);
+            while (((token = strsep(&dstMac, ":")) != NULL) && (i < 6)) {
+                rawHeader.linkHeader.ethernet.ether_dhost[i] = strtoul(token, NULL, 16);
                 i++;
             }
         } else { // linux loopback dest is 00:00...
