@@ -31,7 +31,7 @@ public:
      * @param sockType
      * @param srcIp
      */
-    void receiveBytes(const char* buf, int len, int sockType, QString& srcIp);
+    void receiveBytes(const char* buf, int len, int sockType, QString srcIp);
 
 public slots:
     void run();

@@ -115,7 +115,7 @@ protected:
      * @param sockType
      * @param srcIp
      */
-    virtual void receiveBytes(const char* buf, int len, int sockType, QString& srcIp) = 0;
+    virtual void receiveBytes(const char* buf, int len, int sockType, QString srcIp) = 0;
 public:
     ~Proxy();
     /**

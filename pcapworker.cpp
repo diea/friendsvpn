@@ -50,9 +50,7 @@ void PcapWorker::run() {
                 *dstPort = htons(p->listenPort); // restore the original port
             }
 
-            QString ipSrc(pcapHeader.ipSrcStr);
-
-            p->receiveBytes(packet, pcapHeader.len, p->sockType, ipSrc);
+            p->receiveBytes(packet, pcapHeader.len, p->sockType, pcapHeader.ipSrcStr);
         }
     }
 }

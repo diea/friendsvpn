@@ -38,6 +38,6 @@ void ProxyServer::sendBytes(const char *buf, int len, QString dstIp) {
     rawSocks->writeBytes(rec.ips.at(0), dstIp, port, buf, sockType, len);
 }
 
-void ProxyServer::receiveBytes(const char* buf, int len, int sockType, QString& srcIp) {
+void ProxyServer::receiveBytes(const char* buf, int len, int sockType, QString srcIp) {
     con->sendBytes(buf, len, idHash, sockType, srcIp);
 }

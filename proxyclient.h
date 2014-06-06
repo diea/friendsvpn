@@ -34,7 +34,7 @@ public:
      * @param sockType
      * @param srcIp
      */
-    void receiveBytes(const char* buf, int len, int sockType, QString& srcIp);
+    void receiveBytes(const char* buf, int len, int sockType, QString srcIp);
 
 private slots:
     void timeout(); // called when QTimer times out
