@@ -83,22 +83,22 @@ void DataPlaneConnection::readBuffer(const char* buf, int bufLen) {
         // read tcp or udp header to get src port
 
         // the first 16 bits of UDP or TCP header are the src_port
-        quint16* srcPort = static_cast<quint16*>(malloc(sizeof(quint16)));
-        memcpy(srcPort, packetBuf, sizeof(quint16));
-        *srcPort = ntohs(*srcPort);
+        quint16 srcPort; //= static_cast<quint16*>(malloc(sizeof(quint16)));
+        memcpy(&srcPort, packetBuf, sizeof(quint16));
+        srcPort = ntohs(srcPort);
 
-        QByteArray clientHash = QCryptographicHash::hash(QString(hash + srcIp + QString::number(*srcPort)).toUtf8(), QCryptographicHash::Md5);
+        QByteArray clientHash = QCryptographicHash::hash(QString(hash + srcIp + QString::number(srcPort)).toUtf8(), QCryptographicHash::Md5);
         qDebug() << "Get proxy";
         prox = Proxy::getProxy(clientHash);
         if (!prox) {
             qDebug() << "New client";
-            prox = new ProxyClient(clientHash, hash, srcIp, header->sockType, *srcPort, this);
+            prox = new ProxyClient(clientHash, hash, srcIp, header->sockType, srcPort, this);
             qDebug() << "Constructor OK, run";
             prox->run();
             qDebug() << "Run OK";
             clientProxys.push(dynamic_cast<ProxyClient*>(prox));
             qDebug() << "Client OK";
-            free(srcPort);
+            //free(srcPort);
         }
     }
     prox->sendBytes(packetBuf, ntohs(header->len), srcIp);
