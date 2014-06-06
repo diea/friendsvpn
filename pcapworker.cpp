@@ -21,41 +21,40 @@ void PcapWorker::run() {
         qDebug() << "Waiting for ready read";
         pcap.waitForReadyRead(-1);
         qDebug() << "Before reading header PCAP has" << pcap.bytesAvailable() << "bytes available";
-        if (remaining <= 0) {
-            if (pcap.bytesAvailable() < qint64(sizeof(pcapComHeader))) {
-                qDebug() << "PCAP header was not available, not enough bytes to be read";
-                continue; // wait for more!
+
+        while (pcap.bytesAvailable() > qint64(sizeof(pcapComHeader))) {
+            if (remaining <= 0) {
+                char pcapHeadChar[sizeof(struct pcapComHeader)];
+                pcap.read(pcapHeadChar, sizeof(struct pcapComHeader));
+
+                memset(&pcapHeader, 0, sizeof(struct pcapComHeader));
+                memcpy(&pcapHeader, pcapHeadChar, sizeof(struct pcapComHeader));
+                memset(&packet, 0, MAX_PACKET_SIZE);
+                remaining = pcapHeader.len;
             }
-            char pcapHeadChar[sizeof(struct pcapComHeader)];
-            pcap.read(pcapHeadChar, sizeof(struct pcapComHeader));
 
-            memset(&pcapHeader, 0, sizeof(struct pcapComHeader));
-            memcpy(&pcapHeader, pcapHeadChar, sizeof(struct pcapComHeader));
-            memset(&packet, 0, MAX_PACKET_SIZE);
-            remaining = pcapHeader.len;
+            qint64 bytesAv = pcap.bytesAvailable();
+            if (bytesAv >= remaining) {
+                pcap.read(packet + pos, remaining);
+                remaining = 0;
+                pos = 0;
+            } else {
+                pcap.read(packet + pos, bytesAv);
+                pos += bytesAv;
+                remaining -= bytesAv;
+                continue;
+            }
+
+            if (p->port != p->listenPort) {
+                // first 16 bits = source Port of UDP and TCP
+                quint16* dstPort = static_cast<quint16*>(static_cast<void*>(packet + 2)); // second 16 bits dstPort (or + 2 bytes)
+                *dstPort = htons(p->listenPort); // restore the original port
+            }
+
+            QString ipSrc(pcapHeader.ipSrcStr);
+
+            p->receiveBytes(packet, pcapHeader.len, p->sockType, ipSrc);
         }
-
-        qint64 bytesAv = pcap.bytesAvailable();
-        if (bytesAv >= remaining) {
-            pcap.read(packet + pos, remaining);
-            remaining = 0;
-            pos = 0;
-        } else {
-            pcap.read(packet + pos, bytesAv);
-            pos += bytesAv;
-            remaining -= bytesAv;
-            continue;
-        }
-
-        if (p->port != p->listenPort) {
-            // first 16 bits = source Port of UDP and TCP
-            quint16* dstPort = static_cast<quint16*>(static_cast<void*>(packet + 2)); // second 16 bits dstPort (or + 2 bytes)
-            *dstPort = htons(p->listenPort); // restore the original port
-        }
-
-        QString ipSrc(pcapHeader.ipSrcStr);
-
-        p->receiveBytes(packet, pcapHeader.len, p->sockType, ipSrc);
     }
 }
 
