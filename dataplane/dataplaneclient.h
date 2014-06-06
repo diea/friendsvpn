@@ -2,6 +2,7 @@
 #define DATAPLANECLIENT_H
 
 #include <QObject>
+#include <QMutex>
 #include "dataplaneconfig.h"
 #include "bonjour/bonjourrecord.h"
 #include "databasehandler.h"

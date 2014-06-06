@@ -3,6 +3,7 @@
 
 #include <QObject>
 #include <QSocketNotifier>
+#include <QMutex>
 #include "dataplaneconfig.h"
 
 class DataPlaneConnection;
