@@ -8,7 +8,7 @@ sslVersion=$(openssl version)
 unamestr=$(uname)
 
 if ! [ -f "openssl-1.0.1g/libcrypto.a" ] || ! [ -f "openssl-1.0.1g/libssl.a" ]; then
-    if [[ $sslVersion != "OpenSSL 1.0.1g"* ]]
+    if [[ $sslVersion != "zOpenSSL 1.0.1g"* ]]
     then
         echo "OpenSSL 1.0.1g or newer is required for the DTLS server to be able to function and it was not detected on your system"
         echo "Your version is :" $sslVersion
