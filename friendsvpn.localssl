@@ -36,7 +36,8 @@ SOURCES += main.cpp \
     ipresolver.cpp \
     rawsockets.cpp \
     helpers/raw_structs.cpp \
-    databasehandler.cpp
+    databasehandler.cpp \
+    pcapworker.cpp
 
 HEADERS  += \
     graphic/systray.h \
@@ -66,7 +67,8 @@ HEADERS  += \
     ipresolver.h \
     helpers/raw_structs.h \
     rawsockets.h \
-    databasehandler.h
+    databasehandler.h \
+    pcapworker.h
 
 INCLUDEPATH += $$_PRO_FILE_PWD_/libmaia
 LIBS += $$_PRO_FILE_PWD_/libmaia/libmaia.a
