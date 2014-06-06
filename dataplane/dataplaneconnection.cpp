@@ -93,7 +93,9 @@ void DataPlaneConnection::readBuffer(const char* buf, int bufLen) {
         if (!prox) {
             qDebug() << "New client";
             prox = new ProxyClient(clientHash, hash, srcIp, header->sockType, *srcPort, this);
+            qDebug() << "Constructor OK, run";
             prox->run();
+            qDebug() << "Run OK";
             clientProxys.push(dynamic_cast<ProxyClient*>(prox));
             qDebug() << "Client OK";
             free(srcPort);
