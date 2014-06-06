@@ -6,15 +6,11 @@ PcapWorker::PcapWorker(QStringList args, Proxy* p, QObject *parent) :
 {
     pos = 0;
     remaining = 0;
-    pcapHeader = NULL;
 }
 
 void PcapWorker::run() {
     QProcess pcap;
     connect(&pcap, SIGNAL(finished(int)), this, SLOT(pcapFinish(int)));
-
-    //UnixSignalHandler* u = UnixSignalHandler::getInstance();
-    //u->addQProcess(pcap); // add pcap to be killed when main is killed
 
     pcap.start(QString(HELPERPATH) + "pcapListen", args);
     pcap.waitForStarted();
@@ -27,12 +23,13 @@ void PcapWorker::run() {
                 qDebug() << "PCAP header was not available, not enough bytes to be read";
                 continue; // wait for more!
             }
-            pcapHeader = static_cast<struct pcapComHeader *>(malloc(sizeof(struct pcapComHeader)));
-            char pcapHeadChar[5000];
+            char pcapHeadChar[sizeof(struct pcapComHeader)];
             pcap.read(pcapHeadChar, sizeof(struct pcapComHeader));
-            memcpy(pcapHeader, pcapHeadChar, sizeof(struct pcapComHeader));
+
+            memset(&pcapHeader, 0, sizeof(struct pcapComHeader));
+            memcpy(&pcapHeader, pcapHeadChar, sizeof(struct pcapComHeader));
             memset(&packet, 0, MAX_PACKET_SIZE);
-            remaining = pcapHeader->len;
+            remaining = pcapHeader.len;
         }
 
         qint64 bytesAv = pcap.bytesAvailable();
@@ -53,12 +50,9 @@ void PcapWorker::run() {
             *dstPort = htons(p->listenPort); // restore the original port
         }
 
-        QString ipSrc(pcapHeader->ipSrcStr);
+        QString ipSrc(pcapHeader.ipSrcStr);
 
-        p->receiveBytes(packet, pcapHeader->len, p->sockType, ipSrc);
-
-        free(pcapHeader);
-        pcapHeader = NULL;
+        p->receiveBytes(packet, pcapHeader.len, p->sockType, ipSrc);
     }
 }
 
