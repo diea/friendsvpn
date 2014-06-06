@@ -12,10 +12,52 @@
 
 /* used for test */
 #include "proxyserver.h"
+#ifndef QT_NO_DEBUG_OUTPUT
+
+QTextStream *out = 0;
+
+void logOutput(QtMsgType type, const QMessageLogContext&, const QString &msg)
+{
+    QString debugdate = QDateTime::currentDateTime().toString("yyyy.MM.dd hh:mm:ss");
+    switch (type)
+    {
+    case QtDebugMsg:
+        debugdate += "[D]";
+        break;
+    case QtWarningMsg:
+        debugdate += "[W]";
+        break;
+    case QtCriticalMsg:
+        debugdate += "[C]";
+        break;
+    case QtFatalMsg:
+        debugdate += "[F]";
+    }
+    (*out) << debugdate << " " << msg << endl;
+
+    if (QtFatalMsg == type)
+    {
+        abort();
+    }
+}
+#endif
+
 
 int main(int argc, char *argv[])
 {
     QApplication a(argc, argv);
+
+#ifndef QT_NO_DEBUG_OUTPUT /* used to log timestamps test */
+    QString fileName = "friendsvpn.log";
+    QFile *log = new QFile(fileName);
+    if (log->open(QIODevice::WriteOnly | QIODevice::Append | QIODevice::Text)) {
+        out = new QTextStream(log);
+        qInstallMessageHandler(&logOutput);
+    } else {
+        qDebug() << "Error opening log file '" << fileName << "'. All debug output redirected to console.";
+    }
+#endif
+
     a.setQuitOnLastWindowClosed(false);
 
     // init signal handler
