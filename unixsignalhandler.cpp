@@ -88,8 +88,6 @@ void UnixSignalHandler::termSignalHandler(int) {
         cleanArgs.append(ip);
         cleanup.start(QString(HELPERPATH) + "/cleanup", cleanArgs);
         cleanup.waitForFinished();
-        qDebug() << cleanup.readAll();
-        qDebug() << cleanup.exitCode();
     }
 
     _exit(0);

@@ -29,7 +29,6 @@ int main(int argc, char** argv) {
     strcat(command, " inet6 del ");
 #endif
     strcat(command, ip);
-    printf("%s \n", command);
 
     system(command);
 
@@ -41,7 +40,6 @@ int main(int argc, char** argv) {
     strcat(command, " -ifscope ");
     strcat(command, iface);
     system(command);
-    printf("%s \n", command);
 #endif
 
     return 0;
