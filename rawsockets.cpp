@@ -389,7 +389,7 @@ void RawSockets::packetTooBig(QString srcIp, QString dstIp, const char *packetBu
     rawHeader.ip6.ip6_nxt = SOL_ICMPV6;
     rawHeader.ip6.ip6_hlim = 64;
     qDebug() << "Setting ip6_plen";
-    rawHeader.ip6.ip6_plen = htonl(rawHeader.payload_len);
+    rawHeader.ip6.ip6_plen = htons(rawHeader.payload_len);
 
     struct addrinfo hints, *res;
     memset(&hints, 0, sizeof(hints));
