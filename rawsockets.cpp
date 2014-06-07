@@ -315,11 +315,9 @@ void RawSockets::packetTooBig(QString srcIp, QString dstIp, const char *packetBu
 
     struct rawComHeader rawHeader;
     memset(&rawHeader, 0, sizeof(struct rawComHeader));
-    qDebug() << "Setting rawCom header len";
-    rawHeader.payload_len = packet_send_size + sizeof(struct icmpv6TooBig);
-    qDebug() << "RawCom header payload_len set";
 
     if (linkLayerType == DLT_EN10MB) {
+        packet_send_size -= sizeof(struct ether_header);
         rawHeader.linkHeader.ethernet.ether_type = htons(ETH_IPV6);
         // set source MAC
         const unsigned char* source_mac_addr;
@@ -378,8 +376,13 @@ void RawSockets::packetTooBig(QString srcIp, QString dstIp, const char *packetBu
             memset(rawHeader.linkHeader.ethernet.ether_dhost, 0, ETHER_ADDR_LEN);
         }
     } else { // DLT_NULL
+        packet_send_size -= sizeof(struct loopbackHeader);
         rawHeader.linkHeader.loopback.type = 0x1E; // IPv6 traffic
     }
+
+    qDebug() << "Setting rawCom header len";
+    rawHeader.payload_len = packet_send_size + sizeof(struct icmpv6TooBig);
+    qDebug() << "RawCom header payload_len set";
 
     // Construct v6 header
     rawHeader.ip6.ip6_vfc = 6 << 4;
@@ -417,10 +420,10 @@ void RawSockets::packetTooBig(QString srcIp, QString dstIp, const char *packetBu
     pHeader.payload_len = rawHeader.ip6.ip6_plen;
 
     int nbBytes = packet_send_size;
-    int padding = packet_send_size % 16;
+    /*int padding = packet_send_size % 16;
     if (padding) {
         nbBytes = (packet_send_size / 16) * 16 + 16;
-    } // not sure if icmpv6 needs padding
+    }*/ // not sure if icmpv6 needs padding
 
     qDebug() << "Preparing checksum icmpv6";
     int checksumBufSize = sizeof(struct ipv6upper) + sizeof(struct icmpv6TooBig) + nbBytes;
