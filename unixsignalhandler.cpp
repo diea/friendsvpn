@@ -79,24 +79,17 @@ void UnixSignalHandler::termSignalHandler(int) {
         }
     }
 
-    IpResolver* resolver = IpResolver::getInstance();
     foreach (QString ip, u->listOfIps) {
         qDebug() << "Cleaning up ip" << ip;
         // cleanup listen Ip
         QProcess cleanup;
         QStringList cleanArgs;
-        // get mapping
-        struct ip_mac_mapping map = resolver->getMapping(ip);
-        if (!map.interface.isEmpty()) {
-            cleanArgs.append(map.interface);
-            cleanArgs.append(map.ip);
-            cleanup.start(QString(HELPERPATH) + "/cleanup", cleanArgs);
-            cleanup.waitForFinished();
-            qDebug() << cleanup.readAll();
-            qDebug() << cleanup.exitCode();
-        } else {
-            qWarning() << "Mapping was not found when cleaning proxy";
-        }
+        cleanArgs.append(IpResolver::getDefaultInterface());
+        cleanArgs.append(ip);
+        cleanup.start(QString(HELPERPATH) + "/cleanup", cleanArgs);
+        cleanup.waitForFinished();
+        qDebug() << cleanup.readAll();
+        qDebug() << cleanup.exitCode();
     }
 
     _exit(0);

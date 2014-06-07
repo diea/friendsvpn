@@ -126,7 +126,6 @@ public:
      * @return
      */
     static void gennewIP();
-    static QString getDefaultInterface();
 
     /**
      * @brief getProxy static method that returns the Proxy* identified by the md5

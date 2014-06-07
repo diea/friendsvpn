@@ -1,10 +1,12 @@
 #include "ipresolver.h"
+#include "unixsignalhandler.h"
 #include <QProcess>
 #include <QDebug>
 #include <QStack>
 #include <QThread>
 #include <QHostAddress>
 IpResolver* IpResolver::instance = NULL;
+QString IpResolver::defaultInterface = "";
 
 IpResolver::IpResolver() :
     QObject()
@@ -128,6 +130,9 @@ QStack<QString> IpResolver::getActiveInterfaces() {
 }
 
 QString IpResolver::getDefaultInterface() {
+    if (!defaultInterface.isEmpty()) {
+        return defaultInterface;
+    }
 #ifdef __APPLE__
     QProcess netstat;
     netstat.start("netstat -nr");
@@ -141,13 +146,12 @@ QString IpResolver::getDefaultInterface() {
             QStringList list = curLine.split(" ", QString::SkipEmptyParts);
             if (list.at(1).contains(":")) {
                 netstat.close();
-                return list.at(3);
+                defaultInterface = list.at(3);
+                return defaultInterface;
             }
         }
     }
     netstat.close();
-    qWarning() << "The host has no IPv6 default route!";
-    exit(-1);
 #elif __GNUC__
     QProcess route;
     route.start("route -n6");
@@ -161,12 +165,13 @@ QString IpResolver::getDefaultInterface() {
             QStringList list = curLine.split(" ", QString::SkipEmptyParts);
             if (list.at(2) != "::") {
                 route.close();
-                return list.at(6);
+                defaultInterface = list.at(6);
+                return defaultInterface;
             }
         }
     }
     route.close();
-    qWarning() << "The host has no IPv6 default route!";
-    exit(-1);
 #endif
+    qWarning() << "The host has no IPv6 default route!";
+    UnixSignalHandler::termSignalHandler(0);
 }
