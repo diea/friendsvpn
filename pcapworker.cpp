@@ -30,14 +30,15 @@ void PcapWorker::run() {
                 memcpy(&pcapHeader, pcapHeadChar, sizeof(struct pcapComHeader));
                 memset(&packet, 0, MAX_PACKET_SIZE);
                 remaining = pcapHeader.len;
+                pos = 0;
             }
 
             qint64 bytesAv = pcap.bytesAvailable();
 
             if (bytesAv >= remaining) {
+                pos += remaining;
                 pcap.read(packet + pos, remaining);
                 remaining = 0;
-                pos = 0;
             } else {
                 pcap.read(packet + pos, bytesAv);
                 pos += bytesAv;
