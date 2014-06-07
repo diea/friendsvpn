@@ -81,6 +81,7 @@ void UnixSignalHandler::termSignalHandler(int) {
 
     IpResolver* resolver = IpResolver::getInstance();
     foreach (QString ip, u->listOfIps) {
+        qDebug() << "Cleaning up ip" << ip;
         // cleanup listen Ip
         QProcess cleanup;
         QStringList cleanArgs;
