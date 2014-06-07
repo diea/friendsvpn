@@ -74,7 +74,6 @@ int main(int argc, char *argv[])
     UnixSignalHandler* u = UnixSignalHandler::getInstance();
 
 #if 1
-
 #ifdef __APPLE__ /* linux only in text mode */
     // start systray
     QThread sysTrayThread;

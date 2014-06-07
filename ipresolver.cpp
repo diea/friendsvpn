@@ -6,7 +6,6 @@
 #include <QThread>
 #include <QHostAddress>
 IpResolver* IpResolver::instance = NULL;
-QString IpResolver::defaultInterface = "";
 
 IpResolver::IpResolver() :
     QObject()
@@ -130,8 +129,9 @@ QStack<QString> IpResolver::getActiveInterfaces() {
 }
 
 QString IpResolver::getDefaultInterface() {
-    if (!defaultInterface.isEmpty()) {
-        return defaultInterface;
+    IpResolver* r = IpResolver::getInstance();
+    if (!(r->defaultInterface.isEmpty())) {
+        return r->defaultInterface;
     }
 #ifdef __APPLE__
     QProcess netstat;
@@ -146,8 +146,8 @@ QString IpResolver::getDefaultInterface() {
             QStringList list = curLine.split(" ", QString::SkipEmptyParts);
             if (list.at(1).contains(":")) {
                 netstat.close();
-                defaultInterface = list.at(3);
-                return defaultInterface;
+                r->defaultInterface = list.at(3);
+                return r->defaultInterface;
             }
         }
     }
@@ -165,8 +165,8 @@ QString IpResolver::getDefaultInterface() {
             QStringList list = curLine.split(" ", QString::SkipEmptyParts);
             if (list.at(2) != "::") {
                 route.close();
-                defaultInterface = list.at(6);
-                return defaultInterface;
+                r->defaultInterface = list.at(6);
+                return r->defaultInterface;
             }
         }
     }
