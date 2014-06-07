@@ -24,6 +24,7 @@ private:
     QHash<QString, struct rawProcess*> rawHelpers;
 
     QMutex write;
+    char buffer[65536];
 
     /**
      * @brief initializes the raw helpers, one per interface
