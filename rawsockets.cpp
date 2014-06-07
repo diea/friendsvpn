@@ -383,7 +383,7 @@ void RawSockets::packetTooBig(QString srcIp, QString dstIp, const char *packetBu
     rawHeader.ip6.ip6_vfc = 6 << 4;
     rawHeader.ip6.ip6_nxt = SOL_ICMPV6;
     rawHeader.ip6.ip6_hlim = 64;
-    rawHeader.ip6.ip6_plen = htons(sizeof(struct icmpv6TooBig)); //htons(packet_send_size + sizeof(struct icmpv6TooBig));
+    rawHeader.ip6.ip6_plen = htons(packet_send_size + sizeof(struct icmpv6TooBig));
 
     struct addrinfo hints, *res;
     memset(&hints, 0, sizeof(hints));
@@ -413,11 +413,11 @@ void RawSockets::packetTooBig(QString srcIp, QString dstIp, const char *packetBu
     pHeader.nextHeader = rawHeader.ip6.ip6_nxt;
     pHeader.payload_len = rawHeader.ip6.ip6_plen;
 
-    /*int nbBytes = packet_send_size;
+    int nbBytes = packet_send_size;
     int padding = packet_send_size % 16;
     if (padding) {
         nbBytes = (packet_send_size / 16) * 16 + 16;
-    }*/ // not sure if icmpv6 needs padding
+    } // not sure if icmpv6 needs padding
 
     int checksumBufSize = sizeof(struct ipv6upper) + sizeof(struct icmpv6TooBig);// + nbBytes;
     char* checksumPacket = static_cast<char*>(malloc(checksumBufSize));
@@ -431,7 +431,7 @@ void RawSockets::packetTooBig(QString srcIp, QString dstIp, const char *packetBu
     icmpheader.mtu = htonl(FVPN_MTU);
     memcpy(checksumPacket, &pHeader, sizeof(struct ipv6upper));
     memcpy(checksumPacket + sizeof(struct ipv6upper), &icmpheader, sizeof(struct icmpv6TooBig));
-    //memcpy(checksumPacket + sizeof(struct ipv6upper) + sizeof(struct icmpv6TooBig), packetBuffer, packet_send_size);
+    memcpy(checksumPacket + sizeof(struct ipv6upper) + sizeof(struct icmpv6TooBig), packetBuffer, packet_send_size);
 
     icmpheader.checksum = ~(checksum(checksumPacket, checksumBufSize));
     free(checksumPacket);
@@ -441,7 +441,7 @@ void RawSockets::packetTooBig(QString srcIp, QString dstIp, const char *packetBu
     // combine the rawHeader and packet in one contiguous block
     memcpy(buffer, &rawHeader, sizeof(struct rawComHeader));
     memcpy(buffer + sizeof(struct rawComHeader), &icmpheader, sizeof(struct icmpv6TooBig));
-    //memcpy(buffer + sizeof(struct rawComHeader) + sizeof(struct icmpv6TooBig), packetBuffer, packet_send_size);
+    memcpy(buffer + sizeof(struct rawComHeader) + sizeof(struct icmpv6TooBig), packetBuffer, packet_send_size);
 
     qDebug() << "raw write";
     raw->write(buffer, bufferSize);
