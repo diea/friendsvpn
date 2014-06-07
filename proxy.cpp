@@ -153,7 +153,7 @@ void Proxy::gennewIP() {
         #elif __GNUC__
             resolver->addMapping(newip, "", "lo");
         #endif
-
+            u->addIp(newip);
             poolOfIpsMutex.lock();
             poolOfIps.enqueue(newip);
             poolOfIpsMutex.unlock();
