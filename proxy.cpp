@@ -17,6 +17,8 @@ QQueue<QString> Proxy::poolOfIps;
 QMutex Proxy::poolOfIpsMutex;
 
 Proxy::~Proxy() {
+    UnixSignalHandler* u = UnixSignalHandler::getInstance();
+
     while (!processes.empty()) {
         QProcess* p = processes.pop();
         p->terminate();
@@ -24,7 +26,6 @@ Proxy::~Proxy() {
         if (p->state() != QProcess::NotRunning) {
             p->kill();
         }
-        UnixSignalHandler* u = UnixSignalHandler::getInstance();
         u->removeQProcess(p);
         connect(p, SIGNAL(finished(int)), p, SLOT(deleteLater()));
         proxyHashes.remove(idHash);
@@ -40,6 +41,7 @@ Proxy::~Proxy() {
         cleanArgs.append(map.ip);
         cleanup.start(QString(HELPERPATH) + "/cleanup", cleanArgs);
         cleanup.waitForFinished();
+        u->removeIp(map.ip);
     } else {
         qWarning() << "Mapping was not found when cleaning proxy";
     }

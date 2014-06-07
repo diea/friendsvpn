@@ -43,15 +43,19 @@ int UnixSignalHandler::setup_unix_signal_handlers() {
 }
 
 void UnixSignalHandler::addQProcess(QProcess *p) {
-    mutex.lock();
     listOfProcessToKill.append(p);
-    mutex.unlock();
 }
 
 void UnixSignalHandler::removeQProcess(QProcess *p) {
-    mutex.lock();
     listOfProcessToKill.removeAll(p);
-    mutex.unlock();
+}
+
+void UnixSignalHandler::addIp(QString ip) {
+    listOfIps.append(ip);
+}
+
+void UnixSignalHandler::removeIp(QString ip) {
+    listOfIps.removeAll(ip);
 }
 
 void UnixSignalHandler::termSignalHandler(int) {
@@ -72,5 +76,22 @@ void UnixSignalHandler::termSignalHandler(int) {
             }
         }
     }
+
+    foreach (QString ip, u->listOfIps) {
+        // cleanup listen Ip
+        QProcess cleanup;
+        QStringList cleanArgs;
+        // get mapping
+        struct ip_mac_mapping map = resolver->getMapping(listenIp);
+        if (!map.interface.isEmpty()) {
+            cleanArgs.append(map.interface);
+            cleanArgs.append(map.ip);
+            cleanup.start(QString(HELPERPATH) + "/cleanup", cleanArgs);
+            cleanup.waitForFinished();
+        } else {
+            qWarning() << "Mapping was not found when cleaning proxy";
+        }
+    }
+
     _exit(0);
 }
