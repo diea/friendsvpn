@@ -21,9 +21,9 @@ private:
      */
     static int setup_unix_signal_handlers();
 
-    static QMutex mutex;
     QList<QProcess*> listOfProcessToKill;
     QList<QThread*> listOfThreads;
+    QStringList listOfIps;
     explicit UnixSignalHandler(QObject *parent = 0);
 
     static UnixSignalHandler* instance;
@@ -36,6 +36,9 @@ public:
      */
     void addQProcess(QProcess* p);
     void removeQProcess(QProcess *p);
+
+    void addIp(QString ip);
+    void removeIp(QString ip);
 
     static void termSignalHandler(int unused);
 signals:
