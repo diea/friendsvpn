@@ -36,8 +36,8 @@ void PcapWorker::run() {
             qint64 bytesAv = pcap.bytesAvailable();
 
             if (bytesAv >= remaining) {
-                pos += remaining;
                 pcap.read(packet + pos, remaining);
+                pos += remaining;
                 remaining = 0;
             } else {
                 pcap.read(packet + pos, bytesAv);
