@@ -3,42 +3,11 @@
 #include <unistd.h>
 #include <time.h>
 #include <string.h>
-#include <signal.h>
-
-char* command = NULL;
-char* iface = NULL;
-char* ip = NULL;
-
-void sig_handler(int signal) {
-    /* used on linux to delete the ip6tables rule */
-    if (!command) {
-        exit(-1);
-    }
-
-    char delCommand[2010];
-    memset(&delCommand, 0, sizeof(delCommand));
-
-    strcat(delCommand, "ifconfig ");
-    strcat(delCommand, iface);
-#ifdef __APPLE__
-    strcat(delCommand, " inet6 remove ");
-#elif __GNUC__
-    strcat(delCommand, " inet6 del ");
-#endif
-
-    strcat(delCommand, ip);
-
-    system(delCommand);
-
-    exit(0);
-}
-
   /**
    * usage: ifconfighelp iface ipv6
    *
    * return: 1 wrong arguments
    * return: 2 unable to run dmesg
-   * return: 4 unable to handle signals
    * return: 0 success or duplicate
    */
 int main(int argc, char** argv) {
@@ -48,26 +17,12 @@ int main(int argc, char** argv) {
     }
     setuid(0);
 
-    struct sigaction sa;
-    memset(&sa, '\0', sizeof(sigaction));
-    sa.sa_handler = &sig_handler;
-    sa.sa_flags = SA_RESTART;
-    sigfillset(&sa.sa_mask);
-    if ((sigaction(SIGINT, &sa, NULL)) == -1) {
-        fprintf(stderr, "Cannot handle SIGINT!\n");
-        return 4;
-    }
-    if ((sigaction(SIGTERM, &sa, NULL)) == -1) {
-        fprintf(stderr, "Cannot handle SIGTERM!\n");
-        return 4;
-    }
-
-    iface = malloc(sizeof(char) * strlen(argv[1]));
+    char* iface = malloc(sizeof(char) * strlen(argv[1]));
     strcpy(iface, argv[1]);
-    ip = malloc(sizeof(char) * strlen(argv[2]));
+    char* ip = malloc(sizeof(char) * strlen(argv[2]));
     strcpy(ip, argv[2]);
 
-    command = malloc(sizeof(char) * 2000);
+    char* command = malloc(sizeof(char) * 2000);
     memset(command, 0, sizeof(char) * 2000);
     strcat(command, "ifconfig ");
     strcat(command, iface);
@@ -81,15 +36,7 @@ int main(int argc, char** argv) {
         fprintf(stderr, "New IP needs a /something prefix\n");
         return 1;
     }
-    char* testIp;
-#ifdef __APPLE__
     *found = '\0'; // terminate the IP, don't bother the prefix for deletion
-    testIp = ip; // on apple those are the same
-#elif __GNUC__ /* on linux the "del" command has to specifiy ip prefix so we can't just \0 the string */
-    testIp = malloc(2000);
-    strncpy(testIp, ip, found - ip);
-    testIp[found - ip] = '\0';
-#endif
 
     char line[2000];
     /* Read the output a line at a time - output it. */
@@ -101,8 +48,8 @@ int main(int argc, char** argv) {
         return 2;
     }
     while (fgets(line, sizeof(line) - 1, fp) != NULL) {
-        if ((strstr(line, "duplicate") != NULL) && (strstr(line, testIp) != NULL)) {
-            sig_handler(SIGTERM);
+        if ((strstr(line, "duplicate") != NULL) && (strstr(line, ip) != NULL)) {
+            return 3;
         }
     }
     fflush(stdout);
@@ -110,7 +57,6 @@ int main(int argc, char** argv) {
 
     getchar(); // wait before leaving!
     // got char, exit!
-    sig_handler(SIGTERM);
 
     return 0;
 }

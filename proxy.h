@@ -57,6 +57,7 @@ protected:
     /**
      * @brief Proxy is an abstract class
      */
+    void commonInit(QByteArray md5); // does the common initialization
     Proxy(int port, int sockType, QByteArray md5);
     Proxy(int port, const QString& regType, QByteArray md5);
 

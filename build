@@ -41,21 +41,22 @@ cd ..
 qmake
 make
 cd helpers
-rm -f ifconfighelp pcapListen sendRaw reqIp newSocket
+rm -f ifconfighelp pcapListen sendRaw reqIp newSocket cleanup
 gcc ifconfighelp.c -o ifconfighelp
 gcc pcapListen.c -o pcapListen -lpcap
 gcc sendRaw.c -o sendRaw -lpcap
 gcc icmpReqMac.c raw_structs.c -o reqIp -lpcap
 gcc newSocket.c -o newSocket
+gcc cleanup.c -o cleanup
 
 echo "Please provide root password for setting the setuid bit to the helpers, thank you"
 
 if [[ $unamestr == "Darwin" ]]; then
-	sudo chown root:wheel pcapListen sendRaw ifconfighelp reqIp
-	sudo chmod u+s pcapListen sendRaw ifconfighelp reqIp
+	sudo chown root:wheel pcapListen sendRaw ifconfighelp reqIp cleanup
+	sudo chmod u+s pcapListen sendRaw ifconfighelp reqIp cleanup
 else
-	sudo chown root:`whoami` pcapListen sendRaw ifconfighelp reqIp newSocket
-	sudo chmod u+s pcapListen sendRaw ifconfighelp reqIp newSocket
+	sudo chown root:`whoami` pcapListen sendRaw ifconfighelp reqIp newSocket cleanup
+	sudo chmod u+s pcapListen sendRaw ifconfighelp reqIp newSocket cleanup
 fi
 
 cd ..
