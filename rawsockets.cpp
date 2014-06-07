@@ -419,11 +419,18 @@ void RawSockets::packetTooBig(QString srcIp, QString dstIp, const char *packetBu
     pHeader.nextHeader = rawHeader.ip6.ip6_nxt;
     pHeader.payload_len = rawHeader.ip6.ip6_plen;
 
+    struct icmpv6TooBig icmpheader;
+    memset(&icmpheader, 0, sizeof(struct icmpv6TooBig));
+    icmpheader.code = 0;
+    icmpheader.type = 2;
+    icmpheader.mtu = htonl(FVPN_MTU);
+
     int nbBytes = packet_send_size;
-    /*int padding = packet_send_size % 16;
+    int padding = packet_send_size % 16;
     if (padding) {
+        qDebug() << "ICMPv6 needs padding!";
         nbBytes = (packet_send_size / 16) * 16 + 16;
-    }*/ // not sure if icmpv6 needs padding
+    } // not sure if icmpv6 needs padding
 
     qDebug() << "Preparing checksum icmpv6";
     int checksumBufSize = sizeof(struct ipv6upper) + sizeof(struct icmpv6TooBig) + nbBytes;
@@ -431,16 +438,12 @@ void RawSockets::packetTooBig(QString srcIp, QString dstIp, const char *packetBu
     memset(checksumPacket, 0, checksumBufSize);
 
     /* make icmpv6 packet too big header */
-    struct icmpv6TooBig icmpheader;
-    memset(&icmpheader, 0, sizeof(struct icmpv6TooBig));
-    icmpheader.code = 0;
-    icmpheader.type = 2;
-    icmpheader.mtu = htonl(FVPN_MTU);
     memcpy(checksumPacket, &pHeader, sizeof(struct ipv6upper));
     memcpy(checksumPacket + sizeof(struct ipv6upper), &icmpheader, sizeof(struct icmpv6TooBig));
     memcpy(checksumPacket + sizeof(struct ipv6upper) + sizeof(struct icmpv6TooBig), packetBuffer, packet_send_size);
 
     qDebug() << "Computing checksum icmpv6";
+    qDebug() << "Checksum for" << checksumBufSize << "bytes";
     icmpheader.checksum = ~(checksum(checksumPacket, checksumBufSize));
     free(checksumPacket);
 
