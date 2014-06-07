@@ -327,11 +327,10 @@ void Proxy::run_pcap(const char* dstIp) {
         bindSocket->waitForStarted();
 
         qDebug() << "Wait for finished";
-        if (bindSocket->waitForFinished(400)) { // 200ms should be plenty enough for the process to fail on bind
+        if (bindSocket->waitForFinished(100)) { // 200ms should be plenty enough for the process to fail on bind
             if (bindSocket->exitCode() == EADDRNOTAVAIL) {
                 // loop again until IP is available but just sleep a moment
                 qDebug() << "Bind ERROR: EADDRNOTAVAIL";
-                QThread::sleep(1);
             } else if (bindSocket->exitCode() == 3) {
                 if (port < 60000) {
                     port = 60001;

@@ -100,7 +100,8 @@ bool DatabaseHandler::insertDevice(QString hostname, int port, QString service_n
     query.bindValue(5, record_name);
     query.exec();
     // test qry
-    db.close(); qryMut.unlock();
+    db.close();
+    qryMut.unlock();
     return true;
 }
 
