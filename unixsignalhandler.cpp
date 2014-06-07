@@ -92,6 +92,8 @@ void UnixSignalHandler::termSignalHandler(int) {
             cleanArgs.append(map.ip);
             cleanup.start(QString(HELPERPATH) + "/cleanup", cleanArgs);
             cleanup.waitForFinished();
+            qDebug() << cleanup.readAll();
+            qDebug() << cleanup.exitCode();
         } else {
             qWarning() << "Mapping was not found when cleaning proxy";
         }
