@@ -39,6 +39,7 @@ Proxy::~Proxy() {
         cleanArgs.append(map.interface);
         cleanArgs.append(map.ip);
         cleanup.start(QString(HELPERPATH) + "/cleanup", cleanArgs);
+        cleanup.waitForFinished();
     } else {
         qWarning() << "Mapping was not found when cleaning proxy";
     }
