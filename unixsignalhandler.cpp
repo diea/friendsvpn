@@ -1,4 +1,6 @@
 #include "unixsignalhandler.h"
+#include "ipresolver.h"
+#include "config.h"
 #include <signal.h>
 #include <QDebug>
 #include <sys/types.h>
@@ -8,7 +10,6 @@
 #include <unistd.h>
 
 UnixSignalHandler* UnixSignalHandler::instance = NULL;
-QMutex UnixSignalHandler::mutex;
 
 UnixSignalHandler::UnixSignalHandler(QObject *parent) :
     QObject(parent)
@@ -60,6 +61,7 @@ void UnixSignalHandler::removeIp(QString ip) {
 
 void UnixSignalHandler::termSignalHandler(int) {
     UnixSignalHandler* u = UnixSignalHandler::getInstance();
+    static QMutex mutex;
     mutex.lock(); // no need to unlock we exit
     emit u->exiting();
     foreach (QProcess* p, u->listOfProcessToKill) {
@@ -77,12 +79,13 @@ void UnixSignalHandler::termSignalHandler(int) {
         }
     }
 
+    IpResolver* resolver = IpResolver::getInstance();
     foreach (QString ip, u->listOfIps) {
         // cleanup listen Ip
         QProcess cleanup;
         QStringList cleanArgs;
         // get mapping
-        struct ip_mac_mapping map = resolver->getMapping(listenIp);
+        struct ip_mac_mapping map = resolver->getMapping(ip);
         if (!map.interface.isEmpty()) {
             cleanArgs.append(map.interface);
             cleanArgs.append(map.ip);
