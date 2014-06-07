@@ -43,9 +43,13 @@ void PcapWorker::run() {
                 pcap.read(packet + pos, bytesAv);
                 pos += bytesAv;
                 remaining -= bytesAv;
+                qDebug() << "Packet read remaining" << remaining;
+                qDebug() << "Packet read pos:" << pos;
                 continue;
             }
 
+            qDebug() << "Full packet read remaining" << remaining;
+            qDebug() << "Full packet read pos:" << pos;
             if ((pcapHeader.len > FVPN_MTU) && (pos > IPV6_MIN_MTU)) {
                 qDebug() << "Got packet of size" << remaining << "sending icmpv6 too big";
 
