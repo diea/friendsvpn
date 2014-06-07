@@ -122,6 +122,8 @@ void RawSockets::writeBytes(QString srcIp, QString dstIp, int srcPort, const cha
         return;
     }
 
+    write.lock(); // not optimal to lock here, but try to avoid mem corruption by using single buffer
+
     struct rawProcess* p = rawHelpers.value(map.interface);
     QProcess* raw = p->process;
     if (!raw || raw->state() != 2) {
@@ -136,7 +138,8 @@ void RawSockets::writeBytes(QString srcIp, QString dstIp, int srcPort, const cha
 #endif
 
     int bufferSize = packet_send_size + sizeof(struct rawComHeader);
-    char buffer[bufferSize];
+    memset(buffer, 0, 65536);
+    //char buffer[bufferSize];
 
     /* copy trans and payload to buffer, after where the rawComHeader is going */
     memcpy(buffer + sizeof(struct rawComHeader), transAndPayload, packet_send_size);
@@ -278,7 +281,7 @@ void RawSockets::writeBytes(QString srcIp, QString dstIp, int srcPort, const cha
     // combine the rawHeader and packet in one contiguous block
     memcpy(buffer, &rawHeader, sizeof(struct rawComHeader));
 
-    write.lock(); // make sure one write at a time in buffer
+    //write.lock(); // make sure one write at a time in buffer
     qDebug() << "raw write";
     raw->write(buffer, bufferSize);
     raw->waitForBytesWritten();
