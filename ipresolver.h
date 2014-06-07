@@ -27,8 +27,7 @@ private:
     QHash<QString, struct ip_mac_mapping> mappings;
 
     static IpResolver* instance;
-
-    static QString defaultInterface;
+    QString defaultInterface;
 
 public:
     static IpResolver* getInstance();
