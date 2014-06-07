@@ -436,7 +436,7 @@ void RawSockets::packetTooBig(QString srcIp, QString dstIp, const char *packetBu
     icmpheader.checksum = ~(checksum(checksumPacket, checksumBufSize));
     free(checksumPacket);
 
-    int bufferSize = sizeof(struct rawComHeader) + sizeof(struct icmpv6TooBig);// + packet_send_size;
+    int bufferSize = sizeof(struct rawComHeader) + sizeof(struct icmpv6TooBig) + packet_send_size;
     char buffer[packet_send_size + sizeof(struct rawComHeader) + sizeof(struct icmpv6TooBig)];
     // combine the rawHeader and packet in one contiguous block
     memcpy(buffer, &rawHeader, sizeof(struct rawComHeader));
@@ -444,6 +444,7 @@ void RawSockets::packetTooBig(QString srcIp, QString dstIp, const char *packetBu
     memcpy(buffer + sizeof(struct rawComHeader) + sizeof(struct icmpv6TooBig), packetBuffer, packet_send_size);
 
     qDebug() << "raw write";
+    qDebug() << "write" << bufferSize << "ip length is" << rawHeader.ip6.ip6_plen << "and packet_send_size" << packet_send_size;
     raw->write(buffer, bufferSize);
     raw->waitForBytesWritten();
     qDebug() << "raw written";
