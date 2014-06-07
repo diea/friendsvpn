@@ -423,7 +423,7 @@ void RawSockets::packetTooBig(QString srcIp, QString dstIp, const char *packetBu
     } // not sure if icmpv6 needs padding
 
     qDebug() << "Preparing checksum icmpv6";
-    int checksumBufSize = sizeof(struct ipv6upper) + sizeof(struct icmpv6TooBig);// + nbBytes;
+    int checksumBufSize = sizeof(struct ipv6upper) + sizeof(struct icmpv6TooBig) + nbBytes;
     char* checksumPacket = static_cast<char*>(malloc(checksumBufSize));
     memset(checksumPacket, 0, checksumBufSize);
 
