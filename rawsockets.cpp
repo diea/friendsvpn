@@ -421,7 +421,6 @@ void RawSockets::packetTooBig(QString srcIp, QString dstIp, const char *packetBu
 
     struct icmpv6TooBig icmpheader;
     memset(&icmpheader, 0, sizeof(struct icmpv6TooBig));
-    icmpheader.code = 0;
     icmpheader.type = 2;
     icmpheader.mtu = htonl(FVPN_MTU);
 
@@ -444,7 +443,7 @@ void RawSockets::packetTooBig(QString srcIp, QString dstIp, const char *packetBu
 
     qDebug() << "Computing checksum icmpv6";
     qDebug() << "Checksum for" << checksumBufSize << "bytes";
-    icmpheader.checksum = ~(checksum(checksumPacket, checksumBufSize));
+    //icmpheader.checksum = ~(checksum(checksumPacket, checksumBufSize));
     free(checksumPacket);
 
     qDebug() << "Combine the different headers in one contiguos block";
