@@ -9,20 +9,6 @@
 #include <netdb.h>
 #include <errno.h>
 #include <string.h>
-#include <signal.h> // sigaction(), sigsuspend(), sig*()
-
-char* ip6tablesRule = NULL;
-
-void sig_handler(int signal) {
-    /* used on linux to delete the ip6tables rule */
-    if (!ip6tablesRule) {
-        exit(0);
-    }
-
-    ip6tablesRule[11] = 'D'; // replace append by 'D' for delete in the command
-    system(ip6tablesRule);
-    exit(0);
-}
 
 /**
  * usage: sockType ipProto port addr
@@ -69,15 +55,6 @@ int main(int argc, char** argv) {
         return 3;
     }
 
-    struct sigaction sa;
-    sa.sa_handler = &sig_handler;
-    sa.sa_flags = SA_RESTART;
-    sigfillset(&sa.sa_mask);
-    if ((sigaction(SIGINT, &sa, NULL) == -1) || (sigaction(SIGTERM, &sa, NULL) == -1)) {
-        fprintf(stderr, "Cannot handle SIGINT or SIGTERM!\n");
-        return 4;
-    }
-
 #ifndef __APPLE__ /* linux */
     /* on linux the "bind" trick does not work due to bind's implementation needing a "listen"
      * to accept connections, we will thus prevent the kernel from sending its RST using an ip6tables
@@ -85,13 +62,13 @@ int main(int argc, char** argv) {
      * we still bind on linux to prevent other applications from binding on the same port
      */
 
-    ip6tablesRule = malloc(400 * sizeof(char));
+    char* ip6tablesRule = malloc(400 * sizeof(char));
     sprintf(ip6tablesRule, "ip6tables -A OUTPUT -s %s -p tcp --sport %s --tcp-flags RST RST -j DROP", argv[4], argv[3]);
     system(ip6tablesRule);
 #endif
     fprintf(stderr, "all is well!\n");
 
-    getchar(); // press any key to quit
+    getchar(); // press any key to quit (releasing the "bind" call)
     
     return 0;
 }

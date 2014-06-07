@@ -82,7 +82,7 @@ int main(int argc, char *argv[])
     QObject::connect(&sysTrayThread, SIGNAL(started()), st, SLOT(createActions()));
     QObject::connect(&sysTrayThread, SIGNAL(started()), st, SLOT(createTrayIcon()));
     sysTrayThread.start();
-    QObject::connect(u, SIGNAL(exiting()), &sysTrayThread, SLOT(quit()));
+    QObject::connect(u, SIGNAL(exiting()), &sysTrayThread, SLOT(quit()), Qt::DirectConnection);
 #endif
 
     // connect to sql database
@@ -93,7 +93,7 @@ int main(int argc, char *argv[])
     Poller* poller = new Poller();
     poller->moveToThread(&pollerThread);
     poller->connect(&pollerThread, SIGNAL(started()), SLOT(run()));
-    QObject::connect(u, SIGNAL(exiting()), &pollerThread, SLOT(quit()));
+    QObject::connect(u, SIGNAL(exiting()), &pollerThread, SLOT(quit()), Qt::DirectConnection);
     pollerThread.start();
 
     // get uid from app
@@ -108,7 +108,7 @@ int main(int argc, char *argv[])
     BonjourDiscoverer* disco = BonjourDiscoverer::getInstance();
     disco->moveToThread(&discovererThread);
     QObject::connect(&discovererThread, SIGNAL(started()), disco, SLOT(discoverServices()));
-    QObject::connect(u, SIGNAL(exiting()), &discovererThread, SLOT(quit()));
+    QObject::connect(u, SIGNAL(exiting()), &discovererThread, SLOT(quit()), Qt::DirectConnection);
     discovererThread.start();
 
     con->run();

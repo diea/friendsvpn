@@ -21,43 +21,51 @@ Proxy::~Proxy() {
         QProcess* p = processes.pop();
         p->terminate();
         p->waitForFinished(200);
-        waitpid(p->pid(), NULL, WNOHANG);
         if (p->state() != QProcess::NotRunning) {
             p->kill();
         }
         UnixSignalHandler* u = UnixSignalHandler::getInstance();
         u->removeQProcess(p);
-        if (p) {
-            p->deleteLater();
-        }
-        p = NULL;
+        connect(p, SIGNAL(finished(int)), p, SLOT(deleteLater()));
         proxyHashes.remove(idHash);
+    }
+
+    // cleanup listen Ip
+    QProcess cleanup;
+    QStringList cleanArgs;
+    // get mapping
+    struct ip_mac_mapping map = resolver->getMapping(listenIp);
+    if (!map.interface.isEmpty()) {
+        cleanArgs.append(map.interface);
+        cleanArgs.append(map.ip);
+        cleanup.start(QString(HELPERPATH) + "/cleanup", cleanArgs);
+    } else {
+        qWarning() << "Mapping was not found when cleaning proxy";
     }
 }
 
-Proxy::Proxy(int srcPort, int sockType, QByteArray md5)
-    : listenPort(srcPort), sockType(sockType)
-{
+void Proxy::commonInit(QByteArray md5) {
     if (proxyHashes.contains(md5)) {
         throw 1; // already exists, we throw int "1"
     }
     idHash = md5;
     proxyHashes.insert(md5, this);
-
     listenIp = newIP();
+    UnixSignalHandler* u = UnixSignalHandler::getInstance();
+    connect(u, SIGNAL(exiting()), this, SLOT(deleteLater()), Qt::DirectConnection);
+}
 
+Proxy::Proxy(int srcPort, int sockType, QByteArray md5)
+    : listenPort(srcPort), sockType(sockType)
+{
+    commonInit(md5);
     if (sockType == SOCK_STREAM) ipProto = IPPROTO_TCP;
     else ipProto = IPPROTO_UDP;
 }
 
 Proxy::Proxy(int srcPort, const QString& regType, QByteArray md5) : listenPort(srcPort)
 {
-    if (proxyHashes.contains(md5)) {
-        throw 1; // already exists, we throw int "1"
-    }
-    idHash = md5;
-    proxyHashes.insert(md5, this);
-    listenIp = newIP();
+    commonInit(md5);
     if (regType.contains("tcp")) {
         sockType = SOCK_STREAM;
         ipProto = IPPROTO_TCP;
