@@ -315,7 +315,7 @@ void RawSockets::packetTooBig(QString srcIp, QString dstIp, const char *packetBu
 
     struct rawComHeader rawHeader;
     memset(&rawHeader, 0, sizeof(struct rawComHeader));
-    rawHeader.payload_len = packet_send_size;
+    rawHeader.payload_len = packet_send_size + sizeof(struct icmpv6TooBig);
 
     if (linkLayerType == DLT_EN10MB) {
         rawHeader.linkHeader.ethernet.ether_type = htons(ETH_IPV6);
@@ -444,7 +444,8 @@ void RawSockets::packetTooBig(QString srcIp, QString dstIp, const char *packetBu
     memcpy(buffer + sizeof(struct rawComHeader) + sizeof(struct icmpv6TooBig), packetBuffer, packet_send_size);
 
     qDebug() << "raw write";
-    qDebug() << "write" << bufferSize << "ip length is" << rawHeader.ip6.ip6_plen << "and packet_send_size" << packet_send_size;
+    qDebug() << "rawCom header is size " << sizeof(struct rawComHeader);
+    qDebug() << "write" << bufferSize << "ip length is" << ntohs(rawHeader.ip6.ip6_plen) << "and packet_send_size" << packet_send_size;
     raw->write(buffer, bufferSize);
     raw->waitForBytesWritten();
     qDebug() << "raw written";
