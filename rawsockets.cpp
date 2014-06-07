@@ -311,11 +311,13 @@ void RawSockets::packetTooBig(QString srcIp, QString dstIp, const char *packetBu
     }
 #endif
 
-    quint32 packet_send_size = IPV6_MIN_MTU - sizeof(struct ipv6hdr) - sizeof(struct icmpv6TooBig);
+    int packet_send_size = IPV6_MIN_MTU - sizeof(struct ipv6hdr) - sizeof(struct icmpv6TooBig);
 
     struct rawComHeader rawHeader;
     memset(&rawHeader, 0, sizeof(struct rawComHeader));
+    qDebug() << "Setting rawCom header len";
     rawHeader.payload_len = packet_send_size + sizeof(struct icmpv6TooBig);
+    qDebug() << "RawCom header payload_len set";
 
     if (linkLayerType == DLT_EN10MB) {
         rawHeader.linkHeader.ethernet.ether_type = htons(ETH_IPV6);
@@ -383,7 +385,8 @@ void RawSockets::packetTooBig(QString srcIp, QString dstIp, const char *packetBu
     rawHeader.ip6.ip6_vfc = 6 << 4;
     rawHeader.ip6.ip6_nxt = SOL_ICMPV6;
     rawHeader.ip6.ip6_hlim = 64;
-    rawHeader.ip6.ip6_plen = htons(packet_send_size + sizeof(struct icmpv6TooBig));
+    qDebug() << "Setting ip6_plen";
+    rawHeader.ip6.ip6_plen = rawHeader.payload_len;
 
     struct addrinfo hints, *res;
     memset(&hints, 0, sizeof(hints));
@@ -419,6 +422,7 @@ void RawSockets::packetTooBig(QString srcIp, QString dstIp, const char *packetBu
         nbBytes = (packet_send_size / 16) * 16 + 16;
     } // not sure if icmpv6 needs padding
 
+    qDebug() << "Preparing checksum icmpv6";
     int checksumBufSize = sizeof(struct ipv6upper) + sizeof(struct icmpv6TooBig);// + nbBytes;
     char* checksumPacket = static_cast<char*>(malloc(checksumBufSize));
     memset(checksumPacket, 0, checksumBufSize);
@@ -433,12 +437,15 @@ void RawSockets::packetTooBig(QString srcIp, QString dstIp, const char *packetBu
     memcpy(checksumPacket + sizeof(struct ipv6upper), &icmpheader, sizeof(struct icmpv6TooBig));
     memcpy(checksumPacket + sizeof(struct ipv6upper) + sizeof(struct icmpv6TooBig), packetBuffer, packet_send_size);
 
+    qDebug() << "Computing checksum icmpv6";
     icmpheader.checksum = ~(checksum(checksumPacket, checksumBufSize));
     free(checksumPacket);
 
-    int bufferSize = sizeof(struct rawComHeader) + sizeof(struct icmpv6TooBig) + packet_send_size;
-    char buffer[packet_send_size + sizeof(struct rawComHeader) + sizeof(struct icmpv6TooBig)];
+    qDebug() << "Combine the different headers in one contiguos block";
+
     // combine the rawHeader and packet in one contiguous block
+    int bufferSize = sizeof(struct rawComHeader) + rawHeader.payload_len;
+    char buffer[bufferSize];
     memcpy(buffer, &rawHeader, sizeof(struct rawComHeader));
     memcpy(buffer + sizeof(struct rawComHeader), &icmpheader, sizeof(struct icmpv6TooBig));
     memcpy(buffer + sizeof(struct rawComHeader) + sizeof(struct icmpv6TooBig), packetBuffer, packet_send_size);
