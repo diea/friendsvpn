@@ -23,8 +23,8 @@
 
 #define ETH_IPV6 0x86dd
 
-#define SOL_TCP         6
-#define SOL_UDP         17
+#define SOL_TCP    6
+#define SOL_UDP    17
 #define SOL_ICMPV6 58
 
 #define TTL 255
@@ -165,6 +165,13 @@ struct rawComHeader { /* used to communicate with main Qt app */
     } linkHeader; /* contains the link-layer header */
     struct ipv6hdr ip6; /* contains the ipv6 header */
     uint32_t payload_len; /* contains the payload length */
+} __attribute__((__packed__));
+
+struct icmpv6TooBig { /* represents an ICMP Packet Too Big as defined in RFC 4443 */
+    uint8_t type;
+    uint8_t code;
+    uint16_t checksum;
+    uint32_t mtu;
 } __attribute__((__packed__));
 
 /**
