@@ -154,7 +154,8 @@ void DataPlaneClient::readyRead(int) {
 
 void DataPlaneClient::sendBytes(const char *bytes, socklen_t len) {
     if (!(SSL_get_shutdown(ssl) & SSL_RECEIVED_SHUTDOWN)) {
-        SSL_write(ssl, bytes, len);
+        int nbWr = SSL_write(ssl, bytes, len);
+        qDebug() << "Wrote" << nbWr << "bytes";
         switch (SSL_get_error(ssl, len)) {
             case SSL_ERROR_NONE:
                 break;
