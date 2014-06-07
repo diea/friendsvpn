@@ -34,17 +34,11 @@ Proxy::~Proxy() {
     // cleanup listen Ip
     QProcess cleanup;
     QStringList cleanArgs;
-    // get mapping
-    struct ip_mac_mapping map = resolver->getMapping(listenIp);
-    if (!map.interface.isEmpty()) {
-        cleanArgs.append(map.interface);
-        cleanArgs.append(map.ip);
-        cleanup.start(QString(HELPERPATH) + "/cleanup", cleanArgs);
-        cleanup.waitForFinished();
-        u->removeIp(map.ip);
-    } else {
-        qWarning() << "Mapping was not found when cleaning proxy";
-    }
+    cleanArgs.append(IpResolver::getDefaultInterface());
+    cleanArgs.append(listenIp);
+    cleanup.start(QString(HELPERPATH) + "/cleanup", cleanArgs);
+    cleanup.waitForFinished();
+    u->removeIp(listenIp);
 }
 
 void Proxy::commonInit(QByteArray md5) {

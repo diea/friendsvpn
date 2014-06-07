@@ -28,6 +28,8 @@ private:
 
     static IpResolver* instance;
 
+    static QString defaultInterface;
+
 public:
     static IpResolver* getInstance();
 
