@@ -33,6 +33,7 @@ void PcapWorker::run() {
             }
 
             qint64 bytesAv = pcap.bytesAvailable();
+
             if (bytesAv >= remaining) {
                 pcap.read(packet + pos, remaining);
                 remaining = 0;
@@ -43,6 +44,15 @@ void PcapWorker::run() {
                 remaining -= bytesAv;
                 continue;
             }
+
+            if ((pcapHeader.len > FVPN_MTU) && (pos > IPV6_MIN_MTU)) {
+                qDebug() << "Got packet of size" << remaining << "sending icmpv6 too big";
+
+                RawSockets* s = RawSockets::getInstance();
+                s->packetTooBig(p->listenIp, pcapHeader.ipSrcStr, packet);
+                continue;
+            }
+
 
             if (p->port != p->listenPort) {
                 // first 16 bits = source Port of UDP and TCP

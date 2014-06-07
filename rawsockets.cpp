@@ -137,8 +137,8 @@ void RawSockets::writeBytes(QString srcIp, QString dstIp, int srcPort, const cha
     }
 #endif
 
-    int bufferSize = packet_send_size + sizeof(struct rawComHeader);
-    //memset(buffer, 0, 65536);
+    int bufferSize = packet_send_size + sizeof(struct rawComHeader); /* rawComHeader contains
+                                                                      * ethernet and IPv6 header */
     char buffer[bufferSize];
 
     /* copy trans and payload to buffer, after where the rawComHeader is going */
@@ -287,4 +287,164 @@ void RawSockets::writeBytes(QString srcIp, QString dstIp, int srcPort, const cha
     raw->waitForBytesWritten();
     qDebug() << "raw written";
     //write.unlock();
+}
+
+void RawSockets::packetTooBig(QString srcIp, QString dstIp, const char *packetBuffer) {
+    IpResolver* r = IpResolver::getInstance();
+    struct ip_mac_mapping map = r->getMapping(dstIp);
+
+    if (map.interface == "") {
+        qWarning() << "Mapping not found, cannot send packet!";
+        return;
+    }
+
+    struct rawProcess* p = rawHelpers.value(map.interface);
+    QProcess* raw = p->process;
+    if (!raw || raw->state() != 2) {
+        qFatal("No raw helper");
+    }
+
+    int linkLayerType = DLT_EN10MB;
+#ifdef __APPLE__
+    if (map.mac.isEmpty()) {
+        linkLayerType = DLT_NULL;
+    }
+#endif
+
+    quint32 packet_send_size = IPV6_MIN_MTU - sizeof(struct ipv6hdr) - sizeof(struct icmpv6TooBig);
+
+    struct rawComHeader rawHeader;
+    memset(&rawHeader, 0, sizeof(struct rawComHeader));
+    rawHeader.payload_len = packet_send_size;
+
+    if (linkLayerType == DLT_EN10MB) {
+        rawHeader.linkHeader.ethernet.ether_type = htons(ETH_IPV6);
+        // set source MAC
+        const unsigned char* source_mac_addr;
+        const char* if_name = map.interface.toUtf8().data();
+#ifdef __APPLE__
+        struct ifaddrs *ifap, *ifaptr;
+        unsigned char *ptr = NULL;
+        if (getifaddrs(&ifap) == 0) {
+            for(ifaptr = ifap; ifaptr != NULL; ifaptr = (ifaptr)->ifa_next) {
+                if (!strcmp((ifaptr)->ifa_name, if_name) && (((ifaptr)->ifa_addr)->sa_family == AF_LINK)) {
+                    ptr = (unsigned char *)LLADDR((struct sockaddr_dl *)(ifaptr)->ifa_addr);
+                    break;
+                }
+            }
+            freeifaddrs(ifap);
+        }
+        source_mac_addr = ptr;
+#elif __GNUC__
+        struct ifreq ifr;
+        size_t if_name_len=strlen(if_name);
+        if (if_name_len<sizeof(ifr.ifr_name)) {
+            memcpy(ifr.ifr_name,if_name,if_name_len);
+            ifr.ifr_name[if_name_len]=0;
+        } else {
+            fprintf(stderr,"interface name is too long");
+            exit(1);
+        }
+        // Open an IPv4-family socket for use when calling ioctl.
+        int fd=socket(AF_INET,SOCK_DGRAM,0);
+        if (fd==-1) {
+            perror(0);
+            exit(1);
+        }
+        // Obtain the source MAC address, copy into Ethernet header
+        if (ioctl(fd,SIOCGIFHWADDR,&ifr)==-1) {
+            perror(0);
+            close(fd);
+            exit(1);
+        }
+
+        source_mac_addr = (unsigned char*)ifr.ifr_hwaddr.sa_data;
+        close(fd);
+#endif
+
+        memcpy(rawHeader.linkHeader.ethernet.ether_shost, source_mac_addr, ETHER_ADDR_LEN);
+        // set dst mac
+        char* dstMac = map.mac.toUtf8().data();
+        if (!map.mac.isEmpty()) {
+            char* token;
+            int i = 0;
+            while (((token = strsep(&dstMac, ":")) != NULL) && (i < 6)) {
+                rawHeader.linkHeader.ethernet.ether_dhost[i] = strtoul(token, NULL, 16);
+                i++;
+            }
+        } else { // linux loopback dest is 00:00...
+            memset(rawHeader.linkHeader.ethernet.ether_dhost, 0, ETHER_ADDR_LEN);
+        }
+    } else { // DLT_NULL
+        rawHeader.linkHeader.loopback.type = 0x1E; // IPv6 traffic
+    }
+
+    // Construct v6 header
+    rawHeader.ip6.ip6_vfc = 6 << 4;
+    rawHeader.ip6.ip6_nxt = SOL_ICMPV6;
+    rawHeader.ip6.ip6_hlim = 64;
+    rawHeader.ip6.ip6_plen = htons(packet_send_size + sizeof(struct icmpv6TooBig));
+
+    struct addrinfo hints, *res;
+    memset(&hints, 0, sizeof(hints));
+    hints.ai_family = AF_INET6;
+    int adret = getaddrinfo(srcIp.toUtf8().data(), NULL, &hints, &res);
+    if (adret) {
+        qDebug() << gai_strerror(adret);
+        return;
+    }
+    rawHeader.ip6.ip6_src = ((struct sockaddr_in6 *) res->ai_addr)->sin6_addr;
+
+    struct addrinfo *res1;
+    memset(&hints, 0, sizeof(hints));
+    hints.ai_family = AF_INET6;
+    adret = getaddrinfo(dstIp.toUtf8().data(), NULL, &hints, &res1);
+    if (adret) {
+        qDebug() << gai_strerror(adret);
+        return;
+    }
+    rawHeader.ip6.ip6_dst = ((struct sockaddr_in6 *) res1->ai_addr)->sin6_addr;
+
+    // pseudo header to compute checksum
+    struct ipv6upper pHeader;
+    memset(&pHeader, 0, sizeof(struct ipv6upper));
+    pHeader.ip6_src = rawHeader.ip6.ip6_src;
+    pHeader.ip6_dst = rawHeader.ip6.ip6_dst;
+    pHeader.nextHeader = rawHeader.ip6.ip6_nxt;
+    pHeader.payload_len = rawHeader.ip6.ip6_plen;
+
+    int nbBytes = packet_send_size;
+    /*int padding = packet_send_size % 16;
+    if (padding) {
+        nbBytes = (packet_send_size / 16) * 16 + 16;
+    }*/ // not sure if icmpv6 needs padding
+
+    int checksumBufSize = sizeof(struct ipv6upper) + sizeof(struct icmpv6TooBig) + nbBytes;
+    char* checksumPacket = static_cast<char*>(malloc(checksumBufSize));
+    memset(checksumPacket, 0, checksumBufSize);
+
+    /* make icmpv6 packet too big header */
+    struct icmpv6TooBig icmpheader;
+    memset(&icmpheader, 0, sizeof(struct icmpv6TooBig));
+    icmpheader.code = 0;
+    icmpheader.type = 2;
+    icmpheader.mtu = htonl(FVPN_MTU);
+    memcpy(checksumPacket, &pHeader, sizeof(struct ipv6upper));
+    memcpy(checksumPacket + sizeof(struct ipv6upper), &icmpheader, sizeof(struct icmpv6TooBig));
+    memcpy(checksumPacket + sizeof(struct ipv6upper) + sizeof(struct icmpv6TooBig), packetBuffer, packet_send_size);
+
+    icmpheader.checksum = ~(checksum(checksumPacket, checksumBufSize));
+    free(checksumPacket);
+
+    int bufferSize = packet_send_size + sizeof(struct rawComHeader) + sizeof(struct icmpv6TooBig);
+    char buffer[packet_send_size + sizeof(struct rawComHeader) + sizeof(struct icmpv6TooBig)];
+    // combine the rawHeader and packet in one contiguous block
+    memcpy(buffer, &rawHeader, sizeof(struct rawComHeader));
+    memcpy(buffer + sizeof(struct rawComHeader), &icmpheader, sizeof(struct icmpv6TooBig));
+    memcpy(buffer + sizeof(struct rawComHeader) + sizeof(struct icmpv6TooBig), packetBuffer, packet_send_size);
+
+    qDebug() << "raw write";
+    raw->write(buffer, bufferSize);
+    raw->waitForBytesWritten();
+    qDebug() << "raw written";
 }

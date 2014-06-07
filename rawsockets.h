@@ -44,6 +44,15 @@ public:
      * @param packet_send_size
      */
     void writeBytes(QString srcIp, QString dstIp, int srcPort, const char *transAndPayload, int sockType, int packet_send_size);
+
+    /**
+     * @brief packetTooBig will reply with an ICMPv6 packet too big if pcap has captured a packet
+     * that exceeds the 1400 bytes MTU we defined.
+     * @param srcIp
+     * @param dstIp
+     * @param packetBuffer
+     */
+    void packetTooBig(QString srcIp, QString dstIp, const char* packetBuffer);
 };
 
 #endif // RAWSOCKETS_H

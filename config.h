@@ -37,6 +37,8 @@
 #define BONJOUR_DELAY 30000 /* BONJOUR messages are sent every * ms */
 #define TIMEOUT_DELAY 10000 /* A PH2PHTP connection times out after * s */
 #define MAX_PACKET_SIZE 65536
+#define FVPN_MTU 1400 /* define MTU of 1400 to be safe */
+#define IPV6_MIN_MTU 1280 /* ipv6 minimum MTU from RFC 2460 */
 
 #define DTLS_ENCRYPT "eNULL:NULL" /* used to debug the dataplane connection, disables the encryption */
 //#define DTLS_ENCRYPT "DEFAULT" /* enables encryption using "default" algorithms on the DTLS connection */
