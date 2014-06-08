@@ -106,7 +106,7 @@ char* printBits(quint16 num)
    char* bits = static_cast<char*>(malloc(16));
    for(int bit=0;bit<(sizeof(quint16) * 8); bit++)
    {
-      sprintf(bits, "%i ", num & 0x01);
+      sprintf(bits + bit, "%i", num & 0x01);
       num = num >> 1;
    }
    bits[16] = '\0';
