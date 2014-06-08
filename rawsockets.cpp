@@ -213,6 +213,9 @@ void RawSockets::writeBytes(QString srcIp, QString dstIp, int srcPort, const cha
     // Construct v6 header
     rawHeader.ip6.ip6_vfc = 6 << 4;
     rawHeader.ip6.ip6_nxt = (sockType == SOCK_DGRAM) ? SOL_UDP : SOL_TCP;
+    if (fragType) {
+        rawHeader.ip6.ip6_nxt = SOL_FRAG;
+    }
     rawHeader.ip6.ip6_hlim = TTL;
     rawHeader.ip6.ip6_plen = htons(packet_send_size);
 
