@@ -98,11 +98,11 @@ void DataPlaneClient::run() {
     qDebug() <<  "\nConnected to \n" << inet_ntop(AF_INET6, &remote_addr.s6.sin6_addr, addrbuf, INET6_ADDRSTRLEN);
 
     if (SSL_get_peer_certificate(ssl)) {
-        qDebug("------------------------------------------------------------\n");
+        qDebug("------------------------------------------------------------");
         /*X509_NAME_print_ex_fp(stdout, X509_get_subject_name(SSL_get_peer_certificate(ssl)),
                               1, XN_FLAG_MULTILINE);*/
-        qDebug() << "\n\n Cipher: " << SSL_CIPHER_get_name(SSL_get_current_cipher(ssl));
-        qDebug("\n------------------------------------------------------------\n\n");
+        qDebug() << "Cipher: " << SSL_CIPHER_get_name(SSL_get_current_cipher(ssl));
+        qDebug("------------------------------------------------------------");
     }
     fflush(stdout);
     notif = new QSocketNotifier(fd, QSocketNotifier::Read);
@@ -133,17 +133,16 @@ void DataPlaneClient::readyRead(int) {
                  reading = 0;
                  break;
                 case SSL_ERROR_SYSCALL:
-                 printf("Socket read error");
-                 //if (!handle_socket_error()) goto cleanup;
+                 qDebug("Socket read error");
                  reading = 0;
-                 //exit(-1);
                  break;
                 case SSL_ERROR_SSL:
-                 printf("SSL read error: ");
-                 printf("%s (%d)\n", ERR_error_string(ERR_get_error(), buf), SSL_get_error(ssl, len));
+                 qDebug("SSL read error: ");
+                 qDebug() << ERR_error_string(ERR_get_error(), buf);
+                 qDebug() << SSL_get_error(ssl, len);
                  break;
                 default:
-                 printf("Unexpected error while reading!\n");
+                 qDebug("Unexpected error while reading!\n");
                  break;
             }
         }
@@ -166,17 +165,17 @@ void DataPlaneClient::sendBytes(const char *bytes, socklen_t len) {
                 /* continue with reading */
                 break;
             case SSL_ERROR_SYSCALL:
-                printf("Socket write error: ");
-                //if (!handle_socket_error()) exit(1);
+                qDebug("Socket write error: ");
                 reading = 0;
                 break;
             case SSL_ERROR_SSL:
-                printf("SSL write error: ");
-                //printf("%s (%d)\n", ERR_error_string(ERR_get_error(), buf), SSL_get_error(ssl, len));
+                qDebug("SSL write error: ");
+                qDebug() << ERR_error_string(ERR_get_error(), buf);
+                qDebug() << SSL_get_error(ssl, len);
                 return;
                 break;
             default:
-                printf("Unexpected error while writing!\n");
+                qDebug("Unexpected error while writing!");
                 return;
                 break;
         }
