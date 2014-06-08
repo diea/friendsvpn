@@ -101,6 +101,14 @@ void DataPlaneConnection::readBuffer(const char* buf, int bufLen) {
     prox->sendBytes(packetBuf, ntohs(header->len), srcIp, header->fragType);
 }
 
+void printBits(quint16 num)
+{
+   for(int bit=0;bit<(sizeof(quint16) * 8); bit++)
+   {
+      printf("%i ", num & 0x01);
+      num = num >> 1;
+   }
+}
 void DataPlaneConnection::sendBytes(const char *buf, int len, QByteArray& hash, int sockType, QString& srcIp) {
     if (time(NULL) - lastRcvdTimestamp > TIMEOUT_DELAY) {
         qDebug() << "Testing ALIVE";
@@ -144,6 +152,8 @@ void DataPlaneConnection::sendBytes(const char *buf, int len, QByteArray& hash, 
             fhead.fragOffsetResAndM |= mbit;
             fragOffsetMult++;
 
+            qDebug() << "Frag off res and M" << printBits(fhead.fragOffsetResAndM);
+
             int payloadLen = len >= dataFieldLen ? dataFieldLen : len;
             header.len = htons(sizeof(struct fragHeader) + payloadLen);
 
@@ -165,7 +175,6 @@ void DataPlaneConnection::sendBytes(const char *buf, int len, QByteArray& hash, 
             len -= payloadLen;
             free(packet);
         }
-        _exit(0); // TEST
     } else {
         int packetLen = len + sizeof(struct dpHeader);
         qDebug() << "Going in packet malloc" << packetLen;
