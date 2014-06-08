@@ -29,8 +29,9 @@ int main(int argc, char** argv) {
 #elif __GNUC__
     strcat(command, " inet6 del ");
 #endif
-    strncat(command, ip, strlen(ip));
-    command[60] = '\0';
+    strncat(command, ip, strlen(ip) - 1);
+    strcat(command, "/64");
+    //command[60] = '\0';
     printf("%s length: %d\n", command, strlen(command));
     system(command);
 
