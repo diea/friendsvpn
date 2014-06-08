@@ -43,6 +43,8 @@ public:
     static void termSignalHandler(int unused);
 signals:
     void exiting();
+public slots:
+    void doExit();
 };
 
 #endif // UNIXSIGNALHANDLER_H

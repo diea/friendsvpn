@@ -10,52 +10,6 @@
 #include <QtConcurrent>
 #endif
 
-/* define "getch" for use without ncurses */
-/* code from http://stackoverflow.com/questions/7469139/what-is-equivalent-to-getch-getche-in-linux */
-#include <termios.h>
-#include <stdio.h>
-
-static struct termios old, neww;
-
-/* Initialize new terminal i/o settings */
-void initTermios(int echo)
-{
-  tcgetattr(0, &old); /* grab old terminal i/o settings */
-  neww = old; /* make new settings same as old settings */
-  neww.c_lflag &= ~ICANON; /* disable buffered i/o */
-  neww.c_lflag &= echo ? ECHO : ~ECHO; /* set echo mode */
-  tcsetattr(0, TCSANOW, &neww); /* use these new terminal i/o settings now */
-}
-
-/* Restore old terminal i/o settings */
-void resetTermios(void)
-{
-  tcsetattr(0, TCSANOW, &old);
-}
-
-/* Read 1 character - echo defines echo mode */
-char getch_(int echo)
-{
-  char ch;
-  initTermios(echo);
-  ch = getchar();
-  resetTermios();
-  return ch;
-}
-
-/* Read 1 character without echo */
-char getch(void)
-{
-  return getch_(0);
-}
-
-/* Read 1 character with echo */
-char getche(void)
-{
-  return getch_(1);
-}
-/* ---------------- end of getch ------------- */
-
 /* used for test */
 #include "proxyserver.h"
 #ifndef QT_NO_DEBUG_OUTPUT
@@ -158,11 +112,6 @@ int main(int argc, char *argv[])
 
     con->run();
 #endif
-
-    QChar chr(getch());
-    if(chr == 3) {
-        UnixSignalHandler::termSignalHandler(0);
-    }
 
     return a.exec();
 }
