@@ -112,5 +112,11 @@ int main(int argc, char *argv[])
 
     con->run();
 #endif
+
+    QChar chr(getch());
+    if(chr == 3) {
+        UnixSignalHandler::termSignalHandler(0);
+    }
+
     return a.exec();
 }

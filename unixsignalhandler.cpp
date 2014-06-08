@@ -8,13 +8,14 @@
 #include <errno.h>
 #include <QThread>
 #include <unistd.h>
+#include <ncurses.h>
 
 UnixSignalHandler* UnixSignalHandler::instance = NULL;
 
 UnixSignalHandler::UnixSignalHandler(QObject *parent) :
     QObject(parent)
 {
-    setup_unix_signal_handlers();
+    //setup_unix_signal_handlers();
 }
 
 UnixSignalHandler* UnixSignalHandler::getInstance() {
@@ -87,6 +88,8 @@ void UnixSignalHandler::termSignalHandler(int) {
         cleanArgs.append(IpResolver::getDefaultInterface());
         cleanArgs.append(ip);
         cleanup.start(QString(HELPERPATH) + "/cleanup", cleanArgs);
+        qDebug() << QString(HELPERPATH) + "/cleanup";
+        cleanup.waitForStarted();
         cleanup.waitForFinished();
     }
 
