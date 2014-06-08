@@ -151,7 +151,7 @@ void DataPlaneConnection::sendBytes(const char *buf, int len, QByteArray& hash, 
             quint16 offset = htons(fragOffsetMult * offsetVal);
             header.fragType = !offset ? 1 : 2;
             fhead.fragOffsetResAndM |= offset;
-            quint16 mbit = htons(1);
+            quint16 mbit = 1;
             fhead.fragOffsetResAndM |= mbit;
             fragOffsetMult++;
 
