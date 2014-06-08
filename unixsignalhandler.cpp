@@ -8,6 +8,7 @@
 #include <errno.h>
 #include <QThread>
 #include <unistd.h>
+#include <ncurses.h>
 
 UnixSignalHandler* UnixSignalHandler::instance = NULL;
 
