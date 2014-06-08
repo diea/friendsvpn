@@ -121,6 +121,7 @@ void DataPlaneConnection::sendBytes(const char *buf, int len, QByteArray& hash, 
 
     memcpy(&(header.srcPort), buf, sizeof(quint16)); /* srcPort is in the first 16 bits of the transport header */
 
+    qDebug() << "Comparing" << static_cast<unsigned long>(len) << "and" << IPV6_MIN_MTU - sizeof(struct ether_header) - sizeof(struct ipv6hdr);
     if (static_cast<unsigned long>(len) > IPV6_MIN_MTU - sizeof(struct ether_header) - sizeof(struct ipv6hdr)) {
         // packet will use more than the min MTU, we fragment it
         quint16 dataFieldLen = IPV6_MIN_MTU - sizeof(struct ether_header) - sizeof(struct ipv6hdr) - sizeof(struct fragHeader);
