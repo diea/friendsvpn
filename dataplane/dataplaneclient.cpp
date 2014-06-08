@@ -159,9 +159,11 @@ void DataPlaneClient::sendBytes(const char *bytes, socklen_t len) {
             case SSL_ERROR_NONE:
                 break;
             case SSL_ERROR_WANT_WRITE:
+                qDebug() << "SSL_ERROR_WANT_WRITE";
                 /* Just try again later */
                 break;
             case SSL_ERROR_WANT_READ:
+                qDebug() << "SSL_ERROR_WANT_READ";
                 /* continue with reading */
                 break;
             case SSL_ERROR_SYSCALL:
@@ -172,11 +174,9 @@ void DataPlaneClient::sendBytes(const char *bytes, socklen_t len) {
                 qDebug("SSL write error: ");
                 qDebug() << ERR_error_string(ERR_get_error(), buf);
                 qDebug() << SSL_get_error(ssl, len);
-                return;
                 break;
             default:
                 qDebug("Unexpected error while writing!");
-                return;
                 break;
         }
     }
