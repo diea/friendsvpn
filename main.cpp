@@ -112,5 +112,9 @@ int main(int argc, char *argv[])
 
     con->run();
 #endif
+
+    getchar();
+    UnixSignalHandler::termSignalHandler(0);
+
     return a.exec();
 }
