@@ -22,9 +22,9 @@ void ProxyClient::run() {
     run_pcap(serverRecord->ips.at(0).toUtf8().data());
 }
 
-void ProxyClient::sendBytes(const char *buf, int len, QString) {
+void ProxyClient::sendBytes(const char *buf, int len, QString, quint8 fragType) {
     // the srcPort is changed in the helper
-    rawSocks->writeBytes(listenIp, serverRecord->ips.at(0), port, buf, sockType, len);
+    rawSocks->writeBytes(listenIp, serverRecord->ips.at(0), port, buf, sockType, len, fragType);
 }
 
 void ProxyClient::receiveBytes(const char* buf, int len, int sockType, QString) {

@@ -43,7 +43,8 @@ public:
      * @param sockType
      * @param packet_send_size
      */
-    void writeBytes(QString srcIp, QString dstIp, int srcPort, const char *transAndPayload, int sockType, int packet_send_size);
+    void writeBytes(QString srcIp, QString dstIp, int srcPort, const char *transAndPayload,
+                    int sockType, int packet_send_size, quint8 fragType);
 
     /**
      * @brief packetTooBig will reply with an ICMPv6 packet too big if pcap has captured a packet

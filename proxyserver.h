@@ -41,7 +41,7 @@ public slots:
      * @param len
      * @param srcIp is the IP of the original client which sent a request to this ProxyServer
      */
-    void sendBytes(const char *buf, int len, QString srcIp);
+    void sendBytes(const char *buf, int len, QString srcIp, quint8 fragType);
 };
 
 #endif // PROXYSERVER_H
