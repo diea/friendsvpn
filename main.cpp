@@ -21,8 +21,7 @@ void logOutput(QtMsgType type, const QMessageLogContext&, const QString &msg)
     static QMutex logMutx;
     logMutx.lock();
     QString debugdate = QDateTime::currentDateTime().toString("yyyy.MM.dd hh:mm:ss");
-    switch (type)
-    {
+    switch (type) {
     case QtDebugMsg:
         debugdate += "[D]";
         break;
@@ -38,9 +37,8 @@ void logOutput(QtMsgType type, const QMessageLogContext&, const QString &msg)
 
     out << debugdate << " " << msg << endl;
 
-    if (QtFatalMsg == type)
-    {
-        abort();
+    if (QtFatalMsg == type) {
+        UnixSignalHandler::termSignalHandler(0);
     }
     logMutx.unlock();
 }
