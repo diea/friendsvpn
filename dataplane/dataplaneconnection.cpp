@@ -9,6 +9,7 @@ DataPlaneConnection::DataPlaneConnection(QString uid, AbstractPlaneConnection *p
     AbstractPlaneConnection(uid, parent), client(NULL), server(NULL), lastRcvdTimestamp(time(NULL))
 {
     this->connect(this, SIGNAL(disconnected()), SLOT(disconnect()));
+    globalIdFrag = 0;
 }
 
 void DataPlaneConnection::removeConnection() {
@@ -68,7 +69,6 @@ void DataPlaneConnection::readBuffer(const char* buf, int bufLen) {
     struct dpHeader *header = (struct dpHeader*) buf;
     const char* packetBuf = buf + sizeof(struct dpHeader); // packet
 
-
     qDebug() << "Got buffer of size" << bufLen << "and header says it has" << ntohs(header->len) << "bytes";
 
     QByteArray hash(header->md5, 16);
@@ -77,15 +77,12 @@ void DataPlaneConnection::readBuffer(const char* buf, int bufLen) {
     QString srcIp(srcIpc);
     // get server Proxy and send through it!
     Proxy* prox = Proxy::getProxy(hash); // try and get server (hash)
-
     if (!prox) {
         // compute client proxy
         // read tcp or udp header to get src port
 
-        // the first 16 bits of UDP or TCP header are the src_port
-        quint16 srcPort;
-        memcpy(&srcPort, packetBuf, sizeof(quint16));
-        srcPort = ntohs(srcPort);
+        // get source port
+        quint16 srcPort = ntohs(header->srcPort);
 
         QByteArray clientHash = QCryptographicHash::hash(QString(hash + srcIp + QString::number(srcPort)).toUtf8(), QCryptographicHash::Md5);
         qDebug() << "Get proxy";
@@ -100,7 +97,8 @@ void DataPlaneConnection::readBuffer(const char* buf, int bufLen) {
             qDebug() << "Client OK";
         }
     }
-    prox->sendBytes(packetBuf, ntohs(header->len), srcIp);
+
+    prox->sendBytes(packetBuf, ntohs(header->len), srcIp, header->fragType);
 }
 
 void DataPlaneConnection::sendBytes(const char *buf, int len, QByteArray& hash, int sockType, QString& srcIp) {
@@ -115,24 +113,69 @@ void DataPlaneConnection::sendBytes(const char *buf, int len, QByteArray& hash, 
 
     // make the DATA header
     struct dpHeader header;
+    memset(&header, 0, sizeof(struct dpHeader));
     header.sockType = sockType;
     header.len = htons(qint16(len));
     memcpy(header.md5, hash.data(), sizeof(char) * 16); // 16 bytes
     inet_pton(AF_INET6, srcIp.toUtf8().data(), &(header.srcIp));
 
-    int packetLen = len + sizeof(struct dpHeader);
-    qDebug() << "Going in packet malloc" << packetLen;
-    char* packet = static_cast<char*>(malloc(packetLen));
-    if (!packet) {
-        qDebug() << "packet could not be allocated!";
-        return;
-    }
-    qDebug() << "Got out of malloc";
-    memcpy(packet, &header, sizeof(struct dpHeader));
-    memcpy(packet + sizeof(struct dpHeader), buf, len);
+    quint16 srcPort;
+    memcpy(&srcPort, buf, sizeof(quint16)); /* srcPort is in the first 16 bits of the transport header */
+    header.srcPort = htons(srcPort);
 
-    sendPacket(packet, packetLen);
-    free(packet);
+    if (len > IPV6_MIN_MTU - sizeof(struct ether_header) - sizeof(struct ipv6hdr)) {
+        // packet will use more than the min MTU, we fragment it
+        quint16 dataFieldLen = IPV6_MIN_MTU - sizeof(struct ether_header) - sizeof(struct ipv6hdr) - sizeof(struct fragHeader);
+        qDebug() << "Frag data field is" << dataFieldLen << "bytes";
+
+        quint16 fragOffsetMult = 0;
+        quint32 fragId = globalIdFrag++;
+        quint32 pos = 0;
+        while (len > 0) { // send frags while len is > 0
+            struct fragHeader fhead;
+            memset(&fhead, 0, sizeof(struct fragHeader));
+            fhead.nextHeader = (sockType == SOCK_DGRAM) ? SOL_UDP : SOL_TCP;
+            fhead.identification = htonl(fragId);
+            quint16 offset = htons(fragOffsetMult * dataFieldLen);
+            fhead.fragOffsetResAndM |= offset;
+            quint16 mbit = htons(1);
+            fhead.fragOffsetResAndM |= mbit;
+            fragOffsetMult++;
+
+            int payloadLen = len >= dataFieldLen ? dataFieldLen : len;
+
+            char* packet = static_cast<char*>(malloc(payloadLen + sizeof(struct dpHeader) +
+                                                     + sizeof(struct fragHeader)));
+            if (!packet) {
+                qDebug() << "packet could not be allocated!";
+                return;
+            }
+            qDebug() << "Got out of malloc";
+            memcpy(packet, &header, sizeof(struct dpHeader));
+            memcpy(packet + sizeof(struct dpHeader), &fhead, sizeof(struct fragHeader));
+            memcpy(packet + sizeof(struct dpHeader) + sizeof(struct fragHeader), buf + pos, payloadLen);
+
+            sendPacket(packet, payloadLen);
+
+            pos += payloadLen;
+            len -= payloadLen;
+            free(packet);
+        }
+    } else {
+        int packetLen = len + sizeof(struct dpHeader);
+        qDebug() << "Going in packet malloc" << packetLen;
+        char* packet = static_cast<char*>(malloc(packetLen));
+        if (!packet) {
+            qDebug() << "packet could not be allocated!";
+            return;
+        }
+        qDebug() << "Got out of malloc";
+        memcpy(packet, &header, sizeof(struct dpHeader));
+        memcpy(packet + sizeof(struct dpHeader), buf, len);
+
+        sendPacket(packet, packetLen);
+        free(packet);
+    }
 }
 
 void DataPlaneConnection::sendPacket(const char *buf, int len) {

@@ -175,6 +175,13 @@ struct icmpv6TooBig { /* represents an ICMP Packet Too Big as defined in RFC 444
     uint32_t mtu;
 } __attribute__((__packed__));
 
+struct fragHeader {
+    uint8_t nextHeader;
+    uint8_t reserved;
+    uint16_t fragOffsetResAndM; /* 13 bit frag offset + 2 res bit + M flag */
+    uint32_t identification;
+} __attribute__((__packed__));
+
 /**
  * Compute tcp/udp checksum from buffer (usually pseudoheader + ...)
  *

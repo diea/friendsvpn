@@ -46,7 +46,7 @@ public slots:
      * @param len
      * @param srcIp not used by ProxyClient, it's used by the ProxyServer to know to which client to send
      */
-    void sendBytes(const char *buf, int len, QString srcIp);
+    void sendBytes(const char *buf, int len, QString srcIp, quint8 fragType);
 
 };
 

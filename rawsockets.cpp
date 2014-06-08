@@ -113,7 +113,7 @@ RawSockets* RawSockets::getInstance() {
     return instance;
 }
 
-void RawSockets::writeBytes(QString srcIp, QString dstIp, int srcPort, const char *transAndPayload, int sockType, int packet_send_size) {
+void RawSockets::writeBytes(QString srcIp, QString dstIp, int srcPort, const char *transAndPayload, int sockType, int packet_send_size, quint8 fragType) {
     IpResolver* r = IpResolver::getInstance();
     struct ip_mac_mapping map = r->getMapping(dstIp);
 

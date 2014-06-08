@@ -22,6 +22,7 @@ struct dpHeader {
     quint16 len; /* underlying packet length (including transport header) */
     quint32 fragId;
     char md5[16]; /* MD5 identifying ProxyServer */
+    quint16 srcPort; /* source port of the underlying transport header */
     struct in6_addr srcIp; /* source IP of the client using the service */
 } __attribute__((__packed__));
 
@@ -32,10 +33,14 @@ class DataPlaneConnection : public AbstractPlaneConnection
 {
     Q_OBJECT
 private:
-    //QString friendUid; // connection associated with friendUid
     DataPlaneClient* client;
     ServerWorker* server;
     QMutex mutex;
+
+    /**
+     * @brief globalIdFrag used by the dataplaneconnection to fragment outgoing fragments
+     */
+    quint32 globalIdFrag;
 
     /**
      * @brief lastRcvdTimestap contains the timestamp of the last received packet
