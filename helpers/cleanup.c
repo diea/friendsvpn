@@ -30,7 +30,9 @@ int main(int argc, char** argv) {
     strcat(command, " inet6 del ");
 #endif
     strncat(command, ip, strlen(ip) - 1);
+#ifndef __APPLE__
     strcat(command, "/64");
+#endif
     //command[60] = '\0';
     printf("%s length: %d\n", command, strlen(command));
     system(command);
