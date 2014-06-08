@@ -122,7 +122,7 @@ void DataPlaneConnection::sendBytes(const char *buf, int len, QByteArray& hash, 
     quint16 srcPort;
     memcpy(&srcPort, buf, sizeof(quint16)); /* srcPort is in the first 16 bits of the transport header */
     header.srcPort = srcPort;
-
+#if 0
     if (len > IPV6_MIN_MTU - sizeof(struct ether_header) - sizeof(struct ipv6hdr)) {
         // packet will use more than the min MTU, we fragment it
         quint16 dataFieldLen = IPV6_MIN_MTU - sizeof(struct ether_header) - sizeof(struct ipv6hdr) - sizeof(struct fragHeader);
@@ -162,6 +162,7 @@ void DataPlaneConnection::sendBytes(const char *buf, int len, QByteArray& hash, 
             free(packet);
         }
     } else {
+#endif
         int packetLen = len + sizeof(struct dpHeader);
         qDebug() << "Going in packet malloc" << packetLen;
         char* packet = static_cast<char*>(malloc(packetLen));
@@ -175,7 +176,7 @@ void DataPlaneConnection::sendBytes(const char *buf, int len, QByteArray& hash, 
 
         sendPacket(packet, packetLen);
         free(packet);
-    }
+   // }
 }
 
 void DataPlaneConnection::sendPacket(const char *buf, int len) {
