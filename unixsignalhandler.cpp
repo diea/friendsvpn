@@ -87,6 +87,7 @@ void UnixSignalHandler::termSignalHandler(int) {
         cleanArgs.append(IpResolver::getDefaultInterface());
         cleanArgs.append(ip);
         cleanup.start(QString(HELPERPATH) + "/cleanup", cleanArgs);
+        qDebug() << QString(HELPERPATH) + "/cleanup";
         cleanup.waitForStarted();
         cleanup.waitForFinished();
     }
