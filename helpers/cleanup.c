@@ -29,7 +29,7 @@ int main(int argc, char** argv) {
 #elif __GNUC__
     strcat(command, " inet6 del ");
 #endif
-    strncat(command, ip, strlen(ip) - 1);
+    strncat(command, ip, strlen(ip) - 2);
 #ifndef __APPLE__
     strcat(command, "/64");
 #endif
