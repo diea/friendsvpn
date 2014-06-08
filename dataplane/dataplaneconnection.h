@@ -20,6 +20,7 @@ struct dpHeader {
     quint8 sockType; /* underlying transport header socket type */
     quint8 empty; /* should be set to 0 */
     quint16 len; /* underlying packet length (including transport header) */
+    quint32 fragId;
     char md5[16]; /* MD5 identifying ProxyServer */
     struct in6_addr srcIp; /* source IP of the client using the service */
 } __attribute__((__packed__));
