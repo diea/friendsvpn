@@ -119,13 +119,16 @@ void ServerWorker::sendBytes(const char* buf, int len) {
         len = SSL_write(ssl, buf, len);
         switch (SSL_get_error(ssl, len)) {
          case SSL_ERROR_NONE:
+             qDebug() << "SSL_ERROR_NONE";
              break;
          case SSL_ERROR_WANT_WRITE:
              /* Can't write because of a renegotiation, so
               * we actually have to retry sending this message...
               */
+             qDebug() << "SSL_ERROR_WANT_WRITE";
              break;
          case SSL_ERROR_WANT_READ:
+             qDebug() << "SSL_ERROR_WANT_READ";
              /* continue with reading */
              break;
          case SSL_ERROR_SYSCALL:
