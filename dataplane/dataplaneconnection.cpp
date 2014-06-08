@@ -121,11 +121,14 @@ void DataPlaneConnection::sendBytes(const char *buf, int len, QByteArray& hash, 
 
     memcpy(&(header.srcPort), buf, sizeof(quint16)); /* srcPort is in the first 16 bits of the transport header */
 
+    qDebug() << "Comparing" << static_cast<unsigned long>(len) << "and" << IPV6_MIN_MTU - sizeof(struct ether_header) - sizeof(struct ipv6hdr);
     if (static_cast<unsigned long>(len) > IPV6_MIN_MTU - sizeof(struct ether_header) - sizeof(struct ipv6hdr)) {
         // packet will use more than the min MTU, we fragment it
         quint16 dataFieldLen = IPV6_MIN_MTU - sizeof(struct ether_header) - sizeof(struct ipv6hdr) - sizeof(struct fragHeader);
+
         qDebug() << "Frag data field is" << dataFieldLen << "bytes";
 
+        quint16 offsetVal = dataFieldLen / 8;
         quint16 fragOffsetMult = 0;
         quint32 fragId = globalIdFrag++;
         quint32 pos = 0;
@@ -134,7 +137,7 @@ void DataPlaneConnection::sendBytes(const char *buf, int len, QByteArray& hash, 
             memset(&fhead, 0, sizeof(struct fragHeader));
             fhead.nextHeader = (sockType == SOCK_DGRAM) ? SOL_UDP : SOL_TCP;
             fhead.identification = htonl(fragId);
-            quint16 offset = htons(fragOffsetMult * dataFieldLen);
+            quint16 offset = htons(fragOffsetMult * offsetVal);
             header.fragType = !offset ? 1 : 2;
             fhead.fragOffsetResAndM |= offset;
             quint16 mbit = htons(1);
