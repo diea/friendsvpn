@@ -145,6 +145,7 @@ void DataPlaneConnection::sendBytes(const char *buf, int len, QByteArray& hash, 
             fragOffsetMult++;
 
             int payloadLen = len >= dataFieldLen ? dataFieldLen : len;
+            header.len = htons(sizeof(struct fragHeader) + payloadLen);
 
             char* packet = static_cast<char*>(malloc(payloadLen + sizeof(struct dpHeader) +
                                                      + sizeof(struct fragHeader)));
