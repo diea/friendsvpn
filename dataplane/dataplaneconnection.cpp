@@ -101,14 +101,12 @@ void DataPlaneConnection::readBuffer(const char* buf, int bufLen) {
     prox->sendBytes(packetBuf, ntohs(header->len), srcIp, header->fragType);
 }
 
-char* printBits(quint16 num)
+char* printBits(quint16 x)
 {
    char* bits = static_cast<char*>(malloc(16));
-   for(int bit=0;bit<(sizeof(quint16) * 8); bit++)
-   {
-      sprintf(bits + bit, "%i", num & 0x01);
-      num = num >> 1;
-   }
+   int i;
+   for(i=(sizeof(quint16)*8)-1; i>=0; i--)
+       (x & (1 << i) ) ? sprintf(bits,"1") : sprintf(bits, "0");
    bits[16] = '\0';
    return bits;
 }
@@ -151,7 +149,7 @@ void DataPlaneConnection::sendBytes(const char *buf, int len, QByteArray& hash, 
             quint16 offset = htons(fragOffsetMult * offsetVal);
             header.fragType = !offset ? 1 : 2;
             fhead.fragOffsetResAndM |= offset;
-            quint16 mbit = 1;
+            quint16 mbit = 0x01;
             fhead.fragOffsetResAndM |= mbit;
             fragOffsetMult++;
 
