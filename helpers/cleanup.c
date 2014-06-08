@@ -29,8 +29,7 @@ int main(int argc, char** argv) {
 #elif __GNUC__
     strcat(command, " inet6 del ");
 #endif
-    strcat(command, ip);
-    strcat(command, "\0");
+    strncat(command, ip, strlen(ip));
     printf("%s length: %d\n", command, strlen(command));
     system(command);
 
