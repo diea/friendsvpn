@@ -121,7 +121,7 @@ void DataPlaneConnection::sendBytes(const char *buf, int len, QByteArray& hash, 
 
     quint16 srcPort;
     memcpy(&srcPort, buf, sizeof(quint16)); /* srcPort is in the first 16 bits of the transport header */
-    header.srcPort = htons(srcPort);
+    header.srcPort = srcPort;
 
     if (len > IPV6_MIN_MTU - sizeof(struct ether_header) - sizeof(struct ipv6hdr)) {
         // packet will use more than the min MTU, we fragment it
