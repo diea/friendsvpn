@@ -47,6 +47,7 @@
 
 /* define "getch" for use on linux with ncurses */
 /* code from http://stackoverflow.com/questions/7469139/what-is-equivalent-to-getch-getche-in-linux */
+#ifndef CURSES
 #include <termios.h>
 #include <stdio.h>
 
@@ -89,4 +90,5 @@ char getche(void)
 {
   return getch_(1);
 }
+#endif
 #endif // CONFIG_H
