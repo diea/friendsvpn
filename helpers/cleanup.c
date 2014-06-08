@@ -16,6 +16,7 @@ int main(int argc, char** argv) {
 
     char* iface = malloc(sizeof(char) * strlen(argv[1]));
     strcpy(iface, argv[1]);
+    printf("%s\n", argv[2]);
     char* ip = malloc(sizeof(char) * strlen(argv[2]));
     strcpy(ip, argv[2]);
 
