@@ -14,7 +14,7 @@ UnixSignalHandler* UnixSignalHandler::instance = NULL;
 UnixSignalHandler::UnixSignalHandler(QObject *parent) :
     QObject(parent)
 {
-    setup_unix_signal_handlers();
+    //setup_unix_signal_handlers();
 }
 
 UnixSignalHandler* UnixSignalHandler::getInstance() {
