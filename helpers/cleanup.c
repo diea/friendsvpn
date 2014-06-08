@@ -14,22 +14,16 @@ int main(int argc, char** argv) {
     }
     setuid(0);
 
-    char* iface = malloc(sizeof(char) * strlen(argv[1]));
-    strcpy(iface, argv[1]);
-    char* ip = malloc(sizeof(char) * strlen(argv[2]));
-    strcpy(ip, argv[2]);
-    printf("%s length %d\n", ip, strlen(ip));
-
     char* command = malloc(sizeof(char) * 2000);
     memset(command, 0, sizeof(char) * 2000);
     strcat(command, "ifconfig ");
-    strcat(command, iface);
+    strcat(command, argv[1]);
 #ifdef __APPLE__
     strcat(command, " inet6 remove ");
 #elif __GNUC__
     strcat(command, " inet6 del ");
 #endif
-    strncat(command, ip, strlen(ip) - 2);
+    strcat(command, argv[2]);
 #ifndef __APPLE__
     strcat(command, "/64");
 #endif
@@ -41,9 +35,9 @@ int main(int argc, char** argv) {
 #ifdef __APPLE__
     memset(command, 0, sizeof(char) * 2000);
     strcat(command, "route delete -inet6 ");
-    strcat(command, ip);
+    strcat(command, argv[2]);
     strcat(command, " -ifscope ");
-    strcat(command, iface);
+    strcat(command, argv[1]);
     system(command);
 #endif
 
