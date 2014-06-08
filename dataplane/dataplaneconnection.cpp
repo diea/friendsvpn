@@ -83,7 +83,7 @@ void DataPlaneConnection::readBuffer(const char* buf, int bufLen) {
         // read tcp or udp header to get src port
 
         // the first 16 bits of UDP or TCP header are the src_port
-        quint16 srcPort; //= static_cast<quint16*>(malloc(sizeof(quint16)));
+        quint16 srcPort;
         memcpy(&srcPort, packetBuf, sizeof(quint16));
         srcPort = ntohs(srcPort);
 
@@ -98,7 +98,6 @@ void DataPlaneConnection::readBuffer(const char* buf, int bufLen) {
             qDebug() << "Run OK";
             clientProxys.push(dynamic_cast<ProxyClient*>(prox));
             qDebug() << "Client OK";
-            //free(srcPort);
         }
     }
     prox->sendBytes(packetBuf, ntohs(header->len), srcIp);

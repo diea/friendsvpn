@@ -18,7 +18,7 @@ class ProxyClient;
  */
 struct dpHeader {
     quint8 sockType; /* underlying transport header socket type */
-    quint8 empty; /* should be set to 0 */
+    quint8 fragType; /* 0 if not a frag, 1 if is first frag packet, 2 if not first frag */
     quint16 len; /* underlying packet length (including transport header) */
     quint32 fragId;
     char md5[16]; /* MD5 identifying ProxyServer */
