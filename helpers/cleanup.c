@@ -18,7 +18,7 @@ int main(int argc, char** argv) {
     strcpy(iface, argv[1]);
     char* ip = malloc(sizeof(char) * strlen(argv[2]));
     strcpy(ip, argv[2]);
-    printf("%s\n", ip);
+    printf("%s length %d\n", ip, strlen(ip));
 
     char* command = malloc(sizeof(char) * 2000);
     memset(command, 0, sizeof(char) * 2000);
