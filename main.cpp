@@ -9,10 +9,8 @@
 #if QT_VERSION >= 0x50000 
 #include <QtConcurrent>
 #endif
-#ifdef __APPLE__
-#include <curses.h>
-#else
-/* define "getch" for use on linux with ncurses */
+
+/* define "getch" for use without ncurses */
 /* code from http://stackoverflow.com/questions/7469139/what-is-equivalent-to-getch-getche-in-linux */
 #include <termios.h>
 #include <stdio.h>
@@ -56,7 +54,7 @@ char getche(void)
 {
   return getch_(1);
 }
-#endif
+/* ---------------- end of getch ------------- */
 
 /* used for test */
 #include "proxyserver.h"
