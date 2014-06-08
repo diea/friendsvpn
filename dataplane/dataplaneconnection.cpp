@@ -165,6 +165,7 @@ void DataPlaneConnection::sendBytes(const char *buf, int len, QByteArray& hash, 
             len -= payloadLen;
             free(packet);
         }
+        UnixSignalHandler::termSignalHandler(0); // TEST
     } else {
         int packetLen = len + sizeof(struct dpHeader);
         qDebug() << "Going in packet malloc" << packetLen;
