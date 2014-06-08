@@ -101,13 +101,16 @@ void DataPlaneConnection::readBuffer(const char* buf, int bufLen) {
     prox->sendBytes(packetBuf, ntohs(header->len), srcIp, header->fragType);
 }
 
-void printBits(quint16 num)
+char* printBits(quint16 num)
 {
+   char* bits = static_cast<char*>(malloc(16));
    for(int bit=0;bit<(sizeof(quint16) * 8); bit++)
    {
-      printf("%i ", num & 0x01);
+      sprintf(bits, "%i ", num & 0x01);
       num = num >> 1;
    }
+   bits[16] = '\0';
+   return bits;
 }
 void DataPlaneConnection::sendBytes(const char *buf, int len, QByteArray& hash, int sockType, QString& srcIp) {
     if (time(NULL) - lastRcvdTimestamp > TIMEOUT_DELAY) {
