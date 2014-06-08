@@ -31,7 +31,7 @@ int main(int argc, char** argv) {
 #endif
     strcat(command, ip);
     strcat(command, "\0");
-    printf("%s\n", command);
+    printf("%s length: %d\n", command, strlen(command));
     system(command);
 
     // remove from routing table
