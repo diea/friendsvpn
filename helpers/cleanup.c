@@ -30,6 +30,7 @@ int main(int argc, char** argv) {
     strcat(command, " inet6 del ");
 #endif
     strcat(command, ip);
+    strcat(command, "\0");
     printf("%s\n", command);
     system(command);
 
