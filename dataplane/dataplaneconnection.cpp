@@ -156,6 +156,8 @@ void DataPlaneConnection::sendBytes(const char *buf, int len, QByteArray& hash, 
             fhead.fragOffsetResAndM |= mbit;
             fragOffsetMult++;
 
+            fhead.fragOffsetResAndM = htons(fhead.fragOffsetResAndM);
+
             qDebug() << "Frag off res and M" << printBits(fhead.fragOffsetResAndM);
 
             int payloadLen = len >= dataFieldLen ? dataFieldLen : len;
