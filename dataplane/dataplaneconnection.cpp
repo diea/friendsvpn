@@ -105,8 +105,11 @@ char* printBits(quint16 x)
 {
    char* bits = static_cast<char*>(malloc(16));
    int i;
-   for(i=(sizeof(quint16)*8)-1; i>=0; i--)
-       (x & (1 << i) ) ? sprintf(bits,"1") : sprintf(bits, "0");
+   int cnt = 0;
+   for(i=(sizeof(quint16)*8)-1; i>=0; i--) {
+       (x & (1 << i) ) ? sprintf(bits + cnt,"1") : sprintf(bits + cnt, "0");
+       cnt++;
+   }
    bits[16] = '\0';
    return bits;
 }
@@ -149,7 +152,7 @@ void DataPlaneConnection::sendBytes(const char *buf, int len, QByteArray& hash, 
             quint16 offset = htons(fragOffsetMult * offsetVal);
             header.fragType = !offset ? 1 : 2;
             fhead.fragOffsetResAndM |= offset;
-            quint16 mbit = 0x01;
+            quint16 mbit = 1 >> 16;
             fhead.fragOffsetResAndM |= mbit;
             fragOffsetMult++;
 
