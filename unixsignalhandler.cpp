@@ -8,14 +8,15 @@
 #include <errno.h>
 #include <QThread>
 #include <unistd.h>
-#include <ncurses.h>
+//#include <ncurses.h>
 
 UnixSignalHandler* UnixSignalHandler::instance = NULL;
 
 UnixSignalHandler::UnixSignalHandler(QObject *parent) :
     QObject(parent)
 {
-    //setup_unix_signal_handlers();
+    connect(this, SIGNAL(exiting()), this, SLOT(doExit()));
+    setup_unix_signal_handlers();
 }
 
 UnixSignalHandler* UnixSignalHandler::getInstance() {
@@ -62,10 +63,13 @@ void UnixSignalHandler::removeIp(QString ip) {
 
 void UnixSignalHandler::termSignalHandler(int) {
     UnixSignalHandler* u = UnixSignalHandler::getInstance();
+    emit u->exiting();
+}
+
+void UnixSignalHandler::doExit() {
     static QMutex mutex;
     mutex.lock(); // no need to unlock we exit
-    emit u->exiting();
-    foreach (QProcess* p, u->listOfProcessToKill) {
+    foreach (QProcess* p, listOfProcessToKill) {
         if (p) {
             if ((p->state() != QProcess::NotRunning)) {
                 qDebug() << p->state();
@@ -80,7 +84,7 @@ void UnixSignalHandler::termSignalHandler(int) {
         }
     }
 
-    foreach (QString ip, u->listOfIps) {
+    foreach (QString ip, listOfIps) {
         qDebug() << "Cleaning up ip" << ip;
         // cleanup listen Ip
         QProcess cleanup;
