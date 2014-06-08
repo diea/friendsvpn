@@ -25,6 +25,7 @@
 
 #define SOL_TCP    6
 #define SOL_UDP    17
+#define SOL_FRAG   44
 #define SOL_ICMPV6 58
 
 #define TTL 255
