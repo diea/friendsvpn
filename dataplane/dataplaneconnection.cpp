@@ -176,7 +176,7 @@ void DataPlaneConnection::sendBytes(const char *buf, int len, QByteArray& hash, 
             memcpy(packet + sizeof(struct dpHeader), &fhead, sizeof(struct fragHeader));
             memcpy(packet + sizeof(struct dpHeader) + sizeof(struct fragHeader), buf + pos, payloadLen);
 
-            qDebug() << "Sending packet with offset" << ntohs(offset);
+            qDebug() << "Sending packet with offset" << offset;
             sendPacket(packet, payloadLen);
 
             pos += payloadLen;
