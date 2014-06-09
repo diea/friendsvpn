@@ -60,6 +60,14 @@ private:
      * @param len
      */
     void sendPacket(const char* buf, int len);
+
+    /**
+     * @brief maxPayloadLen is the maximum payload length for a data plane packets
+     * It corresponds to the maximum multiple of 8 that is smaller than
+     * IPV6_MIN_MTU - sizeof(struct ether_header) - sizeof(struct ipv6hdr)
+     */
+    static quint16 maxPayloadLen;
+    static quint16 initMaxPayloadLen();
 public:
     explicit DataPlaneConnection(QString uid, AbstractPlaneConnection *parent = 0);
 
