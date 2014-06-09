@@ -27,7 +27,7 @@ struct dpHeader {
 struct dpFragHeader {
     quint32 fragId;
     quint16 offset; /* offset for fragmented packet, in number of bytes */
-    //quint16 offsetLen;
+    quint16 offsetLen;
 } __attribute__((__packed__));
 
 /**

@@ -75,9 +75,9 @@ void DataPlaneConnection::readBuffer(char* buf, int bufLen) {
         struct dpFragHeader* fragHead = (struct dpFragHeader*) (buf + sizeof(struct dpHeader));
         fragHead->fragId = ntohl(fragHead->fragId);
         fragHead->offset = ntohs(fragHead->offset);
-        //fragHead->offsetLen = ntohs(fragHead->offsetLen);
+        fragHead->offsetLen = ntohs(fragHead->offsetLen);
         quint16 offsetLen = bufLen - sizeof(struct dpHeader) - sizeof(struct fragHeader);
-        //qDebug() << "Fraghead has" << fragHead->offsetLen << "and computed is" << offsetLen;
+        qDebug() << "Fraghead has" << fragHead->offsetLen << "and computed is" << offsetLen;
         if (!remainingBits.contains(fragHead->fragId)) { /* new frag */
             remainingBits.insert(fragHead->fragId, header->len);
             fragmentBuffer.insert(fragHead->fragId, static_cast<char*>(malloc(header->len)));
@@ -214,7 +214,7 @@ void DataPlaneConnection::sendBytes(const char *buf, int len, QByteArray& hash, 
             }
             qDebug() << "Got out of malloc";
             dpFrag.offset = htons(pos);
-            //dpFrag.offsetLen = htons(payloadLen); /* TODO maybe not needed as UDP contains length */
+            dpFrag.offsetLen = htons(payloadLen); /* TODO maybe not needed as UDP contains length */
 
             memcpy(packet, &header, sizeof(struct dpHeader));
             memcpy(packet + sizeof(struct dpHeader), &dpFrag, sizeof(struct dpFragHeader));
