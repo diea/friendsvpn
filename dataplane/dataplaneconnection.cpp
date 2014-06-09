@@ -83,7 +83,7 @@ void DataPlaneConnection::readBuffer(char* buf, int bufLen) {
             fragmentBuffer.insert(fragHead->fragId, static_cast<char*>(malloc(header->len)));
             totalSize.insert(fragHead->fragId, header->len);
         }
-        qDebug() << "Got fragment of offset" << fragHead->offset << "and len" << offsetLen;
+        //qDebug() << "Got fragment of offset" << fragHead->offset << "and len" << offsetLen;
         if (fragHead->offset + offsetLen <= totalSize.value(fragHead->fragId)) {
             const char* frag = buf + sizeof(dpHeader) + sizeof(fragHeader);
             memcpy(fragmentBuffer[fragHead->fragId] + fragHead->offset, frag, offsetLen);
