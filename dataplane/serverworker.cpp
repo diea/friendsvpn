@@ -64,7 +64,7 @@ void ServerWorker::connection_handle() {
 
 void ServerWorker::readyRead(int) {
     notif->setEnabled(false);
-    char buf[BUFFER_SIZE];
+    char* buf = static_cast<char*>(malloc(BUFFER_SIZE * sizeof(char)));
     size_t len;
     while ((!(SSL_get_shutdown(ssl) & SSL_RECEIVED_SHUTDOWN))) {
         closeProtect.lock();

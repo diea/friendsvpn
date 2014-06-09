@@ -18,12 +18,16 @@ class ProxyClient;
  */
 struct dpHeader {
     quint8 sockType; /* underlying transport header socket type */
-    quint8 fragType; /* 0 if not a frag, 1 if is first frag packet, 2 if not first frag */
+    quint8 fragType; /* 0 if not a frag, 1 if is first frag packet, 2 if not first frag, 3 if the last */
     quint16 len; /* underlying packet length (including transport header) */
-    quint32 fragId;
     char md5[16]; /* MD5 identifying ProxyServer */
-    quint16 srcPort; /* source port of the underlying transport header */
     struct in6_addr srcIp; /* source IP of the client using the service */
+} __attribute__((__packed__));
+
+struct dpFragHeader {
+    quint32 fragId;
+    quint32 offset; /* offset for fragmented packet, in number of bytes */
+    quint16 offsetLen;
 } __attribute__((__packed__));
 
 /**
@@ -41,6 +45,22 @@ private:
      * @brief globalIdFrag used by the dataplaneconnection to fragment outgoing fragments
      */
     quint32 globalIdFrag;
+    QMutex globalIdMutex;
+
+    /**
+     * @brief fragmentBuffer will hold the different fragment bits for each incoming packet that
+     * needs to be re-assembled.
+     */
+    QHash<quint32, char*> fragmentBuffer;
+    /**
+     * @brief remainingBits used in parallel with the fragment buffer, tells how many bits are
+     * waiting to be received
+     */
+    QHash<quint32, quint16> remainingBits;
+    /**
+     * @brief totalSize also used in parallel with the two preceding, is there to prevent buffer overflow
+     */
+    QHash<quint32, quint16> totalSize;
 
     /**
      * @brief lastRcvdTimestap contains the timestamp of the last received packet
@@ -67,7 +87,7 @@ private:
      * IPV6_MIN_MTU - sizeof(struct ether_header) - sizeof(struct ipv6hdr)
      */
     static quint16 maxPayloadLen;
-    static quint16 initMaxPayloadLen();
+    //static quint16 initMaxPayloadLen();
 public:
     explicit DataPlaneConnection(QString uid, AbstractPlaneConnection *parent = 0);
 
@@ -88,7 +108,7 @@ public slots:
      * @param buf
      * @param len
      */
-    void readBuffer(const char* buf, int len);
+    void readBuffer(char* buf, int len);
 
     void disconnect();
 

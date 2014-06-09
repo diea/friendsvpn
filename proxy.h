@@ -145,11 +145,10 @@ public slots:
      * @param buf
      * @param len
      * @param dstIp
-     * @param fragType corresponds to the fragType field in the data plane connection header
      *
      * dstIp argument is unused by client, it's for the server to know to which ip to send
      */
-    virtual void sendBytes(const char* buf, int len, QString dstIp, quint8 fragType) = 0;
+    virtual void sendBytes(char* buf, int len, QString dstIp) = 0;
 };
 
 #endif // PROXY_H

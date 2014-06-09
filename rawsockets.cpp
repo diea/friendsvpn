@@ -113,7 +113,8 @@ RawSockets* RawSockets::getInstance() {
     return instance;
 }
 
-void RawSockets::writeBytes(QString srcIp, QString dstIp, int srcPort, const char *transAndPayload, int sockType, int packet_send_size, quint8 fragType) {
+void RawSockets::writeBytes(QString srcIp, QString dstIp, int srcPort,
+                            char *transAndPayload, int sockType, int packet_send_size) {
     IpResolver* r = IpResolver::getInstance();
     struct ip_mac_mapping map = r->getMapping(dstIp);
 
@@ -216,11 +217,6 @@ void RawSockets::writeBytes(QString srcIp, QString dstIp, int srcPort, const cha
     rawHeader.ip6.ip6_hlim = TTL;
     rawHeader.ip6.ip6_plen = htons(packet_send_size);
 
-    if (fragType) {
-        rawHeader.ip6.ip6_nxt = SOL_FRAG;
-        rawHeader.ip6.ip6_hlim = ICMPREQ_HOP;
-    }
-
     struct addrinfo hints, *res;
     memset(&hints, 0, sizeof(hints));
     hints.ai_family = AF_INET6;
@@ -241,61 +237,56 @@ void RawSockets::writeBytes(QString srcIp, QString dstIp, int srcPort, const cha
     }
     rawHeader.ip6.ip6_dst = ((struct sockaddr_in6 *) res1->ai_addr)->sin6_addr;
 
-    if (fragType < 2) { /* fragType 0 and 1 contain a transport header */
-        if (fragType == 1) {
-            // we need to skip the frag header in our computations
-            packet_send_size -= sizeof(struct fragHeader);
-            packet_send += sizeof(struct fragHeader);
-        }
+    // pseudo header to compute checksum
+    struct ipv6upper pHeader;
+    memset(&pHeader, 0, sizeof(struct ipv6upper));
+    pHeader.ip6_src = rawHeader.ip6.ip6_src;
+    pHeader.ip6_dst = rawHeader.ip6.ip6_dst;
+    pHeader.nextHeader = rawHeader.ip6.ip6_nxt;
 
-        // pseudo header to compute checksum
-        struct ipv6upper pHeader;
-        memset(&pHeader, 0, sizeof(struct ipv6upper));
-        pHeader.ip6_src = rawHeader.ip6.ip6_src;
-        pHeader.ip6_dst = rawHeader.ip6.ip6_dst;
-        pHeader.nextHeader = rawHeader.ip6.ip6_nxt;
-
-        int nbBytes = packet_send_size;
-        int padding = packet_send_size % 16;
-        if (padding) {
-            nbBytes = (packet_send_size / 16) * 16 + 16;
-        }
-        int checksumBufSize = sizeof(struct ipv6upper) + nbBytes;
-        char* checksumPacket = static_cast<char*>(malloc(checksumBufSize));
-        memset(checksumPacket, 0, checksumBufSize);
-
-        if (sockType == SOCK_DGRAM) {
-            struct sniff_udp* udp = static_cast<struct sniff_udp*>(static_cast<void*>(packet_send));
-            udp->sport = htons(srcPort); // change udp src port
-            pHeader.payload_len = udp->udp_length;
-            memset(&(udp->udp_sum), 0, sizeof(u_short)); // checksum field to 0
-            memcpy(checksumPacket, &pHeader, sizeof(struct ipv6upper));
-            memcpy(checksumPacket + sizeof(struct ipv6upper), packet_send, packet_send_size);
-
-            udp->udp_sum = ~(checksum(checksumPacket, sizeof(struct ipv6upper) + packet_send_size));
-        } else {
-            pHeader.payload_len = htonl(packet_send_size); // XXX fragmentation header different ?
-
-            struct sniff_tcp* tcp = static_cast<struct sniff_tcp*>(static_cast<void*>(packet_send));
-            tcp->th_sport = htons(srcPort); // change source port
-            memset(&(tcp->th_sum), 0, sizeof(u_short)); // checksum field to 0
-
-            memcpy(checksumPacket, &pHeader, sizeof(struct ipv6upper));
-            memcpy(checksumPacket + sizeof(struct ipv6upper), packet_send, packet_send_size);
-
-            tcp->th_sum = ~(checksum(checksumPacket, sizeof(struct ipv6upper) + packet_send_size));
-        }
-        free(checksumPacket);
+    int nbBytes = packet_send_size;
+    int padding = packet_send_size % 16;
+    if (padding) {
+        nbBytes = (packet_send_size / 16) * 16 + 16;
     }
+    int checksumBufSize = sizeof(struct ipv6upper) + nbBytes;
+    char* checksumPacket = static_cast<char*>(malloc(checksumBufSize));
+    memset(checksumPacket, 0, checksumBufSize);
+
+    if (sockType == SOCK_DGRAM) {
+        struct sniff_udp* udp = static_cast<struct sniff_udp*>(static_cast<void*>(packet_send));
+        udp->sport = htons(srcPort); // change udp src port
+        pHeader.payload_len = udp->udp_length;
+        memset(&(udp->udp_sum), 0, sizeof(u_short)); // checksum field to 0
+        memcpy(checksumPacket, &pHeader, sizeof(struct ipv6upper));
+        memcpy(checksumPacket + sizeof(struct ipv6upper), packet_send, packet_send_size);
+
+        udp->udp_sum = ~(checksum(checksumPacket, sizeof(struct ipv6upper) + packet_send_size));
+    } else {
+        pHeader.payload_len = htonl(packet_send_size); // XXX fragmentation header different ?
+
+        struct sniff_tcp* tcp = static_cast<struct sniff_tcp*>(static_cast<void*>(packet_send));
+        tcp->th_sport = htons(srcPort); // change source port
+        memset(&(tcp->th_sum), 0, sizeof(u_short)); // checksum field to 0
+
+        memcpy(checksumPacket, &pHeader, sizeof(struct ipv6upper));
+        memcpy(checksumPacket + sizeof(struct ipv6upper), packet_send, packet_send_size);
+
+        tcp->th_sum = ~(checksum(checksumPacket, sizeof(struct ipv6upper) + packet_send_size));
+    }
+    free(checksumPacket);
 
 
     // combine the rawHeader and packet in one contiguous block
     memcpy(buffer, &rawHeader, sizeof(struct rawComHeader));
 
+    /* TODO, make a mechanism to make sure packet received over DP connection has proper checksum */
     qDebug() << "raw write";
     raw->write(buffer, bufferSize);
     raw->waitForBytesWritten();
     qDebug() << "raw written";
+    free(transAndPayload);
+    qDebug() << "read buffer has been freed";
 }
 
 void RawSockets::packetTooBig(QString srcIp, QString dstIp, const char *packetBuffer) {

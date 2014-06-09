@@ -29,7 +29,6 @@ private:
         struct sockaddr_in6 s6;
     } remote_addr, local_addr;
 
-    char buf[BUFFER_SIZE];
     char addrbuf[INET6_ADDRSTRLEN];
     SSL_CTX *ctx;
     SSL *ssl;

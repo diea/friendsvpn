@@ -151,7 +151,7 @@ bool ControlPlaneConnection::addMode(plane_mode mode, QObject *socket) {
     return true;
 }
 
-void ControlPlaneConnection::readBuffer(const char* buf, int len) {
+void ControlPlaneConnection::readBuffer(char* buf, int len) {
     memcpy(inputBuffer + bytesReceived, buf, len); // copy incoming buffer
     if (len > 0) {
         bytesReceived += len;

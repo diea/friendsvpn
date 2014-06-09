@@ -74,7 +74,7 @@ public slots:
      * @brief readBuffer will read a buffer received by the server or client
      * @param buf
      */
-    virtual void readBuffer(const char* buf, int len) = 0;
+    virtual void readBuffer(char* buf, int len) = 0;
 };
 
 #endif // ABSTRACTPLANECONNECTION_H
