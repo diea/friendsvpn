@@ -219,6 +219,7 @@ void RawSockets::writeBytes(QString srcIp, QString dstIp, int srcPort, const cha
     if (fragType) {
         rawHeader.ip6.ip6_nxt = SOL_FRAG;
         rawHeader.ip6.ip6_hlim = ICMPREQ_HOP;
+        rawHeader.ip6.ip6_plen = htons(1232); /* TODO remove, for test */
     }
 
     struct addrinfo hints, *res;
