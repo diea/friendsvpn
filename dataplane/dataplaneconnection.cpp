@@ -168,7 +168,9 @@ void DataPlaneConnection::sendBytes(const char *buf, int len, QByteArray& hash, 
     memset(&header, 0, sizeof(struct dpHeader));
     header.sockType = sockType;
     header.len = htons(qint16(len));
+    qDebug() << "Putting md5" << hash.data() << "in header";
     memcpy(header.md5, hash.data(), sizeof(char) * 16); // 16 bytes
+    qDebug() << "Header has md5" << header.md5;
     inet_pton(AF_INET6, srcIp.toUtf8().data(), &(header.srcIp));
 
     qDebug() << "Comparing" << static_cast<unsigned long>(len) << "and" << maxPayloadLen;
