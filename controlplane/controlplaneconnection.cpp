@@ -229,6 +229,8 @@ void ControlPlaneConnection::readBuffer(char* buf, int len) {
                     }
                 }
 
+                qDebug() << "MD5 is" << md5;
+
                 if (hostname.isEmpty() || name.isEmpty() || type.isEmpty() || !port) {
                     qDebug() << "ERROR: Bonjour packet wrong format";
                     return;
@@ -236,6 +238,7 @@ void ControlPlaneConnection::readBuffer(char* buf, int len) {
 
                 ProxyServer* newProxy = NULL;
                 try {
+                    /* TODO, change "" in .local. ? */
                     newProxy = new ProxyServer(friendUid, name, type, "", hostname, QByteArray::fromHex(txt.toUtf8()), port, QByteArray::fromHex(md5.toUtf8()));
                     proxyServers.push(newProxy);
                     newProxy->run();
@@ -279,6 +282,8 @@ void ControlPlaneConnection::sendBonjour() {
         }
 
         packet = packet % "\r\n";
+
+        qDebug() << "Send bonjour with MD5" << rec->md5.toHex();
 
         sendPacket(packet);
     }
