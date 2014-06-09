@@ -84,6 +84,8 @@ void DataPlaneConnection::readBuffer(char* buf, int bufLen) {
             if (!remainingBits[fragHead->fragId]) { /* got to 0, packet is arrived */
                 qDebug() << "Fragment has been assembled";
                 packetBuf = fragmentBuffer.value(fragHead->fragId);
+            } else if (remainingBits[fragHead->fragId] < 0) {
+                qDebug() << "Should not happen, remaining bits is < 0";
             }
         }
     } else {
