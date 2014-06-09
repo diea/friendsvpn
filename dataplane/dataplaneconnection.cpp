@@ -76,6 +76,7 @@ void DataPlaneConnection::readBuffer(char* buf, int bufLen) {
         fragHead->fragId = ntohl(fragHead->fragId);
         fragHead->offset = ntohs(fragHead->offset);
         //fragHead->offsetLen = ntohs(fragHead->offsetLen);
+        qDebug() << bufLen << "-" <<  sizeof(struct dpHeader) << "-" << sizeof(struct fragHeader);
         quint16 offsetLen = bufLen - sizeof(struct dpHeader) - sizeof(struct fragHeader);
         //qDebug() << "Fraghead has" << fragHead->offsetLen << "and computed is" << offsetLen;
         if (!remainingBits.contains(fragHead->fragId)) { /* new frag */
@@ -220,7 +221,7 @@ void DataPlaneConnection::sendBytes(const char *buf, int len, QByteArray& hash, 
             memcpy(packet + sizeof(struct dpHeader), &dpFrag, sizeof(struct dpFragHeader));
             memcpy(packet + sizeof(struct dpHeader) + sizeof(struct dpFragHeader), buf + pos, payloadLen);
 
-            qDebug() << "Sending packet with offset" << pos;
+            qDebug() << "Sending packet with offset" << pos << "and with len" << payloadLen;
             sendPacket(packet, payloadLen + sizeof(struct dpHeader) + sizeof(struct dpFragHeader));
 
             header.fragType = 2; // first frag was sent
