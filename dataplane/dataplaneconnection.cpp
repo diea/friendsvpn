@@ -77,9 +77,11 @@ void DataPlaneConnection::readBuffer(char* buf, int bufLen) {
             fragmentBuffer.insert(fragHead->fragId, static_cast<char*>(malloc(header->len)));
             totalSize.insert(fragHead->fragId, header->len);
         }
+        qDebug() << "Got fragment of offset" << fragHead->offset << "and len" << fragHead->offsetLen;
         if (fragHead->offset + fragHead->offsetLen <= totalSize.value(fragHead->fragId)) {
             const char* frag = buf + sizeof(dpHeader) + sizeof(fragHeader);
-            memcpy(fragmentBuffer.value(fragHead->fragId), frag, fragHead->offsetLen);
+            memcpy(fragmentBuffer[fragHead->fragId], frag, fragHead->offsetLen);
+            remainingBitsMutex.lock();
             remainingBits[fragHead->fragId] -= fragHead->offsetLen;
             qDebug() << "Remaining bytes for fragId" << fragHead->fragId << "are" << remainingBits[fragHead->fragId];
             if (!remainingBits[fragHead->fragId]) { /* got to 0, packet is arrived */
@@ -88,6 +90,7 @@ void DataPlaneConnection::readBuffer(char* buf, int bufLen) {
             } else if (remainingBits[fragHead->fragId] < 0) {
                 qDebug() << "Should not happen, remaining bits is < 0";
             }
+            remainingBitsMutex.unlock();
         }
     } else {
         qDebug() << "Not a fragment";

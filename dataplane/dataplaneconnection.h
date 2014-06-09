@@ -58,6 +58,7 @@ private:
      * a qint32 is used to be able to go under 0 and prevent a wraparound which would cause segfault
      */
     QHash<quint32, qint32> remainingBits;
+    QMutex remainingBitsMutex;
     /**
      * @brief totalSize also used in parallel with the two preceding, is there to prevent buffer overflow
      */
