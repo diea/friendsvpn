@@ -81,11 +81,13 @@ void DataPlaneConnection::readBuffer(char* buf, int bufLen) {
             const char* frag = buf + sizeof(dpHeader) + sizeof(fragHeader);
             memcpy(fragmentBuffer.value(fragHead->fragId), frag, fragHead->offsetLen);
             remainingBits[fragHead->fragId] -= fragHead->offsetLen;
-            if (!remainingBits.value(fragHead->fragId)) { /* got to 0, packet is arrived */
+            if (!remainingBits[fragHead->fragId]) { /* got to 0, packet is arrived */
+                qDebug() << "Fragment has been assembled";
                 packetBuf = fragmentBuffer.value(fragHead->fragId);
             }
         }
     } else {
+        qDebug() << "Not a fragment";
         packetBuf = buf + sizeof(struct dpHeader); // packet
     }
 
@@ -107,6 +109,8 @@ void DataPlaneConnection::readBuffer(char* buf, int bufLen) {
         quint16 srcPort;
         memcpy(&srcPort, packetBuf, sizeof(quint16)); /* src port is 16 first bits of trans header */
         srcPort = ntohs(srcPort);
+
+        qDebug() << "Source port of packet is " << srcPort;
 
         QByteArray clientHash = QCryptographicHash::hash(QString(hash + srcIp + QString::number(srcPort)).toUtf8(), QCryptographicHash::Md5);
         qDebug() << "Get proxy";
