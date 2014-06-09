@@ -64,11 +64,12 @@ void ServerWorker::connection_handle() {
 
 void ServerWorker::readyRead(int) {
     notif->setEnabled(false);
-    char* buf = static_cast<char*>(malloc(BUFFER_SIZE * sizeof(char)));
     size_t len;
     while ((!(SSL_get_shutdown(ssl) & SSL_RECEIVED_SHUTDOWN))) {
+        char* buf = static_cast<char*>(malloc(BUFFER_SIZE * sizeof(char)));
+        memset(buf, 0, BUFFER_SIZE * sizeof(char));
         closeProtect.lock();
-        if ((len = SSL_read(ssl, buf, sizeof(buf))) > 0) {
+        if ((len = SSL_read(ssl, buf, BUFFER_SIZE * sizeof(char))) > 0) {
             switch (SSL_get_error(ssl, len)) {
                 case SSL_ERROR_NONE:
                  con->readBuffer(buf, len);

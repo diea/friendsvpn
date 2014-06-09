@@ -114,10 +114,11 @@ void DataPlaneClient::run() {
 void DataPlaneClient::readyRead(int) {
     notif->setEnabled(false);
     size_t len;
-    char* buf = static_cast<char*>(malloc(BUFFER_SIZE * sizeof(char)));
     while (!(SSL_get_shutdown(ssl) & SSL_RECEIVED_SHUTDOWN)) {
+        char* buf = static_cast<char*>(malloc(BUFFER_SIZE * sizeof(char)));
+        memset(buf, 0, BUFFER_SIZE * sizeof(char));
         closeProtect.lock();
-        if ((len = SSL_read(ssl, buf, sizeof(buf))) > 0) {
+        if ((len = SSL_read(ssl, buf, BUFFER_SIZE * sizeof(char))) > 0) {
             switch (SSL_get_error(ssl, len)) {
                 case SSL_ERROR_NONE:
                  con->readBuffer(buf, len);
