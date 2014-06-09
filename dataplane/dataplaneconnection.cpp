@@ -81,6 +81,7 @@ void DataPlaneConnection::readBuffer(char* buf, int bufLen) {
             const char* frag = buf + sizeof(dpHeader) + sizeof(fragHeader);
             memcpy(fragmentBuffer.value(fragHead->fragId), frag, fragHead->offsetLen);
             remainingBits[fragHead->fragId] -= fragHead->offsetLen;
+            qDebug() << "Remaining bytes for fragId" << fragHead->fragId << "are" << remainingBits[fragHead->fragId];
             if (!remainingBits[fragHead->fragId]) { /* got to 0, packet is arrived */
                 qDebug() << "Fragment has been assembled";
                 packetBuf = fragmentBuffer.value(fragHead->fragId);
@@ -210,7 +211,7 @@ void DataPlaneConnection::sendBytes(const char *buf, int len, QByteArray& hash, 
             memcpy(packet + sizeof(struct dpHeader) + sizeof(struct dpFragHeader), buf + pos, payloadLen);
 
             qDebug() << "Sending packet with offset" << pos;
-            sendPacket(packet, maxPayloadLen);
+            sendPacket(packet, payloadLen + sizeof(struct dpHeader) + sizeof(struct dpFragHeader));
 
             header.fragType = 2; // first frag was sent
 
