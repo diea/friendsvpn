@@ -66,7 +66,8 @@ int main(int argc, char** argv) {
     sprintf(ip6tablesRule, "ip6tables -A OUTPUT -s %s -p tcp --sport %s --tcp-flags RST RST -j DROP", argv[4], argv[3]);
     system(ip6tablesRule);
 #endif
-    fprintf(stderr, "all is well!\n");
+    printf("all is well!\n");
+    fflush(stdout);
 
     getchar(); // press any key to quit (releasing the "bind" call)
     

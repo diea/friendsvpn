@@ -148,9 +148,6 @@ void DataPlaneConnection::sendBytes(const char *buf, int len, QByteArray& hash, 
     if (static_cast<unsigned long>(len) > maxPayloadLen) {
         // packet will use more than the min MTU, we fragment it
         quint16 dataFieldLen = maxPayloadLen - sizeof(struct fragHeader);
-        // find the dataFieldLen that is a multiple of 8
-
-
         qDebug() << "Frag data field is" << dataFieldLen << "bytes";
 
         quint16 offsetVal = dataFieldLen / 8;
