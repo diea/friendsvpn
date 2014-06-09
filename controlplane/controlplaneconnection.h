@@ -76,7 +76,7 @@ public:
     /**
      * @brief readBuffer will read a buffer of lenght len received by the server or client
      */
-    void readBuffer(const char* buf, int len);
+    void readBuffer(char* buf, int len);
 private slots:
     void wasDisconnected();
 

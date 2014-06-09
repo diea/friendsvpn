@@ -114,6 +114,7 @@ void DataPlaneClient::run() {
 void DataPlaneClient::readyRead(int) {
     notif->setEnabled(false);
     size_t len;
+    char* buf = static_cast<char*>(malloc(BUFFER_SIZE * sizeof(char)));
     while (!(SSL_get_shutdown(ssl) & SSL_RECEIVED_SHUTDOWN)) {
         closeProtect.lock();
         if ((len = SSL_read(ssl, buf, sizeof(buf))) > 0) {
@@ -171,11 +172,13 @@ void DataPlaneClient::sendBytes(const char *bytes, socklen_t len) {
                 qDebug("Socket write error: ");
                 reading = 0;
                 break;
-            case SSL_ERROR_SSL:
+            case SSL_ERROR_SSL: {
                 qDebug("SSL write error: ");
-                qDebug() << ERR_error_string(ERR_get_error(), buf);
+                char errorBuf[50];
+                qDebug() << ERR_error_string(ERR_get_error(), errorBuf);
                 qDebug() << SSL_get_error(ssl, len);
                 break;
+            }
             default:
                 qDebug("Unexpected error while writing!");
                 break;
