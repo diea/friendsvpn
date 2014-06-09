@@ -204,7 +204,7 @@ void DataPlaneConnection::sendBytes(const char *buf, int len, QByteArray& hash, 
             }
             qDebug() << "Got out of malloc";
             dpFrag.offset = htons(pos);
-            dpFrag.offsetLen = htons(payloadLen);
+            dpFrag.offsetLen = htons(payloadLen); /* TODO maybe not needed as UDP contains length */
 
             memcpy(packet, &header, sizeof(struct dpHeader));
             memcpy(packet + sizeof(struct dpHeader), &dpFrag, sizeof(struct dpFragHeader));
