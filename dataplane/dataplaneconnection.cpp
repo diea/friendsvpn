@@ -154,15 +154,15 @@ void DataPlaneConnection::sendBytes(const char *buf, int len, QByteArray& hash, 
             qDebug() << "we << 3 offset" << printBits((offset << 3));
             header.fragType = !offset ? 1 : 2;
             fhead.fragOffsetResAndM |= (offset << 3);
-            quint16 mbit = 1;
-            fhead.fragOffsetResAndM |= mbit;
             fragOffsetMult++;
 
-            fhead.fragOffsetResAndM = htons(fhead.fragOffsetResAndM);
-
-            qDebug() << "Frag off res and M" << printBits(fhead.fragOffsetResAndM);
-
             int payloadLen = len >= dataFieldLen ? dataFieldLen : len;
+            quint16 mbit = len >= dataFieldLen ? 1 : 0;
+            fhead.fragOffsetResAndM |= mbit;
+
+            fhead.fragOffsetResAndM = htons(fhead.fragOffsetResAndM);
+            qDebug() << "Frag off res and M" << printBits(ntohs(fhead.fragOffsetResAndM));
+
             header.len = htons(sizeof(struct fragHeader) + payloadLen);
 
             char* packet = static_cast<char*>(malloc(payloadLen + sizeof(struct dpHeader) +
