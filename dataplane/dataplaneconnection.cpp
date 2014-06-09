@@ -96,6 +96,7 @@ void DataPlaneConnection::readBuffer(char* buf, int bufLen) {
     /* TODO, check TCP checksum ? */
 
     QByteArray hash(header->md5, 16);
+    qDebug() << "Hash is" << hash.toHex();
     char srcIpc[INET6_ADDRSTRLEN];
     inet_ntop(AF_INET6, &(header->srcIp), srcIpc, INET6_ADDRSTRLEN);
     QString srcIp(srcIpc);
