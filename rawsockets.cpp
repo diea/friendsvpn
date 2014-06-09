@@ -285,7 +285,7 @@ void RawSockets::writeBytes(QString srcIp, QString dstIp, int srcPort,
     raw->write(buffer, bufferSize);
     raw->waitForBytesWritten();
     qDebug() << "raw written";
-    free(transAndPayload);
+    //free(transAndPayload);
     qDebug() << "read buffer has been freed";
 }
 
