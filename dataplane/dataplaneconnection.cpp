@@ -85,7 +85,7 @@ void DataPlaneConnection::readBuffer(char* buf, int bufLen) {
         qDebug() << "Got fragment of offset" << fragHead->offset << "and len" << fragHead->offsetLen;
         if (fragHead->offset + fragHead->offsetLen <= totalSize.value(fragHead->fragId)) {
             const char* frag = buf + sizeof(dpHeader) + sizeof(fragHeader);
-            memcpy(fragmentBuffer[fragHead->fragId], frag, fragHead->offsetLen);
+            memcpy(fragmentBuffer[fragHead->fragId] + fragHead->offset, frag, fragHead->offsetLen);
             remainingBitsMutex.lock();
             qDebug() << "Remaining bits" << remainingBits[fragHead->fragId] << "-=" << fragHead->offsetLen;
             remainingBits[fragHead->fragId] -= fragHead->offsetLen;
