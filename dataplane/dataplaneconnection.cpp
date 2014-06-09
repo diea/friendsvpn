@@ -75,21 +75,19 @@ void DataPlaneConnection::readBuffer(char* buf, int bufLen) {
         struct dpFragHeader* fragHead = (struct dpFragHeader*) (buf + sizeof(struct dpHeader));
         fragHead->fragId = ntohl(fragHead->fragId);
         fragHead->offset = ntohs(fragHead->offset);
-        qDebug() << "dpheader has size" << sizeof(struct dpHeader) << "and frag header" << sizeof(struct dpFragHeader);
-        quint16 offsetLen = bufLen - sizeof(struct dpHeader) - sizeof(struct dpFragHeader);
-        //fragHead->offsetLen = ntohs(fragHead->offsetLen);
+        fragHead->offsetLen = ntohs(fragHead->offsetLen);
         if (!remainingBits.contains(fragHead->fragId)) { /* new frag */
             remainingBits.insert(fragHead->fragId, header->len);
             fragmentBuffer.insert(fragHead->fragId, static_cast<char*>(malloc(header->len)));
             totalSize.insert(fragHead->fragId, header->len);
-            qDebug() << "Init frag of ID" << fragHead->fragId << "and length" << header->len;
         }
-        qDebug() << "Got fragment of offset" << fragHead->offset << "and len" << offsetLen;
-        if (fragHead->offset + offsetLen <= totalSize.value(fragHead->fragId)) {
+        qDebug() << "Got fragment of offset" << fragHead->offset << "and len" << fragHead->offsetLen;
+        if (fragHead->offset + fragHead->offsetLen <= totalSize.value(fragHead->fragId)) {
             const char* frag = buf + sizeof(dpHeader) + sizeof(fragHeader);
-            memcpy(fragmentBuffer[fragHead->fragId] + fragHead->offset, frag, offsetLen);
+            memcpy(fragmentBuffer[fragHead->fragId], frag, fragHead->offsetLen);
             remainingBitsMutex.lock();
-            remainingBits[fragHead->fragId] -= offsetLen;
+            qDebug() << "Remaining bits" << remainingBits[fragHead->fragId] << "-=" << fragHead->offsetLen;
+            remainingBits[fragHead->fragId] -= fragHead->offsetLen;
             qDebug() << "Remaining bytes for fragId" << fragHead->fragId << "are" << remainingBits[fragHead->fragId];
             if (!remainingBits[fragHead->fragId]) { /* got to 0, packet is arrived */
                 qDebug() << "Fragment has been assembled";
@@ -189,7 +187,7 @@ void DataPlaneConnection::sendBytes(const char *buf, int len, QByteArray& hash, 
     qDebug() << "Comparing" << static_cast<unsigned long>(len) << "and" << maxPayloadLen;
     if (static_cast<unsigned long>(len) > maxPayloadLen) {
         // packet will use more than the min MTU, we fragment it
-        quint16 dataFieldLen = maxPayloadLen - sizeof(struct dpFragHeader);
+        quint16 dataFieldLen = maxPayloadLen - sizeof(struct dpHeader) - sizeof(struct dpFragHeader);
         qDebug() << "Frag data field is" << dataFieldLen << "bytes";
         struct dpFragHeader dpFrag;
         memset(&dpFrag, 0, sizeof(struct dpFragHeader));
@@ -214,13 +212,13 @@ void DataPlaneConnection::sendBytes(const char *buf, int len, QByteArray& hash, 
             }
             qDebug() << "Got out of malloc";
             dpFrag.offset = htons(pos);
+            dpFrag.offsetLen = htons(payloadLen); /* TODO maybe not needed as UDP contains length */
 
             memcpy(packet, &header, sizeof(struct dpHeader));
             memcpy(packet + sizeof(struct dpHeader), &dpFrag, sizeof(struct dpFragHeader));
             memcpy(packet + sizeof(struct dpHeader) + sizeof(struct dpFragHeader), buf + pos, payloadLen);
 
             qDebug() << "Sending packet with offset" << pos;
-            qDebug() << "dpheader has size" << sizeof(struct dpHeader) << "and frag header" << sizeof(struct dpFragHeader);
             sendPacket(packet, payloadLen + sizeof(struct dpHeader) + sizeof(struct dpFragHeader));
 
             header.fragType = 2; // first frag was sent
