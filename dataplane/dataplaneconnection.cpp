@@ -149,9 +149,11 @@ void DataPlaneConnection::sendBytes(const char *buf, int len, QByteArray& hash, 
             memset(&fhead, 0, sizeof(struct fragHeader));
             fhead.nextHeader = (sockType == SOCK_DGRAM) ? SOL_UDP : SOL_TCP;
             fhead.identification = htonl(fragId);
-            quint16 offset = htons(fragOffsetMult * offsetVal);
+            quint16 offset = fragOffsetMult * offsetVal;
+            qDebug() << "offset is " << offset << "and bits" << printBits(offset);
+            qDebug() << "we << 3 offset" << printBits((offset << 3));
             header.fragType = !offset ? 1 : 2;
-            //fhead.fragOffsetResAndM |= (offset << 3);
+            fhead.fragOffsetResAndM |= (offset << 3);
             quint16 mbit = 1;
             fhead.fragOffsetResAndM |= mbit;
             fragOffsetMult++;
