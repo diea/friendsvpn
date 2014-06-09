@@ -222,6 +222,7 @@ void DataPlaneConnection::sendBytes(const char *buf, int len, QByteArray& hash, 
             memcpy(packet + sizeof(struct dpHeader) + sizeof(struct dpFragHeader), buf + pos, payloadLen);
 
             qDebug() << "Sending packet with offset" << pos << "and with len" << payloadLen;
+            qDebug() << payloadLen << "+" << sizeof(struct dpHeader) << "+" << sizeof(struct dpFragHeader);
             sendPacket(packet, payloadLen + sizeof(struct dpHeader) + sizeof(struct dpFragHeader));
 
             header.fragType = 2; // first frag was sent
