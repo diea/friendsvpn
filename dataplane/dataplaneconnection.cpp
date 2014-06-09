@@ -76,8 +76,8 @@ void DataPlaneConnection::readBuffer(char* buf, int bufLen) {
         fragHead->fragId = ntohl(fragHead->fragId);
         fragHead->offset = ntohs(fragHead->offset);
         //fragHead->offsetLen = ntohs(fragHead->offsetLen);
-        qDebug() << bufLen << "-" <<  sizeof(struct dpHeader) << "-" << sizeof(struct fragHeader);
-        quint16 offsetLen = bufLen - sizeof(struct dpHeader) - sizeof(struct fragHeader);
+        qDebug() << bufLen << "-" <<  sizeof(struct dpHeader) << "-" << sizeof(struct dpFragHeader);
+        quint16 offsetLen = bufLen - sizeof(struct dpHeader) - sizeof(struct dpFragHeader);
         //qDebug() << "Fraghead has" << fragHead->offsetLen << "and computed is" << offsetLen;
         if (!remainingBits.contains(fragHead->fragId)) { /* new frag */
             remainingBits.insert(fragHead->fragId, header->len);
@@ -86,7 +86,7 @@ void DataPlaneConnection::readBuffer(char* buf, int bufLen) {
         }
         qDebug() << "Got fragment of offset" << fragHead->offset << "and len" << offsetLen;
         if (fragHead->offset + offsetLen <= totalSize.value(fragHead->fragId)) {
-            const char* frag = buf + sizeof(dpHeader) + sizeof(fragHeader);
+            const char* frag = buf + sizeof(struct dpHeader) + sizeof(struct dpFragHeader);
             memcpy(fragmentBuffer[fragHead->fragId] + fragHead->offset, frag, offsetLen);
             remainingBitsMutex.lock();
             qDebug() << "Remaining bits" << remainingBits[fragHead->fragId] << "-=" << offsetLen;
