@@ -75,6 +75,7 @@ void DataPlaneConnection::readBuffer(char* buf, int bufLen) {
         struct dpFragHeader* fragHead = (struct dpFragHeader*) (buf + sizeof(struct dpHeader));
         fragHead->fragId = ntohl(fragHead->fragId);
         fragHead->offset = ntohs(fragHead->offset);
+        qDebug() << "dpheader has size" << sizeof(struct dpHeader) << "and frag header" << sizeof(struct dpFragHeader);
         int offsetLen = bufLen - sizeof(struct dpHeader) - sizeof(struct dpFragHeader);
         //fragHead->offsetLen = ntohs(fragHead->offsetLen);
         if (!remainingBits.contains(fragHead->fragId)) { /* new frag */
