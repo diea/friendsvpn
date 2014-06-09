@@ -99,6 +99,7 @@ void ServerWorker::readyRead(int) {
             }
         }
         closeProtect.unlock();
+        free(buf);
     }
     notif->setEnabled(true);
 }
