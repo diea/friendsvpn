@@ -113,6 +113,17 @@ char* printBits(quint16 x)
    bits[16] = '\0';
    return bits;
 }
+
+quint16 DataPlaneConnection::initMaxPayloadLen() {
+    quint16 maxPayload = IPV6_MIN_MTU - sizeof(struct ether_header) - sizeof(struct ipv6hdr);
+    while (maxPayload % 8 != 0) {
+        maxPayload--;
+    }
+    return maxPayload;
+}
+
+quint16 DataPlaneConnection::maxPayloadLen = DataPlaneConnection::initMaxPayloadLen();
+
 void DataPlaneConnection::sendBytes(const char *buf, int len, QByteArray& hash, int sockType, QString& srcIp) {
     if (time(NULL) - lastRcvdTimestamp > TIMEOUT_DELAY) {
         qDebug() << "Testing ALIVE";
@@ -133,10 +144,12 @@ void DataPlaneConnection::sendBytes(const char *buf, int len, QByteArray& hash, 
 
     memcpy(&(header.srcPort), buf, sizeof(quint16)); /* srcPort is in the first 16 bits of the transport header */
 
-    qDebug() << "Comparing" << static_cast<unsigned long>(len) << "and" << IPV6_MIN_MTU - sizeof(struct ether_header) - sizeof(struct ipv6hdr);
-    if (static_cast<unsigned long>(len) > IPV6_MIN_MTU - sizeof(struct ether_header) - sizeof(struct ipv6hdr)) {
+    qDebug() << "Comparing" << static_cast<unsigned long>(len) << "and" << maxPayloadLen;
+    if (static_cast<unsigned long>(len) > maxPayloadLen) {
         // packet will use more than the min MTU, we fragment it
-        quint16 dataFieldLen = IPV6_MIN_MTU - sizeof(struct ether_header) - sizeof(struct ipv6hdr) - sizeof(struct fragHeader);
+        quint16 dataFieldLen = maxPayloadLen - sizeof(struct fragHeader);
+        // find the dataFieldLen that is a multiple of 8
+
 
         qDebug() << "Frag data field is" << dataFieldLen << "bytes";
 
