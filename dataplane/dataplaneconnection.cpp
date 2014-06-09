@@ -72,6 +72,9 @@ void DataPlaneConnection::readBuffer(char* buf, int bufLen) {
 
     if (header->fragType != 0) { /* handle fragment */
         struct dpFragHeader* fragHead = (struct dpFragHeader*) (buf + sizeof(struct dpHeader));
+        fragHead->fragId = ntohl(fragHead->fragId);
+        fragHead->offset = ntohs(fragHead->offset);
+        fragHead->offsetLen = ntohs(fragHead->offsetLen);
         if (!remainingBits.contains(fragHead->fragId)) { /* new frag */
             remainingBits.insert(fragHead->fragId, header->len);
             fragmentBuffer.insert(fragHead->fragId, static_cast<char*>(malloc(header->len)));
@@ -193,7 +196,7 @@ void DataPlaneConnection::sendBytes(const char *buf, int len, QByteArray& hash, 
 
         header.fragType = 1;
 
-        quint32 pos = 0;
+        quint16 pos = 0;
         while (len > 0) { // send frags while len is > 0
             int payloadLen = len >= dataFieldLen ? dataFieldLen : len;
             if (payloadLen == len) {
