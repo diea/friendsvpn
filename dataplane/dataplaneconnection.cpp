@@ -84,7 +84,7 @@ void DataPlaneConnection::readBuffer(char* buf, int bufLen) {
         qDebug() << "Got fragment of offset" << fragHead->offset << "and len" << fragHead->offsetLen;
         if (fragHead->offset + fragHead->offsetLen <= totalSize.value(fragHead->fragId)) {
             const char* frag = buf + sizeof(dpHeader) + sizeof(fragHeader);
-            memcpy(fragmentBuffer[fragHead->fragId], frag, fragHead->offsetLen);
+            memcpy(fragmentBuffer[fragHead->fragId] + fragHead->offset, frag, fragHead->offsetLen);
             remainingBitsMutex.lock();
             qDebug() << "Remaining bits" << remainingBits[fragHead->fragId] << "-=" << fragHead->offsetLen;
             remainingBits[fragHead->fragId] -= fragHead->offsetLen;
@@ -187,7 +187,7 @@ void DataPlaneConnection::sendBytes(const char *buf, int len, QByteArray& hash, 
     qDebug() << "Comparing" << static_cast<unsigned long>(len) << "and" << maxPayloadLen;
     if (static_cast<unsigned long>(len) > maxPayloadLen) {
         // packet will use more than the min MTU, we fragment it
-        quint16 dataFieldLen = maxPayloadLen - sizeof(struct dpHeader) - sizeof(struct dpFragHeader);
+        quint16 dataFieldLen = maxPayloadLen - sizeof(struct dpHeader) - sizeof(struct dpFragHeader); //TODO remove dpHeader
         qDebug() << "Frag data field is" << dataFieldLen << "bytes";
         struct dpFragHeader dpFrag;
         memset(&dpFrag, 0, sizeof(struct dpFragHeader));
