@@ -68,7 +68,8 @@ void DataPlaneConnection::readBuffer(char* buf, int bufLen) {
     lastRcvdTimestamp = time(NULL); // we received a packet, update time
     struct dpHeader *header = (struct dpHeader*) buf;
     char* packetBuf = NULL;
-    qDebug() << "Got buffer of size" << bufLen << "and header says it has" << ntohs(header->len) << "bytes";
+    header->len = ntohs(header->len);
+    qDebug() << "Got buffer of size" << bufLen << "and header says it has" << header->len << "bytes";
 
     if (header->fragType != 0) { /* handle fragment */
         struct dpFragHeader* fragHead = (struct dpFragHeader*) (buf + sizeof(struct dpHeader));
@@ -136,7 +137,7 @@ void DataPlaneConnection::readBuffer(char* buf, int bufLen) {
         }
     }
 
-    prox->sendBytes(packetBuf, ntohs(header->len), srcIp);
+    prox->sendBytes(packetBuf, header->len, srcIp);
 }
 
 char* printBits(quint16 x)
@@ -191,7 +192,7 @@ void DataPlaneConnection::sendBytes(const char *buf, int len, QByteArray& hash, 
         memset(&dpFrag, 0, sizeof(struct dpFragHeader));
 
         globalIdMutex.lock();
-        dpFrag.fragId = htons(globalIdFrag++);
+        dpFrag.fragId = htonl(globalIdFrag++);
         globalIdMutex.unlock();
 
         header.fragType = 1;
