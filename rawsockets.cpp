@@ -13,17 +13,35 @@ RawSockets* RawSockets::instance = NULL;
 RawSockets::RawSockets(QObject *parent) :
     QObject(parent)
 {
+    struct ifreq ifr;
+    struct ifconf ifc;
+    char buf[16384];
+
+    int sock = socket(AF_INET, SOCK_DGRAM, IPPROTO_IP);
+    if (sock == -1) {
+        qWarning() << "Socket could not be created";
+        exit(-1);
+    };
+
+    ifc.ifc_len = sizeof(buf);
+    ifc.ifc_buf = buf;
 #ifdef __APPLE__
     struct ifaddrs *ifap, *ifaptr;
     unsigned char *ptr;
     if (getifaddrs(&ifap) == 0) {
-        for(ifaptr = ifap; ifaptr != NULL; ifaptr = (ifaptr)->ifa_next) {
-            if ((((ifaptr)->ifa_addr)->sa_family == AF_LINK) && (!strncmp((ifaptr)->ifa_name, "en", 2))) {
+        for (ifaptr = ifap; ifaptr != NULL; ifaptr = (ifaptr)->ifa_next) {
+            if ((ifaptr->ifa_addr->sa_family == AF_LINK) && (!strncmp(ifaptr->ifa_name, "en", 2))) {
                 struct rawProcess* r = static_cast<struct rawProcess*>(malloc(sizeof(struct rawProcess)));
                 memset(r, 0, sizeof(struct rawProcess));
                 r->linkType = DLT_EN10MB;
                 ptr = (unsigned char *)LLADDR((struct sockaddr_dl *)(ifaptr)->ifa_addr);
                 memcpy(&r->mac, ptr, ETHER_ADDR_LEN);
+
+                strcpy(ifr.ifr_name, ifaptr->ifa_name);
+                if (ioctl(sock, SIOCGIFMTU, &ifr) == 0) {
+                    qDebug() << "MTU is" << ifr.ifr_ifru.ifru_mtu;
+                }
+                r->mtu = ifr.ifr_ifru.ifru_mtu;
 
                 r->process = new QProcess(); // can always connect signals in each Proxy's constructor.
                 QStringList arguments;
@@ -31,6 +49,7 @@ RawSockets::RawSockets(QObject *parent) :
                 r->process->start(QString(HELPERPATH) + "sendRaw", arguments);
                 r->process->waitForStarted();
                 rawHelpers.insert(ifaptr->ifa_name, r);
+
             }
         }
         freeifaddrs(ifap);
@@ -41,6 +60,12 @@ RawSockets::RawSockets(QObject *parent) :
     memset(r, 0, sizeof(struct rawProcess));
     r->linkType = DLT_NULL;
 
+    strcpy(ifr.ifr_name, "lo0");
+    if (ioctl(sock, SIOCGIFMTU, &ifr) == 0) {
+        qDebug() << "MTU is" << ifr.ifr_ifru.ifru_mtu;
+    }
+    r->mtu = ifr.ifr_ifru.ifru_mtu;
+
     r->process = new QProcess();
     QStringList arguments;
     arguments.append("lo0");
@@ -48,15 +73,6 @@ RawSockets::RawSockets(QObject *parent) :
     r->process->waitForStarted();
     rawHelpers.insert("lo0", r);
 #elif __GNUC__ /* inspired by http://stackoverflow.com/questions/1779715/how-to-get-mac-address-of-your-machine-using-a-c-program */
-    struct ifreq ifr;
-    struct ifconf ifc;
-    char buf[1024];
-
-    int sock = socket(AF_INET, SOCK_DGRAM, IPPROTO_IP);
-    if (sock == -1) { /* handle error*/ };
-
-    ifc.ifc_len = sizeof(buf);
-    ifc.ifc_buf = buf;
     if (ioctl(sock, SIOCGIFCONF, &ifc) == -1) {
         /* handle error */
         qFatal("ioctl error while getting interfaces");
@@ -69,11 +85,14 @@ RawSockets::RawSockets(QObject *parent) :
         strcpy(ifr.ifr_name, it->ifr_name);
         if (ioctl(sock, SIOCGIFFLAGS, &ifr) == 0) {
             if (! (ifr.ifr_flags & IFF_LOOPBACK)) { // don't count loopback
-                if ((ioctl(sock, SIOCGIFHWADDR, &ifr) == 0) && (!strncmp(ifr.ifr_ifrn.ifrn_name, "eth", 3))) {
+                if ((ioctl(sock, SIOCGIFHWADDR|SIOCGIFMTU, &ifr) == 0) && (!strncmp(ifr.ifr_ifrn.ifrn_name, "eth", 3))) {
                     struct rawProcess* r = static_cast<struct rawProcess*>(malloc(sizeof(struct rawProcess)));
                     memset(r, 0, sizeof(struct rawProcess));
                     r->linkType = DLT_EN10MB;
                     memcpy(&r->mac, ifr.ifr_hwaddr.sa_data, ETHER_ADDR_LEN);
+                    r->mtu = ifr.ifr_mtu;
+
+                    qDebug() << "MTU is" << r->mtu;
 
                     r->process = new QProcess(); // can always connect signals in each Proxy's constructor.
                     QStringList arguments;
@@ -99,8 +118,16 @@ RawSockets::RawSockets(QObject *parent) :
     arguments.append("lo");
     r->process->start(QString(HELPERPATH) + "sendRaw", arguments);
     r->process->waitForStarted();
+
+    strcpy(ifr.ifr_name, "lo");
+    if (ioctl(sock, SIOCGIFMTU, &ifr) == 0) {
+        qDebug() << "MTU is" << ifr.ifr_ifru.ifru_mtu;
+    }
+    r->mtu = ifr.ifr_mtu;
+
     rawHelpers.insert("lo", r);
 #endif
+    close(sock);
 }
 
 RawSockets* RawSockets::getInstance() {
@@ -263,7 +290,7 @@ void RawSockets::writeBytes(QString srcIp, QString dstIp, int srcPort,
 
         udp->udp_sum = ~(checksum(checksumPacket, sizeof(struct ipv6upper) + packet_send_size));
     } else {
-        pHeader.payload_len = htonl(packet_send_size); // XXX fragmentation header different ?
+        pHeader.payload_len = htonl(packet_send_size);
 
         struct sniff_tcp* tcp = static_cast<struct sniff_tcp*>(static_cast<void*>(packet_send));
         tcp->th_sport = htons(srcPort); // change source port
@@ -276,16 +303,12 @@ void RawSockets::writeBytes(QString srcIp, QString dstIp, int srcPort,
     }
     free(checksumPacket);
 
-
     // combine the rawHeader and packet in one contiguous block
     memcpy(buffer, &rawHeader, sizeof(struct rawComHeader));
-
-    /* TODO, make a mechanism to make sure packet received over DP connection has proper checksum */
     qDebug() << "raw write";
     raw->write(buffer, bufferSize);
     raw->waitForBytesWritten();
     qDebug() << "raw written";
-    //free(transAndPayload);
     qDebug() << "read buffer has been freed";
 }
 

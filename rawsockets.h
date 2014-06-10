@@ -13,6 +13,7 @@ struct rawProcess {
     QProcess* process;
     u_char mac[ETHER_ADDR_LEN];
     int linkType; /* DLT_EN10MB or DLT_NULL */
+    quint32 mtu;
 }; /* represents a raw socket helper */
 
 class RawSockets : public QObject
@@ -24,7 +25,6 @@ private:
     QHash<QString, struct rawProcess*> rawHelpers;
 
     QMutex write;
-    //char buffer[65536];
 
     /**
      * @brief initializes the raw helpers, one per interface
