@@ -89,9 +89,9 @@ void DataPlaneConnection::readBuffer(char* buf, int bufLen) {
                     qDebug() << "Remove call";
                     fragmentBuffer.remove(i.key());
                     qDebug() << "Fragment is discarded, free";
-                    free(frag->fragBuf);
+                    //free(frag->fragBuf);
                     qDebug() << "Buffer was freed, free structure";
-                    free(frag);
+                    //free(frag);
                 }
                 qDebug() << "Fragment buffer QHash is now empty";
             }
@@ -168,10 +168,12 @@ void DataPlaneConnection::readBuffer(char* buf, int bufLen) {
     prox->sendBytes(packetBuf, header->len, srcIp);
 
     if (header->fragType != 0) { /* free resources to assemble packet */
-        free(packetBuf);
         struct dpFragHeader* fragHead = (struct dpFragHeader*) (buf + sizeof(struct dpHeader));
         qDebug() << "Removing ID" << fragHead->fragId;
-        free(fragmentBuffer.value(fragHead->fragId));
+        struct fragment_local* f = fragmentBuffer.value(fragHead->fragId);
+        free(f->fragBuf);
+        f->fragBuf = 0;
+        free(f);
         fragmentBuffer.remove(fragHead->fragId);
     }
 }
