@@ -96,7 +96,7 @@ void DataPlaneConnection::readBuffer(char* buf, int bufLen) {
                     qDebug() << "Buffer was freed, free structure";
                     free(frag);
                     qDebug() << "Remove call";
-                    fragmentBuffer.erase(i);
+                    i = fragmentBuffer.erase(i);
                 }
                 qDebug() << "Fragment buffer QHash is now empty";
             }
