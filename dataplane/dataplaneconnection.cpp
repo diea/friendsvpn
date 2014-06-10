@@ -84,11 +84,13 @@ void DataPlaneConnection::readBuffer(char* buf, int bufLen) {
                 for (i = fragmentBuffer.begin(); i != fragmentBuffer.end(); ++i) {
                     qDebug() << "Fragment is discarded, free";
                     free(i.value()->fragBuf);
+                    qDebug() << "Buffer was freed, free structure";
                     free(i.value());
                     fragmentBuffer.remove(i.key());
                 }
             }
             struct fragment_local* frag = static_cast<struct fragment_local*>(malloc(sizeof(struct fragment_local)));
+            memset(frag, 0, sizeof(struct fragment_local));
             frag->fragBuf = static_cast<char*>(malloc(header->len));
             frag->remainingBits = header->len;
             frag->totalSize = header->len;
