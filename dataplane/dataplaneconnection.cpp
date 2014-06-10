@@ -79,6 +79,7 @@ void DataPlaneConnection::readBuffer(char* buf, int bufLen) {
         quint16 offsetLen = bufLen - sizeof(struct dpHeader) - sizeof(struct dpFragHeader);
         fragBufMut.lock();
         if (!fragmentBuffer.contains(fragHead->fragId)) { /* new frag */
+            qDebug() << "Appending fragment with ID" << fragHead->fragId;
             if (fragmentBuffer.size() > FRAG_BUFFER_SIZE) {
                 /* remove everything from QHash */
                 QHash<quint32, struct fragment_local*>::iterator i;
