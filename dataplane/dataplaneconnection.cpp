@@ -84,6 +84,7 @@ void DataPlaneConnection::readBuffer(char* buf, int bufLen) {
                 QHash<quint32, struct fragment_local*>::iterator i;
                 for (i = fragmentBuffer.begin(); i != fragmentBuffer.end(); ++i) {
                     struct fragment_local* frag = i.value();
+                    qDebug() << "Removing ID" << i.key();
                     qDebug() << "Remove call";
                     fragmentBuffer.remove(i.key());
                     qDebug() << "Fragment is discarded, free";
@@ -96,6 +97,7 @@ void DataPlaneConnection::readBuffer(char* buf, int bufLen) {
             struct fragment_local* frag = static_cast<struct fragment_local*>(malloc(sizeof(struct fragment_local)));
             memset(frag, 0, sizeof(struct fragment_local));
             frag->fragBuf = static_cast<char*>(malloc(header->len));
+            memset(frag->fragBuf, 0, header->len);
             frag->remainingBits = header->len;
             frag->totalSize = header->len;
             fragmentBuffer.insert(fragHead->fragId, frag);
@@ -167,6 +169,7 @@ void DataPlaneConnection::readBuffer(char* buf, int bufLen) {
     if (header->fragType != 0) { /* free resources to assemble packet */
         free(packetBuf);
         struct dpFragHeader* fragHead = (struct dpFragHeader*) (buf + sizeof(struct dpHeader));
+        qDebug() << "Removing ID" << fragHead->fragId;
         free(fragmentBuffer.value(fragHead->fragId));
         fragmentBuffer.remove(fragHead->fragId);
     }
