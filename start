@@ -12,6 +12,13 @@ if [[ $unamestr == "Darwin" ]]; then
 		fi
 	fi
 	./friendsvpn.app/Contents/MacOS/friendsvpn
+
+    ifconfig | grep inet6 | grep -v fe80 | grep -v ::1 | grep -v autoconf | sed -e 's/inet6//g' -e 's/prefixlen 64//g' | while read line
+	do
+    	echo "Cleaning $line"
+    	./helpers/cleanup en1 $line
+	done
+
 else
 	./friendsvpn
 fi
