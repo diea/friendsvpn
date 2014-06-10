@@ -92,7 +92,7 @@ RawSockets::RawSockets(QObject *parent) :
                     memcpy(&r->mac, ifr.ifr_hwaddr.sa_data, ETHER_ADDR_LEN);
                     r->mtu = ifr.ifr_mtu;
 
-                    qDebug() << "MTU is" << r->mtu;
+                    qDebug() << "MTU is" << ifr.ifr_mtu;
 
                     r->process = new QProcess(); // can always connect signals in each Proxy's constructor.
                     QStringList arguments;
