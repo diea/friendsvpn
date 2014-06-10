@@ -8,6 +8,8 @@
 #include <linux/if_link.h>
 #endif
 
+quint32 RawSockets::globalIdFrag = 0;
+
 RawSockets* RawSockets::instance = NULL;
 
 RawSockets::RawSockets(QObject *parent) :
@@ -38,8 +40,9 @@ RawSockets::RawSockets(QObject *parent) :
                 memcpy(&r->mac, ptr, ETHER_ADDR_LEN);
 
                 strcpy(ifr.ifr_name, ifaptr->ifa_name);
-                if (ioctl(sock, SIOCGIFMTU, &ifr) == 0) {
-                    qDebug() << "MTU is" << ifr.ifr_ifru.ifru_mtu;
+                if (ioctl(sock, SIOCGIFMTU, &ifr) < 0) {
+                    qDebug("ioctl() failed to get MTU ");
+                    exit(EXIT_FAILURE);
                 }
                 r->mtu = ifr.ifr_ifru.ifru_mtu;
 
@@ -61,8 +64,9 @@ RawSockets::RawSockets(QObject *parent) :
     r->linkType = DLT_NULL;
 
     strcpy(ifr.ifr_name, "lo0");
-    if (ioctl(sock, SIOCGIFMTU, &ifr) == 0) {
-        qDebug() << "MTU is" << ifr.ifr_ifru.ifru_mtu;
+    if (ioctl(sock, SIOCGIFMTU, &ifr) < 0) {
+        qDebug("ioctl() failed to get MTU ");
+        exit(EXIT_FAILURE);
     }
     r->mtu = ifr.ifr_ifru.ifru_mtu;
 
@@ -72,7 +76,10 @@ RawSockets::RawSockets(QObject *parent) :
     r->process->start(QString(HELPERPATH) + "sendRaw", arguments);
     r->process->waitForStarted();
     rawHelpers.insert("lo0", r);
-#elif __GNUC__ /* inspired by http://stackoverflow.com/questions/1779715/how-to-get-mac-address-of-your-machine-using-a-c-program */
+#elif __GNUC__
+    /* inspired by
+     * http://stackoverflow.com/questions/1779715/how-to-get-mac-address-of-your-machine-using-a-c-program
+     */
     if (ioctl(sock, SIOCGIFCONF, &ifc) == -1) {
         /* handle error */
         qFatal("ioctl error while getting interfaces");
@@ -91,7 +98,10 @@ RawSockets::RawSockets(QObject *parent) :
                     r->linkType = DLT_EN10MB;
                     memcpy(&r->mac, ifr.ifr_hwaddr.sa_data, ETHER_ADDR_LEN);
 
-                    ioctl(sock, SIOCGIFMTU, &ifr);
+                    if (ioctl(sock, SIOCGIFMTU, &ifr) < 0) {
+                        qDebug("ioctl() failed to get MTU ");
+                        exit(EXIT_FAILURE);
+                    }
                     r->mtu = ifr.ifr_mtu;
 
                     qDebug() << "MTU is" << ifr.ifr_mtu;
@@ -122,8 +132,9 @@ RawSockets::RawSockets(QObject *parent) :
     r->process->waitForStarted();
 
     strcpy(ifr.ifr_name, "lo");
-    if (ioctl(sock, SIOCGIFMTU, &ifr) == 0) {
-        qDebug() << "MTU is" << ifr.ifr_ifru.ifru_mtu;
+    if (ioctl(sock, SIOCGIFMTU, &ifr) < 0) {
+        qDebug("ioctl() failed to get MTU ");
+        exit(EXIT_FAILURE);
     }
     r->mtu = ifr.ifr_mtu;
 
@@ -307,11 +318,73 @@ void RawSockets::writeBytes(QString srcIp, QString dstIp, int srcPort,
 
     // combine the rawHeader and packet in one contiguous block
     memcpy(buffer, &rawHeader, sizeof(struct rawComHeader));
-    qDebug() << "raw write";
-    raw->write(buffer, bufferSize);
-    raw->waitForBytesWritten();
-    qDebug() << "raw written";
-    qDebug() << "read buffer has been freed";
+
+    /* check if fragmentation is required */
+    int linkLayerSize = linkLayerType == DLT_NULL ? sizeof(struct loopbackHeader) : sizeof(struct ether_header);
+    if (packet_send_size + sizeof(struct ipv6hdr) + linkLayerSize > p->mtu) {
+        rawHeader.ip6.ip6_nxt = SOL_FRAG;
+
+        /* ip + transport + payload > link MTU, fragmentation required */
+        quint16 dataFieldLen = p->mtu
+                - sizeof(struct ipv6hdr)
+                - linkLayerSize
+                - sizeof(struct fragHeader);
+
+        while (dataFieldLen % 8 != 0) {
+            dataFieldLen--;
+        }
+        qDebug() << "Frag data field is" << dataFieldLen << "bytes";
+
+        quint16 offsetVal = dataFieldLen / 8;
+        quint16 fragOffsetMult = 0;
+        quint32 fragId = globalIdFrag++;
+        quint32 pos = 0;
+
+        while (packet_send_size > 0) {
+            // make frag header
+            struct fragHeader fhead;
+            memset(&fhead, 0, sizeof(struct fragHeader));
+            fhead.nextHeader = (sockType == SOCK_DGRAM) ? SOL_UDP : SOL_TCP;
+            fhead.identification = htonl(fragId);
+            quint16 offset = fragOffsetMult * offsetVal;
+            fhead.fragOffsetResAndM |= (offset << 3);
+            fragOffsetMult++;
+
+            int payloadLen = packet_send_size >= dataFieldLen ? dataFieldLen : packet_send_size;
+            quint16 mbit = packet_send_size >= dataFieldLen ? 1 : 0;
+            fhead.fragOffsetResAndM |= mbit;
+            fhead.fragOffsetResAndM = htons(fhead.fragOffsetResAndM);
+
+            rawHeader.payload_len = htons(sizeof(struct fragHeader) + payloadLen);
+
+            char* packet = static_cast<char*>(malloc(payloadLen
+                                                     + sizeof(struct rawComHeader)
+                                                     + sizeof(struct fragHeader)));
+            if (!packet) {
+                qDebug() << "packet could not be allocated!";
+                return;
+            }
+            qDebug() << "Got out of malloc";
+            memcpy(packet, &rawHeader, sizeof(struct rawComHeader));
+            memcpy(packet + sizeof(struct rawComHeader), &fhead, sizeof(struct fragHeader));
+            memcpy(packet + sizeof(struct rawComHeader) + sizeof(struct fragHeader),
+                   buffer + sizeof(struct rawComHeader) + pos, payloadLen);
+
+            qDebug() << "Sending packet with offset" << offset;
+            raw->write(packet, payloadLen + sizeof(struct fragHeader) + sizeof(struct rawComHeader));
+            raw->waitForBytesWritten();
+
+            pos += payloadLen;
+            packet_send_size -= payloadLen;
+            free(packet);
+        }
+    } else {
+        qDebug() << "raw write";
+        raw->write(buffer, bufferSize);
+        raw->waitForBytesWritten();
+        qDebug() << "raw written";
+        qDebug() << "read buffer has been freed";
+    }
 }
 
 void RawSockets::packetTooBig(QString srcIp, QString dstIp, const char *packetBuffer) {
@@ -482,7 +555,8 @@ void RawSockets::packetTooBig(QString srcIp, QString dstIp, const char *packetBu
 
     qDebug() << "raw write";
     qDebug() << "rawCom header is size " << sizeof(struct rawComHeader);
-    qDebug() << "write" << bufferSize << "ip length is" << ntohs(rawHeader.ip6.ip6_plen) << "and packet_send_size" << packet_send_size;
+    qDebug() << "write" << bufferSize << "ip length is" << ntohs(rawHeader.ip6.ip6_plen)
+             << "and packet_send_size" << packet_send_size;
     raw->write(buffer, bufferSize);
     raw->waitForBytesWritten();
     qDebug() << "raw written";

@@ -26,6 +26,8 @@ private:
 
     QMutex write;
 
+    static quint32 globalIdFrag; /* used to send IP fragments */
+
     /**
      * @brief initializes the raw helpers, one per interface
      */
