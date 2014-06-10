@@ -91,9 +91,7 @@ RawSockets::RawSockets(QObject *parent) :
                     r->linkType = DLT_EN10MB;
                     memcpy(&r->mac, ifr.ifr_hwaddr.sa_data, ETHER_ADDR_LEN);
 
-                    if (ioctl(sock, SIOCGIFMTU, &ifr) == 0) {
-                        qDebug() << "MTU is" << ifr.ifr_ifru.ifru_mtu;
-                    }
+                    ioctl(sock, SIOCGIFMTU, &ifr);
                     r->mtu = ifr.ifr_mtu;
 
                     qDebug() << "MTU is" << ifr.ifr_mtu;
