@@ -30,6 +30,12 @@ struct dpFragHeader {
     //quint16 offsetLen;
 } __attribute__((__packed__));
 
+struct fragment_local {
+    char* fragBuf;
+    qint32 remainingBits;
+    quint16 totalSize;
+};
+
 /**
  * @brief The DataPlaneConnection class
  */
@@ -51,18 +57,18 @@ private:
      * @brief fragmentBuffer will hold the different fragment bits for each incoming packet that
      * needs to be re-assembled.
      */
-    QHash<quint32, char*> fragmentBuffer;
+    QHash<quint32, struct fragment_local*> fragmentBuffer;
     /**
      * @brief remainingBits used in parallel with the fragment buffer, tells how many bits are
      * waiting to be received
      * a qint32 is used to be able to go under 0 and prevent a wraparound which would cause segfault
      */
-    QHash<quint32, qint32> remainingBits;
+    //QHash<quint32, qint32> remainingBits;
     QMutex remainingBitsMutex;
     /**
      * @brief totalSize also used in parallel with the two preceding, is there to prevent buffer overflow
      */
-    QHash<quint32, quint16> totalSize;
+    //QHash<quint32, quint16> totalSize;
 
     /**
      * @brief lastRcvdTimestap contains the timestamp of the last received packet

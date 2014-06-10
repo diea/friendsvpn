@@ -77,24 +77,41 @@ void DataPlaneConnection::readBuffer(char* buf, int bufLen) {
         fragHead->offset = ntohs(fragHead->offset);
         qDebug() << bufLen << "-" <<  sizeof(struct dpHeader) << "-" << sizeof(struct dpFragHeader);
         quint16 offsetLen = bufLen - sizeof(struct dpHeader) - sizeof(struct dpFragHeader);
-        if (!remainingBits.contains(fragHead->fragId)) { /* new frag */
-            remainingBits.insert(fragHead->fragId, header->len);
-            fragmentBuffer.insert(fragHead->fragId, static_cast<char*>(malloc(header->len)));
-            totalSize.insert(fragHead->fragId, header->len);
-            qDebug() << "Remaining bits size" << remainingBits.size();
+        if (!fragmentBuffer.contains(fragHead->fragId)) { /* new frag */
+            struct fragment_local* frag = static_cast<struct fragment_local*>(malloc(sizeof(struct fragment_local)));
+            frag->fragBuf = static_cast<char*>(malloc(header->len));
+            frag->remainingBits = header->len;
+            frag->totalSize = header->len;
+            //remainingBits.insert(fragHead->fragId, header->len);
+            //fragmentBuffer.insert(fragHead->fragId, static_cast<char*>(malloc(header->len)));
+            //totalSize.insert(fragHead->fragId, header->len);
+            fragmentBuffer.insert(fragHead->fragId, frag);
+            qDebug() << "Remaining bits size" << fragmentBuffer.size();
+            //if (remainingBits.size() > FRAG_BUFFER_SIZE) {
+                /* remove all fragments that do not have this id */
+                /*QHash<QObject *, int>::iterator i = objectHash.find(obj);
+                while (i != objectHash.end() && i.key() == obj) {
+                    if (i.value() == 0) {
+                        i = objectHash.erase(i);
+                    } else {
+                        ++i;
+                    }
+                }*/
+            //}
         }
+        struct fragment_local* frag = fragmentBuffer.value(fragHead->fragId);
         qDebug() << "Got fragment of offset" << fragHead->offset << "and len" << offsetLen;
-        if (fragHead->offset + offsetLen <= totalSize.value(fragHead->fragId)) {
-            const char* frag = buf + sizeof(struct dpHeader) + sizeof(struct dpFragHeader);
-            memcpy(fragmentBuffer[fragHead->fragId] + fragHead->offset, frag, offsetLen);
+        if (fragHead->offset + offsetLen <= frag->totalSize) {
+            const char* frag_rcvd = buf + sizeof(struct dpHeader) + sizeof(struct dpFragHeader);
+            memcpy(frag->fragBuf + fragHead->offset, frag_rcvd, offsetLen);
             remainingBitsMutex.lock();
-            qDebug() << "Remaining bits" << remainingBits[fragHead->fragId] << "-=" << offsetLen;
-            remainingBits[fragHead->fragId] -= offsetLen;
-            qDebug() << "Remaining bytes for fragId" << fragHead->fragId << "are" << remainingBits[fragHead->fragId];
-            if (!remainingBits[fragHead->fragId]) { /* got to 0, packet is arrived */
+            qDebug() << "Remaining bits" << frag->remainingBits << "-=" << offsetLen;
+            frag->remainingBits -= offsetLen;
+            qDebug() << "Remaining bytes for fragId" << fragHead->fragId << "are" << frag->remainingBits;
+            if (!frag->remainingBits) { /* got to 0, packet is arrived */
                 qDebug() << "Fragment has been assembled";
-                packetBuf = fragmentBuffer.value(fragHead->fragId);
-            } else if (remainingBits[fragHead->fragId] < 0) {
+                packetBuf = frag->fragBuf;
+            } else if (frag->remainingBits < 0) {
                 qDebug() << "Should not happen, remaining bits is < 0";
             }
             remainingBitsMutex.unlock();
@@ -145,9 +162,8 @@ void DataPlaneConnection::readBuffer(char* buf, int bufLen) {
     if (header->fragType != 0) { /* free resources to assemble packet */
         free(packetBuf);
         struct dpFragHeader* fragHead = (struct dpFragHeader*) (buf + sizeof(struct dpHeader));
+        free(fragmentBuffer.value(fragHead->fragId));
         fragmentBuffer.remove(fragHead->fragId);
-        remainingBits.remove(fragHead->fragId);
-        totalSize.remove(fragHead->fragId);
     }
 }
 
