@@ -2,7 +2,7 @@
 #include "dataplaneconnection.h"
 
 DataPlaneClient::DataPlaneClient(QHostAddress ip, DataPlaneConnection* con, QObject *parent) :
-    QObject(parent), reading(0), ip(ip), con(con)
+    QObject(parent), ip(ip), con(con)
 {
     memset((void *) &remote_addr, 0, sizeof(struct sockaddr_storage));
     memset((void *) &local_addr, 0, sizeof(struct sockaddr_storage));
@@ -132,11 +132,12 @@ void DataPlaneClient::readyRead(int) {
                  /* Just try again */
                  break;
                 case SSL_ERROR_ZERO_RETURN:
-                 reading = 0;
+                 qDebug() << "SSL_ERROR_ZERO_RETURN";
                  break;
                 case SSL_ERROR_SYSCALL:
                  qDebug("Socket read error");
-                 reading = 0;
+                 qDebug() << ERR_error_string(ERR_get_error(), buf);
+                 qDebug() << SSL_get_error(ssl, len);
                  break;
                 case SSL_ERROR_SSL:
                  qDebug("SSL read error: ");
@@ -149,6 +150,7 @@ void DataPlaneClient::readyRead(int) {
             }
         }
         closeProtect.unlock();
+        free(buf);
     }
     notif->setEnabled(true);
 }
@@ -171,7 +173,6 @@ void DataPlaneClient::sendBytes(const char *bytes, socklen_t len) {
                 break;
             case SSL_ERROR_SYSCALL:
                 qDebug("Socket write error: ");
-                reading = 0;
                 break;
             case SSL_ERROR_SSL: {
                 qDebug("SSL write error: ");

@@ -33,7 +33,6 @@ private:
     SSL_CTX *ctx;
     SSL *ssl;
     BIO *bio;
-    int reading;
     struct timeval timeout;
 
     int fd;
