@@ -90,6 +90,7 @@ void DataPlaneConnection::readBuffer(char* buf, int bufLen) {
                     qDebug() << "Remove call";
                     fragmentBuffer.remove(i.key());
                 }
+                qDebug() << "Fragment buffer QHash is now empty";
             }
             struct fragment_local* frag = static_cast<struct fragment_local*>(malloc(sizeof(struct fragment_local)));
             memset(frag, 0, sizeof(struct fragment_local));
