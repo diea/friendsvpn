@@ -82,10 +82,12 @@ void DataPlaneConnection::readBuffer(char* buf, int bufLen) {
                 /* remove everything from QHash */
                 QHash<quint32, struct fragment_local*>::iterator i;
                 for (i = fragmentBuffer.begin(); i != fragmentBuffer.end(); ++i) {
+                    struct fragment_local* frag = i.value();
                     qDebug() << "Fragment is discarded, free";
-                    free(i.value()->fragBuf);
+                    free(frag->fragBuf);
                     qDebug() << "Buffer was freed, free structure";
-                    free(i.value());
+                    free(frag);
+                    qDebug() << "Remove call";
                     fragmentBuffer.remove(i.key());
                 }
             }
