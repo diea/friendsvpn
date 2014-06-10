@@ -75,14 +75,13 @@ void DataPlaneConnection::readBuffer(char* buf, int bufLen) {
         struct dpFragHeader* fragHead = (struct dpFragHeader*) (buf + sizeof(struct dpHeader));
         fragHead->fragId = ntohl(fragHead->fragId);
         fragHead->offset = ntohs(fragHead->offset);
-        //fragHead->offsetLen = ntohs(fragHead->offsetLen);
         qDebug() << bufLen << "-" <<  sizeof(struct dpHeader) << "-" << sizeof(struct dpFragHeader);
         quint16 offsetLen = bufLen - sizeof(struct dpHeader) - sizeof(struct dpFragHeader);
-        //qDebug() << "Fraghead has" << fragHead->offsetLen << "and computed is" << offsetLen;
         if (!remainingBits.contains(fragHead->fragId)) { /* new frag */
             remainingBits.insert(fragHead->fragId, header->len);
             fragmentBuffer.insert(fragHead->fragId, static_cast<char*>(malloc(header->len)));
             totalSize.insert(fragHead->fragId, header->len);
+            qDebug() << "Remaining bits size" << remainingBits.size();
         }
         qDebug() << "Got fragment of offset" << fragHead->offset << "and len" << offsetLen;
         if (fragHead->offset + offsetLen <= totalSize.value(fragHead->fragId)) {
@@ -142,6 +141,14 @@ void DataPlaneConnection::readBuffer(char* buf, int bufLen) {
     }
 
     prox->sendBytes(packetBuf, header->len, srcIp);
+
+    if (header->fragType != 0) { /* free resources to assemble packet */
+        free(packetBuf);
+        struct dpFragHeader* fragHead = (struct dpFragHeader*) (buf + sizeof(struct dpHeader));
+        fragmentBuffer.remove(fragHead->fragId);
+        remainingBits.remove(fragHead->fragId);
+        totalSize.remove(fragHead->fragId);
+    }
 }
 
 char* printBits(quint16 x)
