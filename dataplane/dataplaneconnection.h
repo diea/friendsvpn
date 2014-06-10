@@ -58,6 +58,7 @@ private:
      * needs to be re-assembled.
      */
     QHash<quint32, struct fragment_local*> fragmentBuffer;
+    QMutex fragBufMut;
     /**
      * @brief remainingBits used in parallel with the fragment buffer, tells how many bits are
      * waiting to be received

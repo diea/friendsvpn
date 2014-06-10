@@ -77,6 +77,7 @@ void DataPlaneConnection::readBuffer(char* buf, int bufLen) {
         fragHead->offset = ntohs(fragHead->offset);
         qDebug() << bufLen << "-" <<  sizeof(struct dpHeader) << "-" << sizeof(struct dpFragHeader);
         quint16 offsetLen = bufLen - sizeof(struct dpHeader) - sizeof(struct dpFragHeader);
+        fragBufMut.lock();
         if (!fragmentBuffer.contains(fragHead->fragId)) { /* new frag */
             if (fragmentBuffer.size() > FRAG_BUFFER_SIZE) {
                 /* remove everything from QHash */
@@ -100,22 +101,25 @@ void DataPlaneConnection::readBuffer(char* buf, int bufLen) {
             fragmentBuffer.insert(fragHead->fragId, frag);
             qDebug() << "Frag buffer size" << fragmentBuffer.size();
         }
+        fragBufMut.unlock();
         struct fragment_local* frag = fragmentBuffer.value(fragHead->fragId);
-        qDebug() << "Got fragment of offset" << fragHead->offset << "and len" << offsetLen;
-        if (fragHead->offset + offsetLen <= frag->totalSize) {
-            const char* frag_rcvd = buf + sizeof(struct dpHeader) + sizeof(struct dpFragHeader);
-            memcpy(frag->fragBuf + fragHead->offset, frag_rcvd, offsetLen);
-            remainingBitsMutex.lock();
-            qDebug() << "Remaining bits" << frag->remainingBits << "-=" << offsetLen;
-            frag->remainingBits -= offsetLen;
-            qDebug() << "Remaining bytes for fragId" << fragHead->fragId << "are" << frag->remainingBits;
-            if (!frag->remainingBits) { /* got to 0, packet is arrived */
-                qDebug() << "Fragment has been assembled";
-                packetBuf = frag->fragBuf;
-            } else if (frag->remainingBits < 0) {
-                qDebug() << "Should not happen, remaining bits is < 0";
+        if (frag) {
+            qDebug() << "Got fragment of offset" << fragHead->offset << "and len" << offsetLen;
+            if (fragHead->offset + offsetLen <= frag->totalSize) {
+                const char* frag_rcvd = buf + sizeof(struct dpHeader) + sizeof(struct dpFragHeader);
+                memcpy(frag->fragBuf + fragHead->offset, frag_rcvd, offsetLen);
+                remainingBitsMutex.lock();
+                qDebug() << "Remaining bits" << frag->remainingBits << "-=" << offsetLen;
+                frag->remainingBits -= offsetLen;
+                qDebug() << "Remaining bytes for fragId" << fragHead->fragId << "are" << frag->remainingBits;
+                if (!frag->remainingBits) { /* got to 0, packet is arrived */
+                    qDebug() << "Fragment has been assembled";
+                    packetBuf = frag->fragBuf;
+                } else if (frag->remainingBits < 0) {
+                    qDebug() << "Should not happen, remaining bits is < 0";
+                }
+                remainingBitsMutex.unlock();
             }
-            remainingBitsMutex.unlock();
         }
     } else {
         qDebug() << "Not a fragment";
