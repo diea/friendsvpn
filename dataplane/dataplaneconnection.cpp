@@ -78,26 +78,22 @@ void DataPlaneConnection::readBuffer(char* buf, int bufLen) {
         qDebug() << bufLen << "-" <<  sizeof(struct dpHeader) << "-" << sizeof(struct dpFragHeader);
         quint16 offsetLen = bufLen - sizeof(struct dpHeader) - sizeof(struct dpFragHeader);
         if (!fragmentBuffer.contains(fragHead->fragId)) { /* new frag */
+            if (fragmentBuffer.size() > FRAG_BUFFER_SIZE) {
+                /* remove everything from QHash */
+                QHash<quint32, struct fragment_local*>::iterator i;
+                for (i = fragmentBuffer.begin(); i != fragmentBuffer.end(); ++i) {
+                    qDebug() << "Fragment is discarded, free";
+                    free(i.value()->fragBuf);
+                    free(i.value());
+                    fragmentBuffer.remove(i.key());
+                }
+            }
             struct fragment_local* frag = static_cast<struct fragment_local*>(malloc(sizeof(struct fragment_local)));
             frag->fragBuf = static_cast<char*>(malloc(header->len));
             frag->remainingBits = header->len;
             frag->totalSize = header->len;
-            //remainingBits.insert(fragHead->fragId, header->len);
-            //fragmentBuffer.insert(fragHead->fragId, static_cast<char*>(malloc(header->len)));
-            //totalSize.insert(fragHead->fragId, header->len);
             fragmentBuffer.insert(fragHead->fragId, frag);
-            qDebug() << "Remaining bits size" << fragmentBuffer.size();
-            //if (remainingBits.size() > FRAG_BUFFER_SIZE) {
-                /* remove all fragments that do not have this id */
-                /*QHash<QObject *, int>::iterator i = objectHash.find(obj);
-                while (i != objectHash.end() && i.key() == obj) {
-                    if (i.value() == 0) {
-                        i = objectHash.erase(i);
-                    } else {
-                        ++i;
-                    }
-                }*/
-            //}
+            qDebug() << "Frag buffer size" << fragmentBuffer.size();
         }
         struct fragment_local* frag = fragmentBuffer.value(fragHead->fragId);
         qDebug() << "Got fragment of offset" << fragHead->offset << "and len" << offsetLen;
