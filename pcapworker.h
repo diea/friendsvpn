@@ -18,6 +18,7 @@ private:
     qint64 pos;
     qint64 remaining;
     struct pcapComHeader pcapHeader;
+    QProcess pcap;
 public:
     /**
      * @brief PcapWorker handles a pcap process inside a QThread and hands the data back to
@@ -26,6 +27,7 @@ public:
      * @param parent
      */
     explicit PcapWorker(QStringList args, Proxy* p, QObject *parent = 0);
+    ~PcapWorker();
 signals:
 
 public slots:
