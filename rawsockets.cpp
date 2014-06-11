@@ -266,7 +266,6 @@ void RawSockets::writeBytes(QString srcIp, QString dstIp, int srcPort,
         memcpy(checksumPacket, &pHeader, sizeof(struct ipv6upper));
         memcpy(checksumPacket + sizeof(struct ipv6upper), packet_send, packet_send_size);
 
-
         tcp->th_sum = ~(checksum(checksumPacket, sizeof(struct ipv6upper) + packet_send_size));
     }
     free(checksumPacket);

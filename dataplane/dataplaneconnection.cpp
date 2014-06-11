@@ -189,6 +189,7 @@ void DataPlaneConnection::sendBytes(const char *buf, int len, QByteArray& hash, 
     inet_pton(AF_INET6, srcIp.toUtf8().data(), &(header.srcIp));
 
     if (static_cast<unsigned long>(len) > maxPayloadLen) {
+        qDebug() << "Dataplane frag";
         // packet will use more than the min MTU, we fragment it
         quint16 dataFieldLen = maxPayloadLen - sizeof(struct dpFragHeader); //TODO remove dpHeader
         struct dpFragHeader dpFrag;
