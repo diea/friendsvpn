@@ -167,7 +167,7 @@ void DataPlaneServer::readyRead(int) {
     worker->moveToThread(workerThread);
     connect(workerThread, SIGNAL(started()), worker, SLOT(connection_handle()));
     connect(workerThread, SIGNAL(finished()), workerThread, SLOT(deleteLater()));
-    connect(worker, SIGNAL(bufferReady(const char*, int)), dpc, SLOT(readBuffer(const char*, int)));
+    //connect(worker, SIGNAL(bufferReady(const char*, int)), dpc, SLOT(readBuffer(const char*, int)));
     UnixSignalHandler* u = UnixSignalHandler::getInstance();
     connect(u, SIGNAL(exiting()), workerThread, SLOT(quit()));
     workerThread->start();
