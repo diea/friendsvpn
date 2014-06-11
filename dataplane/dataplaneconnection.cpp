@@ -287,26 +287,32 @@ void DataPlaneConnection::sendPacket(const char *buf, int len) {
 }
 
 void DataPlaneConnection::disconnect() {
+    qDebug() << "Disconnect DataPlaneConnection";
     mutex.lock();
     if (curMode == Both) {
         client->stop();
         server->stop();
     } else {
+        qDebug() << "Not in both mode";
         if (curMode == Receiving) {
+            qDebug() << "Stopping server";
             server->stop();
         }
         if (curMode == Emitting) {
+            qDebug() << "Stopping client";
             client->stop();
         }
     }
+    curMode = Closed;
     mutex.unlock();
+    qDebug() << "Deleting client proxies";
     while (!clientProxys.empty()) {
         Proxy* c = clientProxys.pop();
         if (c)
             delete c;
     }
-
-    curMode = Closed;
+    qDebug() << "Removing from ConnectionInitiator";
     ConnectionInitiator::getInstance()->removeConnection(this);
+    qDebug() << "Delete self";
     this->deleteLater();
 }

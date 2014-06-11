@@ -62,9 +62,8 @@ void UnixSignalHandler::removeIp(QString ip) {
     if (p) {
         qDebug() << "Close ifconfig help for" << ip;
         connect(p, SIGNAL(finished(int)), p, SLOT(deleteLater()));
-        p->write("a few letters");
+        p->write("a few letters"); /* getchar() in helper before it exits */
         p->waitForBytesWritten();
-        //p->kill();
     }
     QProcess cleanup;
     QStringList cleanArgs;
