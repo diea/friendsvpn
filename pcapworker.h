@@ -19,6 +19,7 @@ private:
     qint64 remaining;
     struct pcapComHeader pcapHeader;
     QProcess* pcap;
+    QMutex deleteMut;
 public:
     /**
      * @brief PcapWorker handles a pcap process inside a QThread and hands the data back to
