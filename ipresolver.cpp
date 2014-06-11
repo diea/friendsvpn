@@ -185,5 +185,5 @@ QString IpResolver::getDefaultInterface() {
 #endif
     qWarning() << "The host has no IPv6 default route!";
     UnixSignalHandler::termSignalHandler(0);
-    return;
+    return QString();
 }
