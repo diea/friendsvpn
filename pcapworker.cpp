@@ -48,18 +48,6 @@ void PcapWorker::run() {
                 continue;
             }
 
-            qDebug() << "Full packet read remaining" << remaining;
-            qDebug() << "Full packet read pos:" << pos;
-            /* Sending PACKET TOO BIG does not seem to work, we are going to use IPv6 fragmentation
-            if ((pcapHeader.len > FVPN_MTU) && (pos > IPV6_MIN_MTU)) {
-                qDebug() << "Got packet of size" << pos << "sending icmpv6 too big";
-
-                RawSockets* s = RawSockets::getInstance();
-                s->packetTooBig(p->listenIp, pcapHeader.ipSrcStr, packet);
-                continue;
-            } */
-
-
             if (p->port != p->listenPort) {
                 // first 16 bits = source Port of UDP and TCP
                 quint16* dstPort = static_cast<quint16*>(static_cast<void*>(packet + 2)); // second 16 bits dstPort (or + 2 bytes)

@@ -19,6 +19,11 @@ QMutex Proxy::poolOfIpsMutex;
 Proxy::~Proxy() {
     UnixSignalHandler* u = UnixSignalHandler::getInstance();
 
+    while (!pcapWorkers.empty()) {
+        qDebug() << "Delete pcap worker";
+        delete pcapWorkers.pop();
+    }
+
     while (!processes.empty()) {
         QProcess* p = processes.pop();
         p->terminate();
