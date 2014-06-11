@@ -14,7 +14,7 @@ PcapWorker::~PcapWorker()
     pcap->disconnect();
     pcap->terminate();
     pcap->waitForFinished();
-    delete pcap;
+    //delete pcap;
     qDebug() << "Closed";
 }
 
