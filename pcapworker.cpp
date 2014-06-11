@@ -12,8 +12,8 @@ PcapWorker::~PcapWorker()
 {
     qDebug() << "Closing pcapListen" << pcap.arguments();
     pcap.disconnect();
-    pcap.kill();
-    QThread::currentThread()->exit(0);
+    pcap.close();
+    pcap.waitForFinished();
     qDebug() << "Closed";
 }
 
@@ -21,6 +21,7 @@ void PcapWorker::run() {
     connect(&pcap, SIGNAL(finished(int)), this, SLOT(pcapFinish(int)));
 
     pcap.start(QString(HELPERPATH) + "pcapListen", args);
+    qDebug() << "pcapListen" << args << "runs in thread ID" << QThread::currentThreadId();
     pcap.waitForStarted();
     pcap.closeWriteChannel();
     pcap.setReadChannel(QProcess::StandardOutput);

@@ -389,7 +389,7 @@ void Proxy::run_pcap(const char* dstIp) {
         PcapWorker* pcapWorker = new PcapWorker(args, this);
         pcapWorker->moveToThread(pcapWorkerThread);
         connect(pcapWorkerThread, SIGNAL(started()), pcapWorker, SLOT(run()));
-        connect(pcapWorkerThread, SIGNAL(finished()), pcapWorkerThread, SLOT(deleteLater()));
+        //connect(pcapWorkerThread, SIGNAL(finished()), pcapWorkerThread, SLOT(deleteLater()));
         pcapWorkers.push(pcapWorker);
         pcapWorkerThread->start();
     }
