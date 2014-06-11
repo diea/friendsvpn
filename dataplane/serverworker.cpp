@@ -72,6 +72,7 @@ void ServerWorker::readyRead(int) {
         if ((len = SSL_read(ssl, buf, BUFFER_SIZE * sizeof(char))) > 0) {
             switch (SSL_get_error(ssl, len)) {
                 case SSL_ERROR_NONE:
+                qDebug() << "Reading in thread" << QThread::currentThreadId();
                  con->readBuffer(buf, len);
                  break;
                 case SSL_ERROR_WANT_READ:
@@ -115,6 +116,7 @@ void ServerWorker::stop() {
 
 void ServerWorker::sendBytes(const char* buf, int len) {
     if (len > 0) {
+        qDebug() << "Writing in thread" << QThread::currentThreadId();
         len = SSL_write(ssl, buf, len);
         switch (SSL_get_error(ssl, len)) {
          case SSL_ERROR_NONE:

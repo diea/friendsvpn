@@ -65,6 +65,7 @@ bool DataPlaneConnection::addMode(plane_mode mode, QObject* socket) {
 }
 
 void DataPlaneConnection::readBuffer(char* buf, int bufLen) {
+    qDebug() << "readBuffer Thread" << QThread::currentThreadId();
     lastRcvdTimestamp = time(NULL); // we received a packet, update time
     struct dpHeader *header = (struct dpHeader*) buf;
     char* packetBuf = NULL;
@@ -171,6 +172,7 @@ char* printBits(quint16 x)
 quint16 DataPlaneConnection::maxPayloadLen = IPV6_MIN_MTU - sizeof(struct dpHeader);
 
 void DataPlaneConnection::sendBytes(const char *buf, int len, QByteArray& hash, int sockType, QString& srcIp) {
+    qDebug() << "sendBytes thread ID" << QThread::currentThreadId();
     if (time(NULL) - lastRcvdTimestamp > TIMEOUT_DELAY) {
         qDebug() << "Testing ALIVE";
         // is distant host still alive ?

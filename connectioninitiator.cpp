@@ -118,7 +118,6 @@ void ConnectionInitiator::startClients() {
         clients.append(c);
 
         QThread* dcThread = new QThread(); // dataplane is threaded
-
         DataPlaneConnection* con = this->getDpConnection(QString(*(frien_d->uid)));
         DataPlaneClient* dc = new DataPlaneClient(QHostAddress(*(frien_d->ipv6)), con);
         connect(dcThread, SIGNAL(started()), dc, SLOT(run()));
