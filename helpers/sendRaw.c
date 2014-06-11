@@ -41,6 +41,14 @@ int main(int argc,const char* argv[]) {
         return -3;
     }
 
+
+    size_t linkHeaderSize;
+    if (datalink == DLT_EN10MB) {
+        linkHeaderSize = sizeof(struct ether_header);
+    } else {
+        linkHeaderSize = sizeof(struct loopbackHeader);
+    }
+
     while (1) {
         struct rawComHeader header;
         int res = fread(&header, sizeof(struct rawComHeader), 1, stdin);
@@ -49,18 +57,11 @@ int main(int argc,const char* argv[]) {
         }
         void* packet = malloc(header.payload_len);
 
-        size_t linkHeaderSize;
-        if (datalink == DLT_EN10MB) {
-            linkHeaderSize = sizeof(struct ether_header);
-        } else {
-            linkHeaderSize = sizeof(struct loopbackHeader);
-        }
-
         unsigned char frame[linkHeaderSize + sizeof(struct ipv6hdr) + header.payload_len];
         memcpy(frame, &header.linkHeader, linkHeaderSize);
         memcpy(frame + linkHeaderSize, &header.ip6 ,sizeof(struct ipv6hdr));
 
-        fread(frame + linkHeaderSize + sizeof(struct ipv6hdr), header.payload_len, 1, stdin); 
+        fread(frame + linkHeaderSize + sizeof(struct ipv6hdr), header.payload_len, 1, stdin);
 
         // Write the frame to the interface.
         if (pcap_inject(pcap, frame, sizeof(frame)) == -1) {
