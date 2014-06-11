@@ -21,6 +21,7 @@ ProxyClient::ProxyClient(QByteArray md5, QByteArray servermd5,  QString serversr
 
 void ProxyClient::run() {
     run_pcap(serverRecord->ips.at(0).toUtf8().data());
+    timer.start(TIMEOUT_DELAY);
 }
 
 void ProxyClient::sendBytes(char *buf, int len, QString) {
