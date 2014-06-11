@@ -313,7 +313,8 @@ void RawSockets::writeBytes(QString srcIp, QString dstIp, int srcPort,
             fhead.fragOffsetResAndM |= mbit;
             fhead.fragOffsetResAndM = htons(fhead.fragOffsetResAndM);
 
-            rawHeader.payload_len = htons(sizeof(struct fragHeader) + payloadLen);
+            rawHeader.ip6.ip6_plen = htons(sizeof(struct fragHeader) + payloadLen);
+            rawHeader.payload_len = sizeof(struct fragHeader) + payloadLen;
 
             char* packet = static_cast<char*>(malloc(payloadLen
                                                      + sizeof(struct rawComHeader)
