@@ -3,7 +3,8 @@
 #include "bonjour/bonjourdiscoverer.h"
 #include "rawsockets.h"
 
-ProxyClient::ProxyClient(QByteArray md5, QByteArray servermd5,  QString serversrcIp, int sockType, int srcPort, DataPlaneConnection* con) :
+ProxyClient::ProxyClient(QByteArray md5, QByteArray servermd5,  QString serversrcIp,
+                         int sockType, int srcPort, DataPlaneConnection* con) :
     Proxy(srcPort, sockType, md5)
 {
     this->con = con;
@@ -36,5 +37,6 @@ void ProxyClient::receiveBytes(const char* buf, int len, int sockType, QString) 
 
 void ProxyClient::timeout() {
     qDebug() << "Proxy client timeout";
+    proxyHashes.remove(idHash);
     this->deleteLater(); // delete myself
 }
