@@ -228,6 +228,7 @@ void DataPlaneConnection::sendBytes(const char *buf, int len, QByteArray& hash, 
         quint16 pos = 0;
         while (len > 0) { // send frags while len is > 0
             int payloadLen = len >= dataFieldLen ? dataFieldLen : len;
+            qDebug() << "payloadLen will be" << payloadLen;
             if (payloadLen == len) {
                 header.fragType = 3; // last frag
             }
@@ -240,8 +241,11 @@ void DataPlaneConnection::sendBytes(const char *buf, int len, QByteArray& hash, 
             qDebug() << "Got out of malloc";
             dpFrag.offset = htons(pos);
 
+            qDebug() << "memcpy &header";
             memcpy(packet, &header, sizeof(struct dpHeader));
+            qDebug() << "memcpy &dpFrag";
             memcpy(packet + sizeof(struct dpHeader), &dpFrag, sizeof(struct dpFragHeader));
+            qDebug() << "memcpy buf + pos with pos" << pos << "and payloadLen" << payloadLen;
             memcpy(packet + sizeof(struct dpHeader) + sizeof(struct dpFragHeader), buf + pos, payloadLen);
 
             qDebug() << "Sending packet with offset" << pos << "and with len" << payloadLen;
