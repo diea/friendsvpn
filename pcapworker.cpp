@@ -17,8 +17,7 @@ PcapWorker::~PcapWorker()
     if (pcap) {
         pcap->disconnect();
         pcap->terminate();
-        pcap->waitForFinished();
-        //pcap->deleteLater();
+        connect(pcap, SIGNAL(finished(int)), pcap, SLOT(deleteLater()));
     }
     pcap = NULL;
     qDebug() << "Closed";
