@@ -78,9 +78,12 @@ void ControlPlaneServer::sslSockReadyRead() {
         // not associated
         QString msg = sslSock->read(7);
         if (msg == "HELLO\r\n") {
+            qDebug() << "Got HELLO";
             QString bu = sslSock->readLine();
             QStringList uidList = bu.split(":");
             QString r = sslSock->read(1); // get '\r'
+            qDebug() << "Got uid" << uidList.at(1);
+            qDebug() << (r == "\r");
             if (uidList.length() == 2 && r == "\r") {
                 ControlPlaneConnection* con = init->getConnection(uidList.at(1));
                 con->addMode(Receiving, sslSock);
