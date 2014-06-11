@@ -12,8 +12,7 @@ PcapWorker::~PcapWorker()
 {
     qDebug() << "Closing pcapListen" << pcap.arguments();
     pcap.disconnect();
-    pcap.close();
-    pcap.waitForFinished();
+    pcap.kill();
     qDebug() << "Closed";
 }
 
