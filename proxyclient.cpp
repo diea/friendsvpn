@@ -16,6 +16,7 @@ ProxyClient::ProxyClient(QByteArray md5, QByteArray servermd5,  QString serversr
         qFatal("The record is no more available");
     }
     rawSocks = RawSockets::getInstance();
+    connect(&timer, SIGNAL(timeout()), this, SLOT(timeout()));
 }
 
 void ProxyClient::run() {
@@ -23,6 +24,7 @@ void ProxyClient::run() {
 }
 
 void ProxyClient::sendBytes(char *buf, int len, QString) {
+    timer.start(TIMEOUT_DELAY);
     // the srcPort is changed in the helper
     rawSocks->writeBytes(listenIp, serverRecord->ips.at(0), port, buf, sockType, len);
 }
