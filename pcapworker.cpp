@@ -13,6 +13,7 @@ PcapWorker::~PcapWorker()
     qDebug() << "Closing pcapListen" << pcap.arguments();
     pcap.disconnect();
     pcap.kill();
+    QThread::currentThread()->exit(0);
     qDebug() << "Closed";
 }
 
