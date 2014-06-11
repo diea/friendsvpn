@@ -46,6 +46,7 @@ struct ip_mac_mapping IpResolver::getMapping(QString ip) {
         mutex.unlock();
         return mappings.value(ip);
     } else {
+        mutex.unlock();
         this->addMapping(ip, "", "lo0"); /* test */
         return getMapping(ip); /* TODO  for TEST */
 #if 0
