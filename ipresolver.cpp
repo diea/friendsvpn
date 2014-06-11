@@ -87,13 +87,10 @@ struct ip_mac_mapping IpResolver::getMapping(QString ip) {
                 QHostAddress cmp(list.at(0));
                 if (localIp == cmp) {
                     qDebug() << "Found IP in neighbor cache";
-                    if (list.at(2).contains(":")) {
-                        this->addMapping(ip, list.at(1), list.at(2));
-                        ndp.close();
-                        return getMapping(ip);
-                    } else {
-                        qDebug() << "(incomplete)";
-                    }
+                    qDebug() << "Mapping is" << list.at(1) << list.at(2);
+                    this->addMapping(ip, list.at(1), list.at(2));
+                    ndp.close();
+                    return getMapping(ip);
                 }
             }
         }
