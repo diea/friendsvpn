@@ -30,8 +30,8 @@ void PcapWorker::run() {
     pcap->start(QString(HELPERPATH) + "pcapListen", args);
     qDebug() << "pcapListen" << args << "runs in thread ID" << QThread::currentThreadId();
     pcap->waitForStarted();
-    //pcap->closeWriteChannel();
-    //pcap->setReadChannel(QProcess::StandardOutput);
+    pcap->closeWriteChannel();
+    pcap->setReadChannel(QProcess::StandardOutput);
 
     qDebug() << "Pcap start wait for ready read";
     while (pcap->waitForReadyRead(-1)) {

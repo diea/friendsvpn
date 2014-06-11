@@ -51,7 +51,6 @@ ControlPlaneConnection::ControlPlaneConnection(QString uid, AbstractPlaneConnect
     serverSock = NULL;
     clientSock = NULL;
     inputBuffer = static_cast<char*>(malloc(100000 * sizeof(char)));
-    gotHello = false;
     lastFullPacket = 0;
     bytesReceived = 0;
 }
@@ -194,65 +193,61 @@ void ControlPlaneConnection::readBuffer(char* buf, int len) {
         QStringList list = packet.split("\r\n");
 
         QString packetType = list.at(0);
-        if (!gotHello && packetType == "HELLO") {
+        if (packetType == "HELLO") {
             QStringList disec = list.at(1).split(":");
             if (!(disec.length() < 2)) {
                 if (this->friendUid != disec.at(1)) {
                     wasDisconnected();
                     return;
-                } else {
-                    gotHello = true;
                 }
             }
-        } else if (gotHello) {
-            if (packetType == "BONJOUR") {
-                QString hostname;
-                QString name;
-                QString type;
-                int port = 0;
-                QString md5;
-                QString txt;
-                for (int i = 1; i < list.length(); i++) {
-                    QString listAti = list.at(i);
-                    if (listAti.startsWith("Hostname:")) {
-                        hostname = listAti.right(listAti.length() - 9); // 9 is hostname size
-                    } else if (listAti.startsWith("Name:")) {
-                        name = listAti.right(listAti.length() - 5);
-                    } else if (listAti.startsWith("Type:")) {
-                        type = listAti.right(listAti.length() - 5);
-                    } else if (listAti.startsWith("Port:")) {
-                        port = listAti.right(listAti.length() - 5).toInt();
-                    } else if (listAti.startsWith("MD5:")) {
-                        md5 = listAti.right(listAti.length() - 4);
-                    } else if (listAti.startsWith("TXT:")) {
-                        txt = listAti.right(listAti.length() - 4);
-                    }
+        } else if (packetType == "BONJOUR") {
+            QString hostname;
+            QString name;
+            QString type;
+            int port = 0;
+            QString md5;
+            QString txt;
+            for (int i = 1; i < list.length(); i++) {
+                QString listAti = list.at(i);
+                if (listAti.startsWith("Hostname:")) {
+                    hostname = listAti.right(listAti.length() - 9); // 9 is hostname size
+                } else if (listAti.startsWith("Name:")) {
+                    name = listAti.right(listAti.length() - 5);
+                } else if (listAti.startsWith("Type:")) {
+                    type = listAti.right(listAti.length() - 5);
+                } else if (listAti.startsWith("Port:")) {
+                    port = listAti.right(listAti.length() - 5).toInt();
+                } else if (listAti.startsWith("MD5:")) {
+                    md5 = listAti.right(listAti.length() - 4);
+                } else if (listAti.startsWith("TXT:")) {
+                    txt = listAti.right(listAti.length() - 4);
                 }
-
-                qDebug() << "MD5 is" << md5;
-
-                if (hostname.isEmpty() || name.isEmpty() || type.isEmpty() || !port) {
-                    qDebug() << "ERROR: Bonjour packet wrong format";
-                    return;
-                }
-
-                ProxyServer* newProxy = NULL;
-                try {
-                    /* TODO, change "" in .local. ? */
-                    newProxy = new ProxyServer(friendUid, name, type, "", hostname, QByteArray::fromHex(txt.toUtf8()), port, QByteArray::fromHex(md5.toUtf8()));
-                    proxyServers.push(newProxy);
-                    newProxy->run();
-                } catch (int i) {
-                    // proxy exists
-                }
-            } else if (packetType == "PING") {
-                QString pong = "PONG\r\n\r\n";
-                sendPacket(pong);
-            } else if (packetType == "PONG") {
-            } else { // no need to analyze PONG, we just need a packet for the time :)
-                qDebug() << "Not starting with BONJOUR or PING";
-                qDebug() << packet;
             }
+
+            qDebug() << "MD5 is" << md5;
+
+            if (hostname.isEmpty() || name.isEmpty() || type.isEmpty() || !port) {
+                qDebug() << "ERROR: Bonjour packet wrong format";
+                return;
+            }
+
+            ProxyServer* newProxy = NULL;
+            try {
+                /* TODO, change "" in .local. ? */
+                newProxy = new ProxyServer(friendUid, name, type, "", hostname, QByteArray::fromHex(txt.toUtf8()), port, QByteArray::fromHex(md5.toUtf8()));
+                proxyServers.push(newProxy);
+                newProxy->run();
+            } catch (int i) {
+                // proxy exists
+            }
+        } else if (packetType == "PING") {
+            QString pong = "PONG\r\n\r\n";
+            sendPacket(pong);
+        } else if (packetType == "PONG") {
+        } else { // no need to analyze PONG, we just need a packet for the time :)
+            qDebug() << "Not starting with BONJOUR or PING";
+            qDebug() << packet;
         }
     }
 

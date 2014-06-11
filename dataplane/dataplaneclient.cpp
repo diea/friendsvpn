@@ -115,7 +115,7 @@ void DataPlaneClient::readyRead(int) {
     //notif->setEnabled(false);
     size_t len;
     if (!(SSL_get_shutdown(ssl) & SSL_RECEIVED_SHUTDOWN)) {
-        qDebug() << "Writing in thread" << QThread::currentThreadId();
+        qDebug() << "Reading in thread" << QThread::currentThreadId();
         char* buf = static_cast<char*>(malloc(BUFFER_SIZE * sizeof(char)));
         memset(buf, 0, BUFFER_SIZE * sizeof(char));
         closeProtect.lock();
