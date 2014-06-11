@@ -46,15 +46,18 @@ struct ip_mac_mapping IpResolver::getMapping(QString ip) {
         mutex.unlock();
         return mappings.value(ip);
     } else {
+        this->addMapping(ip, "", "lo0"); /* test */
+        return getMapping(ip); /* TODO  for TEST */
+#if 0
         mutex.unlock();
         char buf[3000];
         int length;
 
         // is it a local address ?
-        QProcess* testIfconfig = new QProcess(0);
-        testIfconfig->start("/sbin/ifconfig");
-        testIfconfig->waitForReadyRead();
-        while ((length = testIfconfig->readLine(buf, 3000))) {
+        QProcess testIfconfig;
+        testIfconfig.start("/sbin/ifconfig");
+        testIfconfig.waitForReadyRead();
+        while ((length = testIfconfig.readLine(buf, 3000))) {
             QString curLine(buf);
             QStringList list = curLine.split(" ", QString::SkipEmptyParts);
             foreach (QString value, list) {
@@ -69,39 +72,31 @@ struct ip_mac_mapping IpResolver::getMapping(QString ip) {
 #elif __GNUC__
                     this->addMapping(ip, "", "lo");
 #endif
-                    testIfconfig->close();
-                    testIfconfig->waitForFinished();
-                    delete testIfconfig;
+                    testIfconfig.close();
                     return getMapping(ip);
                 }
             }
         }
-        testIfconfig->close();
-        testIfconfig->waitForFinished();
-        delete testIfconfig;
+        testIfconfig.close();
 
         // check kernel neighbor cache
-        QProcess* ndp = new QProcess(0);
+        QProcess ndp;
 #ifdef __APPLE__
-        ndp->start("ndp -an");
-        while (ndp->waitForReadyRead(500)) {
-            while ((length = ndp->readLine(buf, 3000))) {
+        ndp.start("ndp -an");
+        while (ndp.waitForReadyRead(500)) {
+            while ((length = ndp.readLine(buf, 3000))) {
                 QString curLine(buf);
                 QStringList list = curLine.split(" ", QString::SkipEmptyParts);
                 QHostAddress cmp(list.at(0));
                 if (localIp == cmp) {
                     qDebug() << "Found IP in neighbor cache";
                     this->addMapping(ip, list.at(1), list.at(2));
-                    ndp->close();
-                    ndp->waitForFinished();
-                    delete ndp;
+                    ndp.close();
                     return getMapping(ip);
                 }
             }
         }
-        ndp->close();
-        ndp->waitForFinished();
-        delete ndp;
+        ndp.close();
 #elif __GNUC__
         ndp.start("ip -6 neigh");
         ndp.waitForReadyRead();
@@ -118,6 +113,7 @@ struct ip_mac_mapping IpResolver::getMapping(QString ip) {
             }
         }
         ndp.close();
+#endif
 #endif
         qDebug() << "Returning nullMapping";
         struct ip_mac_mapping nullMapping;
@@ -185,5 +181,4 @@ QString IpResolver::getDefaultInterface() {
 #endif
     qWarning() << "The host has no IPv6 default route!";
     UnixSignalHandler::termSignalHandler(0);
-    return QString();
 }
