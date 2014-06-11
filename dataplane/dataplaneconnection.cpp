@@ -213,7 +213,6 @@ void DataPlaneConnection::sendBytes(const char *buf, int len, QByteArray& hash, 
 
     qDebug() << "Comparing" << static_cast<unsigned long>(len) << "and" << maxPayloadLen;
     if (static_cast<unsigned long>(len) > maxPayloadLen) {
-#if 0 /* frag is deactivated for TEST TODO */
         // packet will use more than the min MTU, we fragment it
         quint16 dataFieldLen = maxPayloadLen - sizeof(struct dpFragHeader); //TODO remove dpHeader
         qDebug() << "Frag data field is" << dataFieldLen << "bytes";
@@ -240,7 +239,6 @@ void DataPlaneConnection::sendBytes(const char *buf, int len, QByteArray& hash, 
             }
             qDebug() << "Got out of malloc";
             dpFrag.offset = htons(pos);
-            //dpFrag.offsetLen = htons(payloadLen); /* TODO maybe not needed as UDP contains length */
 
             memcpy(packet, &header, sizeof(struct dpHeader));
             memcpy(packet + sizeof(struct dpHeader), &dpFrag, sizeof(struct dpFragHeader));
@@ -256,7 +254,6 @@ void DataPlaneConnection::sendBytes(const char *buf, int len, QByteArray& hash, 
             len -= payloadLen;
             free(packet);
         }
-#endif
     } else {
         int packetLen = len + sizeof(struct dpHeader);
         qDebug() << "Going in packet malloc" << packetLen;
