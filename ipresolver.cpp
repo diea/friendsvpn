@@ -79,7 +79,7 @@ struct ip_mac_mapping IpResolver::getMapping(QString ip) {
         // check kernel neighbor cache
         QProcess ndp;
 #ifdef __APPLE__
-        ndp.start("ndp -an");
+        ndp.start("ndp -an | grep -v incomplete");
         while (ndp.waitForReadyRead(500)) {
             while ((length = ndp.readLine(buf, 3000))) {
                 QString curLine(buf);
