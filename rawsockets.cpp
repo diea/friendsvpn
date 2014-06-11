@@ -333,6 +333,8 @@ void RawSockets::writeBytes(QString srcIp, QString dstIp, int srcPort,
             raw->write(packet, payloadLen + sizeof(struct fragHeader) + sizeof(struct rawComHeader));
             raw->waitForBytesWritten();
 
+            qDebug() << "Raw bytes in buffer" << raw->bytesToWrite();
+
             pos += payloadLen;
             packet_send_size -= payloadLen;
             free(packet);
@@ -341,6 +343,7 @@ void RawSockets::writeBytes(QString srcIp, QString dstIp, int srcPort,
         qDebug() << "raw write";
         raw->write(buffer, bufferSize);
         raw->waitForBytesWritten();
+        qDebug() << "Raw bytes in buffer" << raw->bytesToWrite();
         qDebug() << "raw written";
         qDebug() << "read buffer has been freed";
     }
