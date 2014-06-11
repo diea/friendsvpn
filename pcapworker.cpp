@@ -6,16 +6,20 @@ PcapWorker::PcapWorker(QStringList args, Proxy* p, QThread* t) :
 {
     pos = 0;
     remaining = 0;
+    pcap = NULL;
 }
 
 PcapWorker::~PcapWorker()
 {
     qDebug() << "Closing pcapListen" << pcap->arguments();
-    t->exit(0);
-    pcap->disconnect();
-    pcap->terminate();
-    pcap->waitForFinished();
-    pcap->deleteLater();
+    if (t) t->exit(0);
+
+    if (pcap) {
+        pcap->disconnect();
+        pcap->terminate();
+        pcap->waitForFinished();
+        //pcap->deleteLater();
+    }
     pcap = NULL;
     qDebug() << "Closed";
 }
