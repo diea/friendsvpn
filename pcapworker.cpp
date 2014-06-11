@@ -1,8 +1,8 @@
 #include "pcapworker.h"
 #include "proxy.h"
 #include <QThread>
-PcapWorker::PcapWorker(QStringList args, Proxy* p) :
-    p(p), args(args)
+PcapWorker::PcapWorker(QStringList args, Proxy* p, QThread* t) :
+    p(p), args(args), t(t)
 {
     pos = 0;
     remaining = 0;
@@ -10,14 +10,13 @@ PcapWorker::PcapWorker(QStringList args, Proxy* p) :
 
 PcapWorker::~PcapWorker()
 {
-    //qDebug() << "Closing pcapListen" << pcap->arguments();
-    deleteMut.lock();
+    qDebug() << "Closing pcapListen" << pcap->arguments();
+    t->exit(0);
     pcap->disconnect();
     pcap->terminate();
     pcap->waitForFinished();
     pcap->deleteLater();
     pcap = NULL;
-    deleteMut.unlock();
     qDebug() << "Closed";
 }
 
@@ -31,12 +30,7 @@ void PcapWorker::run() {
     pcap->closeWriteChannel();
     pcap->setReadChannel(QProcess::StandardOutput);
 
-    while (1) {
-        deleteMut.lock();
-        if (pcap)
-            pcap->waitForReadyRead(-1);
-        else
-            break;
+    while (pcap->waitForReadyRead(-1)) {
         qDebug() << "Waiting for ready read";
         qDebug() << "Before reading header PCAP has" << pcap->bytesAvailable() << "bytes available";
 
@@ -75,7 +69,6 @@ void PcapWorker::run() {
 
             p->receiveBytes(packet, pcapHeader.len, p->sockType, pcapHeader.ipSrcStr);
         }
-        deleteMut.unlock();
     }
 }
 

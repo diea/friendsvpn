@@ -387,7 +387,7 @@ void Proxy::run_pcap(const char* dstIp) {
         args.append("ip6 dst host " + listenIp + " and " + transportStr + " and dst port " + QString::number(port));
 
         QThread* pcapWorkerThread = new QThread(0);
-        PcapWorker* pcapWorker = new PcapWorker(args, this);
+        PcapWorker* pcapWorker = new PcapWorker(args, this, pcapWorkerThread);
         pcapWorker->moveToThread(pcapWorkerThread);
         connect(pcapWorkerThread, SIGNAL(started()), pcapWorker, SLOT(run()));
         //connect(pcapWorkerThread, SIGNAL(finished()), pcapWorkerThread, SLOT(deleteLater()));
