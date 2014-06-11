@@ -147,10 +147,8 @@ void DataPlaneClient::readyRead(int) {
             }
         }
         closeProtect.unlock();
-        qDebug() << "Free buffer";
         free(buf);
     }
-    qDebug() << "Got out of loop read client worker";
     //notif->setEnabled(true);
 }
 
@@ -160,7 +158,6 @@ void DataPlaneClient::sendBytes(const char *bytes, socklen_t len) {
         qDebug() << "Wrote" << nbWr << "bytes";
         switch (SSL_get_error(ssl, len)) {
             case SSL_ERROR_NONE:
-                qDebug() << "SSL_ERROR_NONE";
                 break;
             case SSL_ERROR_WANT_WRITE:
                 qDebug() << "SSL_ERROR_WANT_WRITE";

@@ -165,7 +165,6 @@ void RawSockets::writeBytes(QString srcIp, QString dstIp, int srcPort,
         qWarning() << "Mapping not found, cannot send packet!";
         return;
     }
-    qDebug() << "Got mapping" << map.ip << map.mac << map.interface;
 
     struct rawProcess* p = rawHelpers.value(map.interface);
     QProcess* raw = p->process;
@@ -330,10 +329,11 @@ void RawSockets::writeBytes(QString srcIp, QString dstIp, int srcPort,
             packet_send_size -= payloadLen;
             free(packet);
         }
+        qDebug() << pos << "bytes injected";
     } else {
         raw->write(buffer, bufferSize);
         raw->waitForBytesWritten();
-        qDebug() << "Raw written";
+        qDebug() << bufferSize << "bytes injected";
     }
 }
 

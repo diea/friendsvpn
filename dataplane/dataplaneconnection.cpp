@@ -143,7 +143,6 @@ void DataPlaneConnection::readBuffer(char* buf, int bufLen) {
         }
     }
 
-    qDebug() << "sendBytes of size" << header->len;
     prox->sendBytes(packetBuf, header->len, srcIp);
 
     if (header->fragType != 0) { /* free resources to assemble packet */

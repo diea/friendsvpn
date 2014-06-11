@@ -96,10 +96,8 @@ void ServerWorker::readyRead(int) {
             }
         }
         closeProtect.unlock();
-        qDebug() << "Free buffer";
         free(buf);
     }
-    qDebug() << "Got out of loop read server worker";
     //notif->setEnabled(true);
 }
 

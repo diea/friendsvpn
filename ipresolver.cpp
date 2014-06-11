@@ -42,7 +42,6 @@ struct ip_mac_mapping IpResolver::getMapping(QString ip) {
     QHostAddress localIp(ip);
     mutex.lock();
     if (mappings.contains(ip)) {
-        qDebug() << "Mapping is contained in QHash";
         mutex.unlock();
         return mappings.value(ip);
     } else {
