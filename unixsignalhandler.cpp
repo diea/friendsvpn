@@ -65,6 +65,7 @@ void UnixSignalHandler::removeIp(QString ip) {
         p->write("a few letters"); /* getchar() in helper before it exits */
         p->waitForBytesWritten();
     }
+    qDebug() << "Clean ip";
     QProcess cleanup;
     QStringList cleanArgs;
     cleanArgs.append(IpResolver::getDefaultInterface());
