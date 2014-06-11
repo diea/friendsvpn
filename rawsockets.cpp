@@ -162,19 +162,13 @@ void RawSockets::writeBytes(QString srcIp, QString dstIp, int srcPort,
         qWarning() << "Mapping not found, cannot send packet!";
         return;
     }
+    qDebug() << "Gotting mapping" << map.ip << map.mac << map.interface;
 
     struct rawProcess* p = rawHelpers.value(map.interface);
     QProcess* raw = p->process;
     if (!raw || raw->state() != 2) {
         qFatal("No raw helper");
     }
-
-    int linkLayerType = DLT_EN10MB;
-#ifdef __APPLE__
-    if (map.mac.isEmpty()) {
-        linkLayerType = DLT_NULL;
-    }
-#endif
 
     int bufferSize = packet_send_size + sizeof(struct rawComHeader); /* rawComHeader contains
                                                                       * ethernet and IPv6 header */
@@ -189,52 +183,10 @@ void RawSockets::writeBytes(QString srcIp, QString dstIp, int srcPort,
     memset(&rawHeader, 0, sizeof(struct rawComHeader));
     rawHeader.payload_len = packet_send_size;
 
-    if (linkLayerType == DLT_EN10MB) {
+    if (p->linkType == DLT_EN10MB) {
         rawHeader.linkHeader.ethernet.ether_type = htons(ETH_IPV6);
-        // set source MAC
-        const unsigned char* source_mac_addr;
-        const char* if_name = map.interface.toUtf8().data();
-#ifdef __APPLE__
-        struct ifaddrs *ifap, *ifaptr;
-        unsigned char *ptr = NULL;
-        if (getifaddrs(&ifap) == 0) {
-            for(ifaptr = ifap; ifaptr != NULL; ifaptr = (ifaptr)->ifa_next) {
-                if (!strcmp((ifaptr)->ifa_name, if_name) && (((ifaptr)->ifa_addr)->sa_family == AF_LINK)) {
-                    ptr = (unsigned char *)LLADDR((struct sockaddr_dl *)(ifaptr)->ifa_addr);
-                    break;
-                }
-            }
-            freeifaddrs(ifap);
-        }
-        source_mac_addr = ptr;
-#elif __GNUC__
-        struct ifreq ifr;
-        size_t if_name_len=strlen(if_name);
-        if (if_name_len<sizeof(ifr.ifr_name)) {
-            memcpy(ifr.ifr_name,if_name,if_name_len);
-            ifr.ifr_name[if_name_len]=0;
-        } else {
-            fprintf(stderr,"interface name is too long");
-            exit(1);
-        }
-        // Open an IPv4-family socket for use when calling ioctl.
-        int fd=socket(AF_INET,SOCK_DGRAM,0);
-        if (fd==-1) {
-            perror(0);
-            exit(1);
-        }
-        // Obtain the source MAC address, copy into Ethernet header
-        if (ioctl(fd,SIOCGIFHWADDR,&ifr)==-1) {
-            perror(0);
-            close(fd);
-            exit(1);
-        }
-
-        source_mac_addr = (unsigned char*)ifr.ifr_hwaddr.sa_data;
-        close(fd);
-#endif
-
-        memcpy(rawHeader.linkHeader.ethernet.ether_shost, source_mac_addr, ETHER_ADDR_LEN);
+        // set source mac
+        memcpy(rawHeader.linkHeader.ethernet.ether_shost, p->mac, ETHER_ADDR_LEN);
         // set dst mac
         char* dstMac = map.mac.toUtf8().data();
         if (!map.mac.isEmpty()) {
@@ -312,6 +264,7 @@ void RawSockets::writeBytes(QString srcIp, QString dstIp, int srcPort,
         memcpy(checksumPacket, &pHeader, sizeof(struct ipv6upper));
         memcpy(checksumPacket + sizeof(struct ipv6upper), packet_send, packet_send_size);
 
+
         tcp->th_sum = ~(checksum(checksumPacket, sizeof(struct ipv6upper) + packet_send_size));
     }
     free(checksumPacket);
@@ -320,7 +273,7 @@ void RawSockets::writeBytes(QString srcIp, QString dstIp, int srcPort,
     memcpy(buffer, &rawHeader, sizeof(struct rawComHeader));
 
     /* check if fragmentation is required */
-    int linkLayerSize = linkLayerType == DLT_NULL ? sizeof(struct loopbackHeader) : sizeof(struct ether_header);
+    int linkLayerSize = p->linkType == DLT_NULL ? sizeof(struct loopbackHeader) : sizeof(struct ether_header);
     if (packet_send_size + sizeof(struct ipv6hdr) + linkLayerSize > p->mtu) {
         rawHeader.ip6.ip6_nxt = SOL_FRAG;
 

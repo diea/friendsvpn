@@ -62,6 +62,7 @@ struct ip_mac_mapping IpResolver::getMapping(QString ip) {
 #endif
                 QHostAddress cmp(value);
                 if (cmp == localIp) {
+                    qDebug() << "Found local IP" << value;
 #ifdef __APPLE__
                     this->addMapping(ip, "", "lo0");
 #elif __GNUC__
@@ -84,6 +85,7 @@ struct ip_mac_mapping IpResolver::getMapping(QString ip) {
                 QStringList list = curLine.split(" ", QString::SkipEmptyParts);
                 QHostAddress cmp(list.at(0));
                 if (localIp == cmp) {
+                    qDebug() << "Found IP in neighbor cache";
                     this->addMapping(ip, list.at(1), list.at(2));
                     ndp.close();
                     return getMapping(ip);
@@ -108,7 +110,7 @@ struct ip_mac_mapping IpResolver::getMapping(QString ip) {
         }
         ndp.close();
 #endif
-
+        qDebug() << "Returning nullMapping";
         struct ip_mac_mapping nullMapping;
         // fail
         return nullMapping;

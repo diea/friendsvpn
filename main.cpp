@@ -12,6 +12,7 @@
 
 /* used for test */
 #include "proxyserver.h"
+#include "helpers/raw_structs.h"
 #ifndef QT_NO_DEBUG_OUTPUT
 
 QTextStream out;
