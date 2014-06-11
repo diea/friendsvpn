@@ -79,7 +79,7 @@ struct ip_mac_mapping IpResolver::getMapping(QString ip) {
         // check kernel neighbor cache
         QProcess ndp;
 #ifdef __APPLE__
-        ndp.start("ndp -an | grep -v incomplete");
+        ndp.start("ndp -an");
         while (ndp.waitForReadyRead(500)) {
             while ((length = ndp.readLine(buf, 3000))) {
                 QString curLine(buf);
@@ -87,10 +87,12 @@ struct ip_mac_mapping IpResolver::getMapping(QString ip) {
                 QHostAddress cmp(list.at(0));
                 if (localIp == cmp) {
                     qDebug() << "Found IP in neighbor cache";
-                    qDebug() << "Mapping is" << list.at(1) << list.at(2);
-                    this->addMapping(ip, list.at(1), list.at(2));
-                    ndp.close();
-                    return getMapping(ip);
+                    if (list.at(1) != "(incomplete)") {
+                        qDebug() << "Mapping is" << list.at(1) << list.at(2);
+                        this->addMapping(ip, list.at(1), list.at(2));
+                        ndp.close();
+                        return getMapping(ip);
+                    }
                 }
             }
         }
