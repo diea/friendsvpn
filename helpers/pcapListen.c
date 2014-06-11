@@ -91,19 +91,18 @@ void sig_handler(int sig) {
 }
 
 int main(int argc, char** argv) {
-
-    struct sigaction sa;
+    /*struct sigaction sa;
     memset(&sa, 0, sizeof(struct sigaction));
     sa.sa_handler = &sig_handler;
     sa.sa_flags = SA_RESTART;
     sigfillset(&sa.sa_mask);
 
     sigaction(SIGINT, &sa, NULL);
-    sigaction(SIGTERM, &sa, NULL);
+    sigaction(SIGTERM, &sa, NULL);*/
 
     char errbuf[PCAP_ERRBUF_SIZE];      /* error buffer */
 
-    char* filter_exp = NULL; //"ip6 host fd3b:e180:cbaa:1:a9ed:f7b:5cb:10bd and tcp";
+    char* filter_exp = NULL;
 
     if (argc == 3) {
         dev = argv[1];
@@ -114,7 +113,7 @@ int main(int argc, char** argv) {
     }
 
     /* open capture device */
-    handle = pcap_open_live(dev, SNAP_LEN, 0, 3, errbuf);
+    handle = pcap_open_live(dev, SNAP_LEN, 0, 25, errbuf);
     if (handle == NULL) {
         fprintf(stderr, "Couldn't open device %s: %s\n", dev, errbuf);
         return 3;
@@ -144,6 +143,5 @@ int main(int argc, char** argv) {
     /* now we can set our callback function */
     pcap_loop(handle, 0, got_packet, NULL);
 
-    getchar();
     return 0;
 }
