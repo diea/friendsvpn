@@ -4,6 +4,7 @@
 #include <QObject>
 #include <QProcess>
 #include <QMutex>
+#include <QMap>
 /**
  * @brief The UnixSignalHandler class will handle the SIGTERM and SIGINT signals to clearup things
  * that the app must clean before exiting.
@@ -23,7 +24,7 @@ private:
 
     QList<QProcess*> listOfProcessToKill;
     QList<QThread*> listOfThreads;
-    QStringList listOfIps;
+    QMap<QString, QProcess*> listOfIps;
     explicit UnixSignalHandler(QObject *parent = 0);
 
     static UnixSignalHandler* instance;
@@ -37,7 +38,12 @@ public:
     void addQProcess(QProcess* p);
     void removeQProcess(QProcess *p);
 
-    void addIp(QString ip);
+    /**
+     * @brief addIp add ip associated with the ifconfighelp process p
+     * @param ip
+     * @param p
+     */
+    void addIp(QString ip, QProcess* p);
     void removeIp(QString ip);
 
     static void termSignalHandler(int unused);

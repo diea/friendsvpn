@@ -53,12 +53,22 @@ void UnixSignalHandler::removeQProcess(QProcess *p) {
     listOfProcessToKill.removeAll(p);
 }
 
-void UnixSignalHandler::addIp(QString ip) {
-    listOfIps.append(ip);
+void UnixSignalHandler::addIp(QString ip, QProcess* p) {
+    listOfIps.insert(ip, p);
 }
 
 void UnixSignalHandler::removeIp(QString ip) {
-    listOfIps.removeAll(ip);
+    QProcess* p = listOfIps.value(ip);
+    if (p) {
+        p->close();
+        connect(p, SIGNAL(finished(int)), p, SLOT(deleteLater()));
+    }
+    QProcess cleanup;
+    QStringList cleanArgs;
+    cleanArgs.append(IpResolver::getDefaultInterface());
+    cleanArgs.append(ip);
+    cleanup.start(QString(HELPERPATH) + "/cleanup", cleanArgs);
+    cleanup.waitForFinished();
 }
 
 void UnixSignalHandler::termSignalHandler(int) {
@@ -84,17 +94,10 @@ void UnixSignalHandler::doExit() {
         }
     }
 
-    foreach (QString ip, listOfIps) {
+    foreach (QString ip, listOfIps.keys()) {
         qDebug() << "Cleaning up ip" << ip;
         // cleanup listen Ip
-        QProcess cleanup;
-        QStringList cleanArgs;
-        cleanArgs.append(IpResolver::getDefaultInterface());
-        cleanArgs.append(ip);
-        cleanup.start(QString(HELPERPATH) + "/cleanup", cleanArgs);
-        qDebug() << QString(HELPERPATH) + "/cleanup";
-        cleanup.waitForStarted();
-        cleanup.waitForFinished();
+        removeIp(ip);
     }
 
     _exit(0);

@@ -36,13 +36,6 @@ Proxy::~Proxy() {
         proxyHashes.remove(idHash);
     }
 
-    // cleanup listen Ip
-    QProcess cleanup;
-    QStringList cleanArgs;
-    cleanArgs.append(IpResolver::getDefaultInterface());
-    cleanArgs.append(listenIp);
-    cleanup.start(QString(HELPERPATH) + "/cleanup", cleanArgs);
-    cleanup.waitForFinished();
     u->removeIp(listenIp);
 }
 
@@ -152,7 +145,7 @@ void Proxy::gennewIP() {
         #elif __GNUC__
             resolver->addMapping(newip, "", "lo");
         #endif
-            u->addIp(newip);
+            u->addIp(newip, ifconfig);
             poolOfIpsMutex.lock();
             poolOfIps.enqueue(newip);
             poolOfIpsMutex.unlock();
