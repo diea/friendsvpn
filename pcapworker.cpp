@@ -10,32 +10,32 @@ PcapWorker::PcapWorker(QStringList args, Proxy* p) :
 
 PcapWorker::~PcapWorker()
 {
-    //qDebug() << "Closing pcapListen" << pcap.arguments();
-    /*pcap.disconnect();
-    pcap.close();
-    pcap.waitForFinished();*/
+    //qDebug() << "Closing pcapListen" << pcap->arguments();
+    pcap->disconnect();
+    pcap->close();
+    pcap->waitForFinished();
+    delete pcap;
     qDebug() << "Closed";
 }
 
 void PcapWorker::run() {
-    QProcess pcap;
-    connect(&pcap, SIGNAL(finished(int)), this, SLOT(pcapFinish(int)));
-    connect(this, SIGNAL(destroyed()), &pcap, SLOT(terminate()));
+    pcap = new QProcess(0);
+    connect(pcap, SIGNAL(finished(int)), this, SLOT(pcapFinish(int)));
 
-    pcap.start(QString(HELPERPATH) + "pcapListen", args);
+    pcap->start(QString(HELPERPATH) + "pcapListen", args);
     qDebug() << "pcapListen" << args << "runs in thread ID" << QThread::currentThreadId();
-    pcap.waitForStarted();
-    pcap.closeWriteChannel();
-    pcap.setReadChannel(QProcess::StandardOutput);
+    pcap->waitForStarted();
+    pcap->closeWriteChannel();
+    pcap->setReadChannel(QProcess::StandardOutput);
 
-    while (pcap.waitForReadyRead(-1)) {
+    while (pcap->waitForReadyRead(-1)) {
         qDebug() << "Waiting for ready read";
-        qDebug() << "Before reading header PCAP has" << pcap.bytesAvailable() << "bytes available";
+        qDebug() << "Before reading header PCAP has" << pcap->bytesAvailable() << "bytes available";
 
-        while (pcap.bytesAvailable() > qint64(sizeof(pcapComHeader))) {
+        while (pcap->bytesAvailable() > qint64(sizeof(pcapComHeader))) {
             if (remaining <= 0) {
                 char pcapHeadChar[sizeof(struct pcapComHeader)];
-                pcap.read(pcapHeadChar, sizeof(struct pcapComHeader));
+                pcap->read(pcapHeadChar, sizeof(struct pcapComHeader));
 
                 memset(&pcapHeader, 0, sizeof(struct pcapComHeader));
                 memcpy(&pcapHeader, pcapHeadChar, sizeof(struct pcapComHeader));
@@ -44,14 +44,14 @@ void PcapWorker::run() {
                 pos = 0;
             }
 
-            qint64 bytesAv = pcap.bytesAvailable();
+            qint64 bytesAv = pcap->bytesAvailable();
 
             if (bytesAv >= remaining) {
-                pcap.read(packet + pos, remaining);
+                pcap->read(packet + pos, remaining);
                 pos += remaining;
                 remaining = 0;
             } else {
-                pcap.read(packet + pos, bytesAv);
+                pcap->read(packet + pos, bytesAv);
                 pos += bytesAv;
                 remaining -= bytesAv;
                 qDebug() << "Packet read remaining" << remaining;
