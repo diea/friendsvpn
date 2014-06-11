@@ -376,6 +376,7 @@ void Proxy::run_pcap(const char* dstIp) {
     }
 
 
+    qDebug() << "Making worker pcap threads and current thread ID is" << QThread::currentThreadId();
     while (!listenInterfaces.empty()) {
         // listen for packets with pcap, forward on the secure UDP link
         QStringList args;
