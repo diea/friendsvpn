@@ -16,7 +16,8 @@ PcapWorker::~PcapWorker()
     pcap->terminate();
     pcap->waitForFinished();
     pcap->deleteLater();
-    QThread::currentThread()->exit(0);
+    pcap = NULL;
+    deleteMut.unlock();
     qDebug() << "Closed";
 }
 
@@ -32,7 +33,10 @@ void PcapWorker::run() {
 
     while (1) {
         deleteMut.lock();
-        pcap->waitForReadyRead(-1);
+        if (pcap)
+            pcap->waitForReadyRead(-1);
+        else
+            break;
         qDebug() << "Waiting for ready read";
         qDebug() << "Before reading header PCAP has" << pcap->bytesAvailable() << "bytes available";
 
