@@ -20,7 +20,7 @@ PcapWorker::~PcapWorker()
 void PcapWorker::run() {
     QProcess pcap;
     connect(&pcap, SIGNAL(finished(int)), this, SLOT(pcapFinish(int)));
-    connect(this, SIGNAL(destroyed()), &pcap, SLOT(deleteLater()));
+    connect(this, SIGNAL(destroyed()), &pcap, SLOT(terminate());
 
     pcap.start(QString(HELPERPATH) + "pcapListen", args);
     qDebug() << "pcapListen" << args << "runs in thread ID" << QThread::currentThreadId();
