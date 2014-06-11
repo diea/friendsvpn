@@ -11,13 +11,14 @@ PcapWorker::PcapWorker(QStringList args, Proxy* p) :
 PcapWorker::~PcapWorker()
 {
     qDebug() << "Closing pcapListen" << pcap.arguments();
-    pcap.disconnect();
+    /*pcap.disconnect();
     pcap.close();
-    pcap.waitForFinished();
+    pcap.waitForFinished();*/
     qDebug() << "Closed";
 }
 
 void PcapWorker::run() {
+    QProcess pcap;
     connect(&pcap, SIGNAL(finished(int)), this, SLOT(pcapFinish(int)));
 
     pcap.start(QString(HELPERPATH) + "pcapListen", args);
