@@ -11,8 +11,9 @@ PcapWorker::PcapWorker(QStringList args, Proxy* p, QObject *parent) :
 PcapWorker::~PcapWorker()
 {
     qDebug() << "Closing pcapListen" << pcap.arguments();
-    pcap.kill();
-    //pcap.waitForFinished();
+    pcap.disconnect();
+    pcap.close();
+    pcap.waitForFinished();
     qDebug() << "Closed";
 }
 
