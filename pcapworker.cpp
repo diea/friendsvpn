@@ -1,8 +1,8 @@
 #include "pcapworker.h"
 #include "proxy.h"
 #include <QThread>
-PcapWorker::PcapWorker(QStringList args, Proxy* p, QObject *parent) :
-    QObject(parent),  p(p), args(args)
+PcapWorker::PcapWorker(QStringList args, Proxy* p) :
+    p(p), args(args)
 {
     pos = 0;
     remaining = 0;

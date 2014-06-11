@@ -26,7 +26,7 @@ public:
      * @param p
      * @param parent
      */
-    explicit PcapWorker(QStringList args, Proxy* p, QObject *parent = 0);
+    explicit PcapWorker(QStringList args, Proxy* p);
     ~PcapWorker();
 signals:
 

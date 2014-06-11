@@ -123,7 +123,6 @@ void ConnectionInitiator::startClients() {
         DataPlaneClient* dc = new DataPlaneClient(QHostAddress(*(frien_d->ipv6)), con);
         connect(dcThread, SIGNAL(started()), dc, SLOT(run()));
         connect(dcThread, SIGNAL(finished()), dcThread, SLOT(deleteLater()));
-        connect(dc, SIGNAL(bufferReady(const char*, int)), con, SLOT(readBuffer(const char*, int)));
         UnixSignalHandler* u = UnixSignalHandler::getInstance();
         connect(u, SIGNAL(exiting()), dcThread, SLOT(quit()));
         dc->moveToThread(dcThread);
