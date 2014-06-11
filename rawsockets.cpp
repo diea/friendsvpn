@@ -279,7 +279,6 @@ void RawSockets::writeBytes(QString srcIp, QString dstIp, int srcPort,
     memcpy(buffer, &rawHeader, sizeof(struct rawComHeader));
 
     /* check if fragmentation is required */
-    //int linkLayerSize = p->linkType == DLT_NULL ? sizeof(struct loopbackHeader) : sizeof(struct ether_header);
     if (packet_send_size + sizeof(struct ipv6hdr) > p->mtu) {
         rawHeader.ip6.ip6_nxt = SOL_FRAG;
 
