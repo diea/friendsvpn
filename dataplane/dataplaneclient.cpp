@@ -122,13 +122,10 @@ void DataPlaneClient::readyRead(int) {
             switch (SSL_get_error(ssl, len)) {
                 case SSL_ERROR_NONE:
                  con->readBuffer(buf, len);
-                 //emit bufferReady(buf, len);
                  break;
                 case SSL_ERROR_WANT_READ:
                  /* Handle socket timeouts */
-                 if (BIO_ctrl(SSL_get_rbio(ssl), BIO_CTRL_DGRAM_GET_RECV_TIMER_EXP, 0, NULL)) {
-                     //num_timeouts++;
-                 }
+                 if (BIO_ctrl(SSL_get_rbio(ssl), BIO_CTRL_DGRAM_GET_RECV_TIMER_EXP, 0, NULL)) { }
                  /* Just try again */
                  break;
                 case SSL_ERROR_ZERO_RETURN:
@@ -150,8 +147,10 @@ void DataPlaneClient::readyRead(int) {
             }
         }
         closeProtect.unlock();
+        qDebug() << "Free buffer";
         free(buf);
     }
+    qDebug() << "Got out of loop read client worker";
     notif->setEnabled(true);
 }
 

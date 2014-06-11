@@ -8,7 +8,7 @@
 #include <openssl/bio.h>
 #include <openssl/err.h>
 
-#define BUFFER_SIZE 5000
+#define BUFFER_SIZE 1550
 #define COOKIE_SECRET_LENGTH 16
 
 typedef union {
