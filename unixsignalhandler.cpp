@@ -60,8 +60,9 @@ void UnixSignalHandler::addIp(QString ip, QProcess* p) {
 void UnixSignalHandler::removeIp(QString ip) {
     QProcess* p = listOfIps.value(ip);
     if (p) {
-        p->close();
+        qDebug() << "Close ifconfig help for" << ip;
         connect(p, SIGNAL(finished(int)), p, SLOT(deleteLater()));
+        p->kill();
     }
     QProcess cleanup;
     QStringList cleanArgs;
@@ -69,6 +70,7 @@ void UnixSignalHandler::removeIp(QString ip) {
     cleanArgs.append(ip);
     cleanup.start(QString(HELPERPATH) + "/cleanup", cleanArgs);
     cleanup.waitForFinished();
+    listOfIps.remove(ip);
 }
 
 void UnixSignalHandler::termSignalHandler(int) {
