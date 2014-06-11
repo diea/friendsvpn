@@ -37,6 +37,8 @@ Proxy::~Proxy() {
     }
 
     u->removeIp(listenIp);
+    if (fd)
+        close(fd);
 }
 
 void Proxy::commonInit(QByteArray md5) {
@@ -48,6 +50,7 @@ void Proxy::commonInit(QByteArray md5) {
     listenIp = newIP();
     UnixSignalHandler* u = UnixSignalHandler::getInstance();
     connect(u, SIGNAL(exiting()), this, SLOT(deleteLater()), Qt::DirectConnection);
+    fd = 0;
 }
 
 Proxy::Proxy(int srcPort, int sockType, QByteArray md5)
@@ -312,29 +315,53 @@ Proxy* Proxy::getProxy(QByteArray md5) {
 
 void Proxy::run_pcap(const char* dstIp) {
     port = listenPort;
-    UnixSignalHandler* u = UnixSignalHandler::getInstance();
 
     bool bound = false;
     while (!bound) {
         qDebug() << "Proxy client not bound yet";
+
+        // create socket and bind for the kernel
+        fd = socket(AF_INET6, sockType, ipProto);
+        if (fd < 0) {
+            qDebug() << "Could not create socket";
+            UnixSignalHandler::termSignalHandler(0);
+        }
+
+        struct addrinfo hints, *res;
+        memset(&hints, 0, sizeof(struct addrinfo));
+        hints.ai_family = AF_INET6;
+        hints.ai_socktype = sockType;
+
+        int portno = port;
+        int server = getaddrinfo(listenIp.toUtf8().data(), NULL, &hints, &res);
+        if (server) {
+            qDebug("ERROR, no such host");
+            UnixSignalHandler::termSignalHandler(0);
+        }
+        ((struct sockaddr_in6*) res->ai_addr)->sin6_port = htons(portno);
+
+#ifdef linux
+        UnixSignalHandler* u = UnixSignalHandler::getInstance();
         // create socket and bind for the kernel
         QProcess* bindSocket = new QProcess(this);
         QStringList bindSocketArgs;
-        bindSocketArgs.append(QString::number(sockType));
-        bindSocketArgs.append(QString::number(ipProto));
         bindSocketArgs.append(QString::number(port));
         bindSocketArgs.append(listenIp);
+
         qDebug() << "Start bind socket process";
         bindSocket->start(QString(HELPERPATH) + "newSocket", bindSocketArgs);
         qDebug() << "Wait for started";
         bindSocket->waitForStarted();
-
+        processes.push(bindSocket);
+        u->addQProcess(bindSocket);
+#endif
         qDebug() << "Wait for finished";
-        if (bindSocket->waitForFinished(100)) { // 200ms should be plenty enough for the process to fail on bind
-            if (bindSocket->exitCode() == EADDRNOTAVAIL) {
+        if (bind(fd, res->ai_addr, sizeof(struct sockaddr_in6)) < 0) {
+            qDebug() << "error on bind" << errno;
+            if (errno == EADDRNOTAVAIL) {
                 // loop again until IP is available but just sleep a moment
                 qDebug() << "Bind ERROR: EADDRNOTAVAIL";
-            } else if (bindSocket->exitCode() == 3) {
+            } else {
                 if (port < 60000) {
                     port = 60001;
                 } else {
@@ -343,15 +370,9 @@ void Proxy::run_pcap(const char* dstIp) {
                 if (port >= 65535)
                     qFatal("Port escalation higher than 65535");
                 qDebug() << "Could not bind on port " << listenPort << "going to use " << QString::number(port);
-                bindSocket->deleteLater();
-            } else {
-                qFatal("Error with the bind helper process");
-                exit(-1);
             }
         } else {
             bound = true;
-            processes.push(bindSocket);
-            u->addQProcess(bindSocket);
         }
     }
 
