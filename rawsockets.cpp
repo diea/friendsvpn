@@ -333,14 +333,19 @@ void RawSockets::writeBytes(QString srcIp, QString dstIp, int srcPort,
             raw->write(packet, payloadLen + sizeof(struct fragHeader) + sizeof(struct rawComHeader));
             raw->waitForBytesWritten();
 
-            qDebug() << "Raw bytes in buffer" << raw->bytesToWrite();
-
             pos += payloadLen;
             packet_send_size -= payloadLen;
             free(packet);
         }
     } else {
         qDebug() << "raw write";
+
+        qDebug() << "Raw bytes in buffer" << raw->bytesToWrite();
+        QFile fragFile("testFile");
+        fragFile.open(QIODevice::WriteOnly);
+        fragFile.write(buffer, bufferSize);
+        fragFile.close();
+
         raw->write(buffer, bufferSize);
         raw->waitForBytesWritten();
         qDebug() << "Raw bytes in buffer" << raw->bytesToWrite();
