@@ -42,9 +42,11 @@ struct ip_mac_mapping IpResolver::getMapping(QString ip) {
     QHostAddress localIp(ip);
     mutex.lock();
     if (mappings.contains(ip)) {
+        qDebug() << "Mapping is contained in QHash";
         mutex.unlock();
         return mappings.value(ip);
     } else {
+#if 0
         mutex.unlock();
         char buf[3000];
         int length;
@@ -109,6 +111,7 @@ struct ip_mac_mapping IpResolver::getMapping(QString ip) {
             }
         }
         ndp.close();
+#endif
 #endif
         qDebug() << "Returning nullMapping";
         struct ip_mac_mapping nullMapping;
