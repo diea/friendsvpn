@@ -55,7 +55,6 @@ int main(int argc,const char* argv[]) {
         if (res == 0) {
             exit(4);
         }
-        void* packet = malloc(header.payload_len);
 
         unsigned char frame[linkHeaderSize + sizeof(struct ipv6hdr) + header.payload_len];
         memcpy(frame, &header.linkHeader, linkHeaderSize);
