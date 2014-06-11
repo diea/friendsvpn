@@ -69,31 +69,23 @@ void DataPlaneConnection::readBuffer(char* buf, int bufLen) {
     struct dpHeader *header = (struct dpHeader*) buf;
     char* packetBuf = NULL;
     header->len = ntohs(header->len);
-    qDebug() << "Got buffer of size" << bufLen << "and header says it has" << header->len << "bytes";
 
     if (header->fragType != 0) { /* handle fragment */
         struct dpFragHeader* fragHead = (struct dpFragHeader*) (buf + sizeof(struct dpHeader));
         fragHead->fragId = ntohl(fragHead->fragId);
         fragHead->offset = ntohs(fragHead->offset);
-        qDebug() << bufLen << "-" <<  sizeof(struct dpHeader) << "-" << sizeof(struct dpFragHeader);
         quint16 offsetLen = bufLen - sizeof(struct dpHeader) - sizeof(struct dpFragHeader);
         fragBufMut.lock();
         if (!fragmentBuffer.contains(fragHead->fragId)) { /* new frag */
-            qDebug() << "Appending fragment with ID" << fragHead->fragId;
             if (fragmentBuffer.size() > FRAG_BUFFER_SIZE) {
                 /* remove everything from QHash */
                 QHash<quint32, struct fragment_local*>::iterator i;
                 for (i = fragmentBuffer.begin(); i != fragmentBuffer.end(); ++i) {
                     struct fragment_local* frag = i.value();
-                    qDebug() << "Removing ID" << i.key();
-                    qDebug() << "Fragment is discarded, free";
                     free(frag->fragBuf);
-                    qDebug() << "Buffer was freed, free structure";
                     free(frag);
-                    qDebug() << "Remove call";
                     i = fragmentBuffer.erase(i);
                 }
-                qDebug() << "Fragment buffer QHash is now empty";
             }
             struct fragment_local* frag = static_cast<struct fragment_local*>(malloc(sizeof(struct fragment_local)));
             memset(frag, 0, sizeof(struct fragment_local));
@@ -102,21 +94,16 @@ void DataPlaneConnection::readBuffer(char* buf, int bufLen) {
             frag->remainingBits = header->len;
             frag->totalSize = header->len;
             fragmentBuffer.insert(fragHead->fragId, frag);
-            qDebug() << "Frag buffer size" << fragmentBuffer.size();
         }
         fragBufMut.unlock();
         struct fragment_local* frag = fragmentBuffer.value(fragHead->fragId);
         if (frag) {
-            qDebug() << "Got fragment of offset" << fragHead->offset << "and len" << offsetLen;
             if (fragHead->offset + offsetLen <= frag->totalSize) {
                 const char* frag_rcvd = buf + sizeof(struct dpHeader) + sizeof(struct dpFragHeader);
                 memcpy(frag->fragBuf + fragHead->offset, frag_rcvd, offsetLen);
                 remainingBitsMutex.lock();
-                qDebug() << "Remaining bits" << frag->remainingBits << "-=" << offsetLen;
                 frag->remainingBits -= offsetLen;
-                qDebug() << "Remaining bytes for fragId" << fragHead->fragId << "are" << frag->remainingBits;
                 if (!frag->remainingBits) { /* got to 0, packet is arrived */
-                    qDebug() << "Fragment has been assembled";
                     packetBuf = frag->fragBuf;
                 } else if (frag->remainingBits < 0) {
                     qDebug() << "Should not happen, remaining bits is < 0";
@@ -125,14 +112,12 @@ void DataPlaneConnection::readBuffer(char* buf, int bufLen) {
             }
         }
     } else {
-        qDebug() << "Not a fragment";
         packetBuf = buf + sizeof(struct dpHeader); // packet
     }
 
     if (!packetBuf) { return; } /* packet is not yet complete */
 
     QByteArray hash(header->md5, 16);
-    qDebug() << "Hash is" << hash.toHex();
     char srcIpc[INET6_ADDRSTRLEN];
     inet_ntop(AF_INET6, &(header->srcIp), srcIpc, INET6_ADDRSTRLEN);
     QString srcIp(srcIpc);
@@ -147,19 +132,14 @@ void DataPlaneConnection::readBuffer(char* buf, int bufLen) {
         memcpy(&srcPort, packetBuf, sizeof(quint16)); /* src port is 16 first bits of trans header */
         srcPort = ntohs(srcPort);
 
-        qDebug() << "Source port of packet is " << srcPort;
-
-        QByteArray clientHash = QCryptographicHash::hash(QString(hash + srcIp + QString::number(srcPort)).toUtf8(), QCryptographicHash::Md5);
-        qDebug() << "Get proxy";
+        QByteArray clientHash =
+                QCryptographicHash::hash(QString(hash + srcIp + QString::number(srcPort)).toUtf8(),
+                                         QCryptographicHash::Md5);
         prox = Proxy::getProxy(clientHash);
         if (!prox) {
-            qDebug() << "New client";
             prox = new ProxyClient(clientHash, hash, srcIp, header->sockType, srcPort, this);
-            qDebug() << "Constructor OK, run";
             prox->run();
-            qDebug() << "Run OK";
             clientProxys.push(dynamic_cast<ProxyClient*>(prox));
-            qDebug() << "Client OK";
         }
     }
 
@@ -168,7 +148,6 @@ void DataPlaneConnection::readBuffer(char* buf, int bufLen) {
 
     if (header->fragType != 0) { /* free resources to assemble packet */
         struct dpFragHeader* fragHead = (struct dpFragHeader*) (buf + sizeof(struct dpHeader));
-        qDebug() << "Removing ID" << fragHead->fragId;
         struct fragment_local* f = fragmentBuffer.value(fragHead->fragId);
         free(f->fragBuf);
         f->fragBuf = 0;
@@ -207,16 +186,12 @@ void DataPlaneConnection::sendBytes(const char *buf, int len, QByteArray& hash, 
     memset(&header, 0, sizeof(struct dpHeader));
     header.sockType = sockType;
     header.len = htons(qint16(len));
-    qDebug() << "Putting md5" << hash.toHex() << "in header";
     memcpy(header.md5, hash.data(), sizeof(char) * 16); // 16 bytes
-    qDebug() << "Header has md5" << QByteArray(header.md5, 16).toHex();
     inet_pton(AF_INET6, srcIp.toUtf8().data(), &(header.srcIp));
 
-    qDebug() << "Comparing" << static_cast<unsigned long>(len) << "and" << maxPayloadLen;
     if (static_cast<unsigned long>(len) > maxPayloadLen) {
         // packet will use more than the min MTU, we fragment it
         quint16 dataFieldLen = maxPayloadLen - sizeof(struct dpFragHeader); //TODO remove dpHeader
-        qDebug() << "Frag data field is" << dataFieldLen << "bytes";
         struct dpFragHeader dpFrag;
         memset(&dpFrag, 0, sizeof(struct dpFragHeader));
 
@@ -229,7 +204,6 @@ void DataPlaneConnection::sendBytes(const char *buf, int len, QByteArray& hash, 
         quint16 pos = 0;
         while (len > 0) { // send frags while len is > 0
             int payloadLen = len >= dataFieldLen ? dataFieldLen : len;
-            qDebug() << "payloadLen will be" << payloadLen;
             if (payloadLen == len) {
                 header.fragType = 3; // last frag
             }
@@ -241,18 +215,12 @@ void DataPlaneConnection::sendBytes(const char *buf, int len, QByteArray& hash, 
                 qDebug() << "packet could not be allocated!";
                 return;
             }
-            qDebug() << "Got out of malloc";
             dpFrag.offset = htons(pos);
 
-            qDebug() << "memcpy &header";
             memcpy(packet, &header, sizeof(struct dpHeader));
-            qDebug() << "memcpy &dpFrag";
             memcpy(packet + sizeof(struct dpHeader), &dpFrag, sizeof(struct dpFragHeader));
-            qDebug() << "memcpy buf + pos with pos" << pos << "and payloadLen" << payloadLen;
             memcpy(packet + sizeof(struct dpHeader) + sizeof(struct dpFragHeader), buf + pos, payloadLen);
 
-            qDebug() << "Sending packet with offset" << pos << "and with len" << payloadLen;
-            qDebug() << payloadLen << "+" << sizeof(struct dpHeader) << "+" << sizeof(struct dpFragHeader);
             sendPacket(packet, payloadLen + sizeof(struct dpHeader) + sizeof(struct dpFragHeader));
 
             header.fragType = 2; // first frag was sent
@@ -263,13 +231,10 @@ void DataPlaneConnection::sendBytes(const char *buf, int len, QByteArray& hash, 
         }
     } else {
         int packetLen = len + sizeof(struct dpHeader);
-        qDebug() << "Going in packet malloc" << packetLen;
         char* packet = static_cast<char*>(malloc(packetLen));
         if (!packet) {
-            qDebug() << "packet could not be allocated!";
             return;
         }
-        qDebug() << "Got out of malloc";
         memcpy(packet, &header, sizeof(struct dpHeader));
         memcpy(packet + sizeof(struct dpHeader), buf, len);
 

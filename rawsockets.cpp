@@ -173,9 +173,6 @@ void RawSockets::writeBytes(QString srcIp, QString dstIp, int srcPort,
         qFatal("No raw helper");
     }
 
-    qDebug() << "Write bytes thread ID is" << QThread::currentThreadId();
-    qDebug() << "Raw process thread ID" << p->process->thread()->currentThreadId();
-
     int bufferSize = packet_send_size + sizeof(struct rawComHeader); /* rawComHeader contains
                                                                       * ethernet and IPv6 header */
     char buffer[bufferSize];
@@ -290,7 +287,6 @@ void RawSockets::writeBytes(QString srcIp, QString dstIp, int srcPort,
         while (dataFieldLen % 8 != 0) {
             dataFieldLen--;
         }
-        qDebug() << "Frag data field is" << dataFieldLen << "bytes";
 
         quint16 offsetVal = dataFieldLen / 8;
         quint16 fragOffsetMult = 0;
@@ -319,16 +315,14 @@ void RawSockets::writeBytes(QString srcIp, QString dstIp, int srcPort,
                                                      + sizeof(struct rawComHeader)
                                                      + sizeof(struct fragHeader)));
             if (!packet) {
-                qDebug() << "packet could not be allocated!";
+                qDebug() << "Packet could not be allocated!";
                 return;
             }
-            qDebug() << "Got out of malloc";
             memcpy(packet, &rawHeader, sizeof(struct rawComHeader));
             memcpy(packet + sizeof(struct rawComHeader), &fhead, sizeof(struct fragHeader));
             memcpy(packet + sizeof(struct rawComHeader) + sizeof(struct fragHeader),
                    buffer + sizeof(struct rawComHeader) + pos, payloadLen);
 
-            qDebug() << "Sending packet with offset" << offset;
             raw->write(packet, payloadLen + sizeof(struct fragHeader) + sizeof(struct rawComHeader));
             raw->waitForBytesWritten();
 
@@ -337,19 +331,9 @@ void RawSockets::writeBytes(QString srcIp, QString dstIp, int srcPort,
             free(packet);
         }
     } else {
-        qDebug() << "raw write";
-
-        qDebug() << "Raw bytes in buffer" << raw->bytesToWrite();
-        QFile fragFile("testFile");
-        fragFile.open(QIODevice::WriteOnly);
-        fragFile.write(buffer, bufferSize);
-        fragFile.close();
-
         raw->write(buffer, bufferSize);
         raw->waitForBytesWritten();
-        qDebug() << "Raw bytes in buffer" << raw->bytesToWrite();
-        qDebug() << "raw written";
-        qDebug() << "read buffer has been freed";
+        qDebug() << "Raw written";
     }
 }
 
@@ -444,15 +428,12 @@ void RawSockets::packetTooBig(QString srcIp, QString dstIp, const char *packetBu
         rawHeader.linkHeader.loopback.type = 0x1E; // IPv6 traffic
     }
 
-    qDebug() << "Setting rawCom header len";
     rawHeader.payload_len = packet_send_size + sizeof(struct icmpv6TooBig);
-    qDebug() << "RawCom header payload_len set";
 
     // Construct v6 header
     rawHeader.ip6.ip6_vfc = 6 << 4;
     rawHeader.ip6.ip6_nxt = SOL_ICMPV6;
     rawHeader.ip6.ip6_hlim = 64;
-    qDebug() << "Setting ip6_plen";
     rawHeader.ip6.ip6_plen = htons(rawHeader.payload_len);
 
     struct addrinfo hints, *res;
@@ -491,11 +472,9 @@ void RawSockets::packetTooBig(QString srcIp, QString dstIp, const char *packetBu
     int nbBytes = packet_send_size;
     int padding = packet_send_size % 16;
     if (padding) {
-        qDebug() << "ICMPv6 needs padding!";
         nbBytes = (packet_send_size / 16) * 16 + 16;
     } // not sure if icmpv6 needs padding
 
-    qDebug() << "Preparing checksum icmpv6";
     int checksumBufSize = sizeof(struct ipv6upper) + sizeof(struct icmpv6TooBig) + nbBytes;
     char* checksumPacket = static_cast<char*>(malloc(checksumBufSize));
     memset(checksumPacket, 0, checksumBufSize);
@@ -505,12 +484,9 @@ void RawSockets::packetTooBig(QString srcIp, QString dstIp, const char *packetBu
     memcpy(checksumPacket + sizeof(struct ipv6upper), &icmpheader, sizeof(struct icmpv6TooBig));
     memcpy(checksumPacket + sizeof(struct ipv6upper) + sizeof(struct icmpv6TooBig), packetBuffer, packet_send_size);
 
-    qDebug() << "Computing checksum icmpv6";
-    qDebug() << "Checksum for" << checksumBufSize << "bytes";
     icmpheader.checksum = ~(checksum(checksumPacket, checksumBufSize));
     free(checksumPacket);
 
-    qDebug() << "Combine the different headers in one contiguos block";
 
     // combine the rawHeader and packet in one contiguous block
     int bufferSize = sizeof(struct rawComHeader) + rawHeader.payload_len;
@@ -519,11 +495,6 @@ void RawSockets::packetTooBig(QString srcIp, QString dstIp, const char *packetBu
     memcpy(buffer + sizeof(struct rawComHeader), &icmpheader, sizeof(struct icmpv6TooBig));
     memcpy(buffer + sizeof(struct rawComHeader) + sizeof(struct icmpv6TooBig), packetBuffer, packet_send_size);
 
-    qDebug() << "raw write";
-    qDebug() << "rawCom header is size " << sizeof(struct rawComHeader);
-    qDebug() << "write" << bufferSize << "ip length is" << ntohs(rawHeader.ip6.ip6_plen)
-             << "and packet_send_size" << packet_send_size;
     raw->write(buffer, bufferSize);
     raw->waitForBytesWritten();
-    qDebug() << "raw written";
 }
