@@ -12,7 +12,7 @@ PcapWorker::~PcapWorker()
 {
     //qDebug() << "Closing pcapListen" << pcap->arguments();
     pcap->disconnect();
-    pcap->close();
+    pcap->terminate();
     pcap->waitForFinished();
     delete pcap;
     qDebug() << "Closed";
@@ -72,5 +72,4 @@ void PcapWorker::run() {
 
 void PcapWorker::pcapFinish(int exitCode) {
     qWarning() << "pcap exited with exit code " << exitCode;
-    QThread::currentThread()->exit(0);
 }
