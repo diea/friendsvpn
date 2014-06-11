@@ -8,6 +8,9 @@
 #include <linux/if_link.h>
 #endif
 
+/* TODO for test */
+#include <QThread>
+
 quint32 RawSockets::globalIdFrag = 0;
 
 RawSockets* RawSockets::instance = NULL;
@@ -162,13 +165,16 @@ void RawSockets::writeBytes(QString srcIp, QString dstIp, int srcPort,
         qWarning() << "Mapping not found, cannot send packet!";
         return;
     }
-    qDebug() << "Gotting mapping" << map.ip << map.mac << map.interface;
+    qDebug() << "Got mapping" << map.ip << map.mac << map.interface;
 
     struct rawProcess* p = rawHelpers.value(map.interface);
     QProcess* raw = p->process;
     if (!raw || raw->state() != 2) {
         qFatal("No raw helper");
     }
+
+    qDebug() << "Write bytes thread ID is" << QThread::currentThreadId();
+    qDebug() << "Raw process thread ID" << p->process->thread()->currentThreadId();
 
     int bufferSize = packet_send_size + sizeof(struct rawComHeader); /* rawComHeader contains
                                                                       * ethernet and IPv6 header */
