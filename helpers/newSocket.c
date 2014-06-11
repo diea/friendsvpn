@@ -70,6 +70,6 @@ int main(int argc, char** argv) {
     fflush(stdout);
 
     getchar(); // press any key to quit (releasing the "bind" call)
-    
+
     return 0;
 }
