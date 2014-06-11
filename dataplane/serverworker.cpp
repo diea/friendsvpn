@@ -63,9 +63,9 @@ void ServerWorker::connection_handle() {
 }
 
 void ServerWorker::readyRead(int) {
-    notif->setEnabled(false);
+    //notif->setEnabled(false);
     size_t len;
-    while ((!(SSL_get_shutdown(ssl) & SSL_RECEIVED_SHUTDOWN))) {
+    if ((!(SSL_get_shutdown(ssl) & SSL_RECEIVED_SHUTDOWN))) {
         char* buf = static_cast<char*>(malloc(BUFFER_SIZE * sizeof(char)));
         memset(buf, 0, BUFFER_SIZE * sizeof(char));
         closeProtect.lock();
@@ -100,7 +100,7 @@ void ServerWorker::readyRead(int) {
         free(buf);
     }
     qDebug() << "Got out of loop read server worker";
-    notif->setEnabled(true);
+    //notif->setEnabled(true);
 }
 
 void ServerWorker::stop() {
