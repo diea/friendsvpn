@@ -10,7 +10,7 @@ PcapWorker::PcapWorker(QStringList args, Proxy* p) :
 
 PcapWorker::~PcapWorker()
 {
-    qDebug() << "Closing pcapListen" << pcap.arguments();
+    //qDebug() << "Closing pcapListen" << pcap.arguments();
     /*pcap.disconnect();
     pcap.close();
     pcap.waitForFinished();*/
