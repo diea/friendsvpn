@@ -233,7 +233,9 @@ void DataPlaneConnection::sendBytes(const char *buf, int len, QByteArray& hash, 
                 header.fragType = 3; // last frag
             }
 
-            char* packet = static_cast<char*>(malloc(maxPayloadLen));
+            char* packet = static_cast<char*>(malloc(payloadLen
+                                                     + sizeof(struct dpHeader)
+                                                     + sizeof(struct dpFragHeader)));
             if (!packet) {
                 qDebug() << "packet could not be allocated!";
                 return;
