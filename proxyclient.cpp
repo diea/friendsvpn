@@ -21,7 +21,8 @@ ProxyClient::ProxyClient(QByteArray md5, QByteArray servermd5,  QString serversr
     serverRecord = BonjourDiscoverer::recordHashes.value(servermd5);
     if (!serverRecord) {
         // no more available
-        qFatal("The record is no more available");
+        qWarning("The record is no more available");
+        UnixSignalHandler::termSignalHandler(0);
     }
     rawSocks = RawSockets::getInstance();
     connect(&timer, SIGNAL(timeout()), this, SLOT(timeout()));

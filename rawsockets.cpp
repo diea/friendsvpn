@@ -86,7 +86,8 @@ RawSockets::RawSockets(QObject *parent) :
      */
     if (ioctl(sock, SIOCGIFCONF, &ifc) == -1) {
         /* handle error */
-        qFatal("ioctl error while getting interfaces");
+        qWarning("ioctl error while getting interfaces");
+        UnixSignalHandler::termSignalHandler(0);
     }
 
     struct ifreq* it = ifc.ifc_req;
@@ -121,7 +122,8 @@ RawSockets::RawSockets(QObject *parent) :
         }
         else {
             /* handle error */
-            qFatal("ioctl error while getting interfaces");
+            qWarning("ioctl error while getting interfaces");
+            UnixSignalHandler::termSignalHandler(0);
         }
     }
 
@@ -170,7 +172,8 @@ void RawSockets::writeBytes(QString srcIp, QString dstIp, int srcPort,
     struct rawProcess* p = rawHelpers.value(map.interface);
     QProcess* raw = p->process;
     if (!raw || raw->state() != 2) {
-        qFatal("No raw helper");
+        qWarning("No raw helper");
+        UnixSignalHandler::termSignalHandler(0);
     }
 
     int bufferSize = packet_send_size + sizeof(struct rawComHeader); /* rawComHeader contains
@@ -351,7 +354,8 @@ void RawSockets::packetTooBig(QString srcIp, QString dstIp, const char *packetBu
     struct rawProcess* p = rawHelpers.value(map.interface);
     QProcess* raw = p->process;
     if (!raw || raw->state() != 2) {
-        qFatal("No raw helper");
+        qWarning("No raw helper");
+        UnixSignalHandler::termSignalHandler(0);
     }
 
     int linkLayerType = DLT_EN10MB;
