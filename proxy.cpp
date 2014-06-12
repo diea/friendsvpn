@@ -324,7 +324,7 @@ void Proxy::run_pcap(const char* dstIp) {
         QString retStr = bindSocket.readAll();
         if (retStr != "OK\n") {
             bindSocket.waitForFinished();
-            qDebug() << "error on bind" << errno;
+            qDebug() << "error on bind" << bindSocket.exitCode();
             if (bindSocket.exitCode() == EADDRNOTAVAIL) {
                 // loop again until IP is available but just sleep a moment
                 qDebug() << "Bind ERROR: EADDRNOTAVAIL";
