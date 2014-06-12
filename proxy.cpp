@@ -317,27 +317,17 @@ void Proxy::run_pcap(const char* dstIp) {
     bool bound = false;
     while (!bound) {
         qDebug() << "Proxy client not bound yet";
-
         // create socket and bind for the kernel
-        if (fd) close(fd);
-        int fd = socket(AF_INET6, sockType, ipProto);
-        if (fd < 0) {
-            qDebug() << "Could not create socket";
-            UnixSignalHandler::termSignalHandler(0);
-        }
+        QStringList bindSocketArgs;
+        bindSocketArgs.append(QString::number(port));
+        bindSocketArgs.append(listenIp);
 
-        struct addrinfo hints, *res;
-        memset(&hints, 0, sizeof(struct addrinfo));
-        hints.ai_family = AF_INET6;
-        hints.ai_socktype = sockType;
+        qDebug() << "Start bind socket process";
+        bindSocket.start(QString(HELPERPATH) + "newSocket", bindSocketArgs);
+        qDebug() << "Wait for started";
+        bindSocket.waitForStarted();
 
-        int portno = port;
-        int server = getaddrinfo(listenIp.toUtf8().data(), NULL, &hints, &res);
-        if (server) {
-            qDebug("ERROR, no such host");
-            UnixSignalHandler::termSignalHandler(0);
-        }
-        ((struct sockaddr_in6*) res->ai_addr)->sin6_port = htons(portno);
+        bindSocket.waitForReadyRead(200);
 
         qDebug() << "bind call";
         if (bind(fd, res->ai_addr, sizeof(struct sockaddr_in6)) < 0) {
@@ -362,20 +352,6 @@ void Proxy::run_pcap(const char* dstIp) {
             bound = true;
         }
     }
-
-#ifdef linux
-        // create socket and bind for the kernel
-        QProcess bindSocket;
-        QStringList bindSocketArgs;
-        bindSocketArgs.append(QString::number(port));
-        bindSocketArgs.append(listenIp);
-
-        qDebug() << "Start bind socket process";
-        bindSocket.start(QString(HELPERPATH) + "newSocket", bindSocketArgs);
-        qDebug() << "Wait for started";
-        bindSocket.waitForStarted();
-        bindSocket.waitForFinished();
-#endif
 
     qDebug() << "going to seek listen iface";
     QStack<QString> listenInterfaces;

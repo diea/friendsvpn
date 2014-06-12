@@ -22,47 +22,47 @@
 int main(int argc, char** argv) {
     setuid(0);
 
-    int fd = socket(AF_INET6, sockType, ipProto);
+    if (argc != 5) {
+        printf("Wrong nb of args\n");
+        fflush(stdout);
+        return 1;
+    }
+
+    // create socket and bind for the kernel
+    int fd = socket(AF_INET6, atoi(argv[1]), atoi(argv[2]));
     if (fd < 0) {
+        printf("Could not create socket\n");
+        fflush(stdout);
         return 2;
     }
 
     struct addrinfo hints, *res;
     memset(&hints, 0, sizeof(struct addrinfo));
     hints.ai_family = AF_INET6;
-    hints.ai_socktype = sockType;
+    hints.ai_socktype = atoi(argv[1]);
 
-    int portno = atoi(argv[1]);
-    int server = getaddrinfo(listenIp.toUtf8().data(), NULL, &hints, &res);
+    int portno =  atoi(argv[3]);
+    int server = getaddrinfo(argv[4], NULL, &hints, &res);
     if (server) {
-        qDebug("ERROR, no such host");
-        UnixSignalHandler::termSignalHandler(0);
+        printf("ERROR, no such host\n");
+        fflush(stdout);
+        return 5;
     }
-        ((struct sockaddr_in6*) res->ai_addr)->sin6_port = htons(portno);
+    ((struct sockaddr_in6*) res->ai_addr)->sin6_port = htons(portno);
 
-        qDebug() << "bind call";
-        if (bind(fd, res->ai_addr, sizeof(struct sockaddr_in6)) < 0) {
-            qDebug() << "error on bind" << errno;
-            if (errno == EADDRNOTAVAIL) {
-                // loop again until IP is available but just sleep a moment
-                qDebug() << "Bind ERROR: EADDRNOTAVAIL";
-                QThread::sleep(2);
-            } else if (errno == EACCES) {
-                if (port < 60000) {
-                    port = 60001;
-                } else {
-                    port++;
-                }
-                if (port >= 65535) {
-                    qWarning("Port escalation higher than 65535");
-                    UnixSignalHandler::termSignalHandler(0);
-                }
-                qDebug() << "Could not bind on port " << listenPort << "going to use " << QString::number(port);
-            }
-        } else {
-            bound = true;
+    if (bind(fd, res->ai_addr, sizeof(struct sockaddr_in6)) < 0) {
+        if (errno == EADDRNOTAVAIL) { // "address" is taken, need to wait a bit more
+            printf("error on bind %d\n", errno);
+            fflush(stdout);
+            return EADDRNOTAVAIL;
         }
+        printf("error on bind %d\n", errno);
+        fflush(stdout);
+        return errno;
     }
+
+    printf("bind OK\n");
+    fflush(stdout);
 
 #ifndef __APPLE__ /* linux */
     /* on linux the "bind" trick does not work due to bind's implementation needing a "listen"
@@ -73,6 +73,15 @@ int main(int argc, char** argv) {
 
     char* ip6tablesRule = malloc(400 * sizeof(char));
     sprintf(ip6tablesRule, "ip6tables -A OUTPUT -s %s -p tcp --sport %s --tcp-flags RST RST -j DROP", argv[2], argv[1]);
+    system(ip6tablesRule);
+#endif
+
+    getchar();
+
+    close(fd);
+
+#ifdef linux
+    ip6tablesRule[11] = 'D'; // replace append by 'D' for delete in the command
     system(ip6tablesRule);
 #endif
 
