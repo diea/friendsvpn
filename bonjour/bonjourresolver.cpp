@@ -44,12 +44,12 @@ void BonjourResolver::resolveReply(DNSServiceRef , //sdRef
                             quint16 txtLen,
                             const unsigned char * txtRecord,
                             void *context) {
+    QList<void*>* context_list = static_cast<QList<void*>*>(context);
+    BonjourRecord* record = static_cast<BonjourRecord*>(context_list->at(0));
+    BonjourResolver* resolver = static_cast<BonjourResolver*>(context_list->at(1));
     if (errorCode != kDNSServiceErr_NoError) {
         emit resolver->error(errorCode);
     } else {
-        QList<void*>* context_list = static_cast<QList<void*>*>(context);
-        BonjourRecord* record = static_cast<BonjourRecord*>(context_list->at(0));
-        BonjourResolver* resolver = static_cast<BonjourResolver*>(context_list->at(1));
         if (txtLen > 1) {
             record->txt = QByteArray(static_cast<const char*>(static_cast<const void*>(txtRecord)), txtLen);
         }
