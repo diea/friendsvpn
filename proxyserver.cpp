@@ -5,7 +5,9 @@
 #include <arpa/inet.h>
 
 ProxyServer::~ProxyServer() {
-    if (--hostnames[hostnameUid].nb == 0) {
+    hostnames[hostnameUid].nb--;
+    qDebug() << "There are" << hostnames[hostnameUid].nb << "proxy servers left for" << hostnameUid;
+    if (hostnames[hostnameUid].nb == 0) {
         hostnames.remove(hostnameUid);
         UnixSignalHandler* u = UnixSignalHandler::getInstance();
         u->removeIp(listenIp);
