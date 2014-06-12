@@ -50,12 +50,6 @@ void BonjourRegistrar::registerService(const BonjourRecord &record) {
         }
     }
 
-    quint16 bigEndianPort = record.port;
-    #if Q_BYTE_ORDER == Q_LITTLE_ENDIAN
-    bigEndianPort = ((record.port & 0x00ff) << 8)
-                  | ((record.port & 0xff00) >> 8);
-    #endif
-
     QByteArray txtBytes = record.txt;
     char* txtChar = txtBytes.data();
     unsigned char txtRecord[txtBytes.length()];
@@ -66,7 +60,7 @@ void BonjourRegistrar::registerService(const BonjourRecord &record) {
           record.registeredType.toUtf8().constData(),
           record.replyDomain.isEmpty() ? 0
                     : record.replyDomain.toUtf8().constData(),
-          QString(record.hostname + "." + record.replyDomain).toUtf8().data(), bigEndianPort,
+          QString(record.hostname + "." + record.replyDomain).toUtf8().data(), ntohs(record.port),
                              record.txt.length(), txtRecord, bonjourRegisterService,
           this);
     if (err != kDNSServiceErr_NoError) {
@@ -100,7 +94,15 @@ void BonjourRegistrar::handleError(DNSServiceErrorType error) {
     // could very for duplicate name error and not destruct (would allow to advertise using machine's hostname
     // miming the dns-sd -R command (the DNSRegisterRecord would fail)
 
-    this->~BonjourRegistrar(); // call destructor to deallocate the dnssrefs
+    //  deallocate the dnssrefs
+    if (dnssref) {
+        DNSServiceRefDeallocate(dnssref);
+        dnssref = 0;
+    }
+    if (dnssref_pa) {
+        DNSServiceRefDeallocate(dnssref_pa);
+        dnssref_pa = 0;
+    }
 }
 
 void BonjourRegistrar::bonjourSocketReadyRead() {
