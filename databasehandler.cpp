@@ -340,7 +340,7 @@ QList < BonjourRecord* > DatabaseHandler::getRecordsFor(QString friendUid) {
         // used for comparison
         BonjourRecord newRecord(qry.value("Record_name").toString(),
                                 // using the bonjour service name notation
-                                qry.value("Record_Service_name").toString() + "._" + qry.value("Record_Service_Trans_prot").toString() + ".",
+                                qry.value("Record_Service_name").toString(),
                                 "local.");
 
         foreach (BonjourRecord* rec, allActiveRecords) { // if record found in active record, save it
