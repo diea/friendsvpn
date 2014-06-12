@@ -133,6 +133,7 @@ void DataPlaneServer::readyRead(int) {
     while ((dtlsRet = DTLSv1_listen(ssl, &client_addr)) <= 0) {
         qWarning() << "DTLSv1_listen error";
         qWarning() << SSL_get_error(ssl, dtlsRet);
+        qWarning() << "Errno is" << errno;
     }
 
     QThread* workerThread = new QThread();
