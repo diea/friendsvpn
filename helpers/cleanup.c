@@ -27,8 +27,6 @@ int main(int argc, char** argv) {
 #ifndef __APPLE__
     strcat(command, "/64");
 #endif
-    //command[60] = '\0';
-    printf("%s length: %d\n", command, strlen(command));
     system(command);
 
     // remove from routing table
