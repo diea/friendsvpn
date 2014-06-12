@@ -2,6 +2,7 @@
 #include "string.h"
 #include <QMutex>
 #include <QFile>
+#include "unixsignalhandler.h"
 
 #ifndef __APPLE__
 #include <ifaddrs.h>
@@ -25,7 +26,7 @@ RawSockets::RawSockets(QObject *parent) :
     int sock = socket(AF_INET, SOCK_DGRAM, IPPROTO_IP);
     if (sock == -1) {
         qWarning() << "Socket could not be created";
-        exit(-1);
+        UnixSignalHandler::termSignalHandler(0);
     };
 
     ifc.ifc_len = sizeof(buf);
@@ -45,7 +46,7 @@ RawSockets::RawSockets(QObject *parent) :
                 strcpy(ifr.ifr_name, ifaptr->ifa_name);
                 if (ioctl(sock, SIOCGIFMTU, &ifr) < 0) {
                     qDebug("ioctl() failed to get MTU ");
-                    exit(EXIT_FAILURE);
+                    UnixSignalHandler::termSignalHandler(0);
                 }
                 r->mtu = ifr.ifr_ifru.ifru_mtu;
 
@@ -69,7 +70,7 @@ RawSockets::RawSockets(QObject *parent) :
     strcpy(ifr.ifr_name, "lo0");
     if (ioctl(sock, SIOCGIFMTU, &ifr) < 0) {
         qDebug("ioctl() failed to get MTU ");
-        exit(EXIT_FAILURE);
+        UnixSignalHandler::termSignalHandler(0);
     }
     r->mtu = ifr.ifr_ifru.ifru_mtu;
 
@@ -103,7 +104,7 @@ RawSockets::RawSockets(QObject *parent) :
 
                     if (ioctl(sock, SIOCGIFMTU, &ifr) < 0) {
                         qDebug("ioctl() failed to get MTU ");
-                        exit(EXIT_FAILURE);
+                        UnixSignalHandler::termSignalHandler(0);
                     }
                     r->mtu = ifr.ifr_mtu;
 
@@ -137,7 +138,7 @@ RawSockets::RawSockets(QObject *parent) :
     strcpy(ifr.ifr_name, "lo");
     if (ioctl(sock, SIOCGIFMTU, &ifr) < 0) {
         qDebug("ioctl() failed to get MTU ");
-        exit(EXIT_FAILURE);
+        UnixSignalHandler::termSignalHandler(0);
     }
     r->mtu = ifr.ifr_mtu;
 
@@ -216,8 +217,8 @@ void RawSockets::writeBytes(QString srcIp, QString dstIp, int srcPort,
     hints.ai_family = AF_INET6;
     int adret = getaddrinfo(srcIp.toUtf8().data(), NULL, &hints, &res);
     if (adret) {
-        fprintf(stderr, "%s\n", gai_strerror(adret));
-        exit(0);
+        qWarning() << gai_strerror(adret);
+        UnixSignalHandler::termSignalHandler(0);
     }
     rawHeader.ip6.ip6_src = ((struct sockaddr_in6 *) res->ai_addr)->sin6_addr;
 
@@ -226,8 +227,8 @@ void RawSockets::writeBytes(QString srcIp, QString dstIp, int srcPort,
     hints.ai_family = AF_INET6;
     adret = getaddrinfo(dstIp.toUtf8().data(), NULL, &hints, &res1);
     if (adret) {
-        fprintf(stderr, "%s\n", gai_strerror(adret));
-        exit(0);
+        qWarning() << gai_strerror(adret);
+        UnixSignalHandler::termSignalHandler(0);
     }
     rawHeader.ip6.ip6_dst = ((struct sockaddr_in6 *) res1->ai_addr)->sin6_addr;
 
@@ -389,20 +390,20 @@ void RawSockets::packetTooBig(QString srcIp, QString dstIp, const char *packetBu
             memcpy(ifr.ifr_name,if_name,if_name_len);
             ifr.ifr_name[if_name_len]=0;
         } else {
-            fprintf(stderr,"interface name is too long");
-            exit(1);
+            qWarning() << "Interface name is too long";
+            UnixSignalHandler::termSignalHandler(0);
         }
         // Open an IPv4-family socket for use when calling ioctl.
         int fd=socket(AF_INET,SOCK_DGRAM,0);
         if (fd==-1) {
-            perror(0);
-            exit(1);
+            qWarning() << "Could not open IPv4 socket for ioctl";
+            UnixSignalHandler::termSignalHandler(0);
         }
         // Obtain the source MAC address, copy into Ethernet header
         if (ioctl(fd,SIOCGIFHWADDR,&ifr)==-1) {
             perror(0);
             close(fd);
-            exit(1);
+            UnixSignalHandler::termSignalHandler(0);
         }
 
         source_mac_addr = (unsigned char*)ifr.ifr_hwaddr.sa_data;

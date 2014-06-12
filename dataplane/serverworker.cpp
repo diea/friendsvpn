@@ -15,11 +15,11 @@ void ServerWorker::connection_handle() {
     int ret;
     const int on = 1, off = 0;
 
-    //fprintf(stderr, "ss_family client %d and server %d\n", client_addr.ss.ss_family, server_addr.ss.ss_family);
     OPENSSL_assert(client_addr.ss.ss_family == server_addr.ss.ss_family);
     fd = socket(client_addr.ss.ss_family, SOCK_DGRAM, 0);
     if (fd < 0) {
-        perror("socket");
+        qWarning("Could not open SOCK_DGRAM");
+        return;
     }
 
     setsockopt(fd, SOL_SOCKET, SO_REUSEADDR, (const void*) &on, (socklen_t) sizeof(on));
@@ -40,8 +40,8 @@ void ServerWorker::connection_handle() {
     do { ret = SSL_accept(ssl); } while (ret == 0);
 
     if (ret < 0) {
-        perror("SSL_accept");
-        printf("%s\n", ERR_error_string(ERR_get_error(), buf));
+        qWarning("SSL_accept");
+        qWarning() << ERR_error_string(ERR_get_error(), buf);
     }
     struct timeval timeout;
     /* Set and activate timeouts */
@@ -109,7 +109,7 @@ void ServerWorker::stop() {
     close(fd);
     SSL_free(ssl);
     ERR_remove_state(0);
-    printf("done, server worker connection closed.\n");
+    qDebug("done, server worker connection closed.");
     fflush(stdout);
     this->deleteLater();
 }

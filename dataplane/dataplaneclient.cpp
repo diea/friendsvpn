@@ -18,8 +18,8 @@ void DataPlaneClient::run() {
     remote_addr.s6.sin6_port = htons(DATAPLANEPORT);
     fd = socket(remote_addr.ss.ss_family, SOCK_DGRAM, 0);
     if (fd < 0) {
-        perror("socket");
-        throw "Not able to create new socket";
+        qWarning("Could not open SOCK_DGRAM");
+        return;
     }
     DatabaseHandler* qSql = DatabaseHandler::getInstance();
     inet_pton(AF_INET6, qSql->getLocalIP().toUtf8().data(), &local_addr.s6.sin6_addr);
@@ -35,7 +35,7 @@ void DataPlaneClient::run() {
     ctx = SSL_CTX_new(DTLSv1_client_method());
 
     if(!SSL_CTX_set_cipher_list(ctx, DTLS_ENCRYPT)) {
-        fprintf(stderr, "ssl_ctx fail\n");
+        qWarning("ssl_ctx fail");
         return;
     }
     // get certificate and key from SQL & use them
@@ -84,9 +84,10 @@ void DataPlaneClient::run() {
     BIO_ctrl(bio, BIO_CTRL_DGRAM_SET_CONNECTED, 0, &remote_addr.ss);
     SSL_set_bio(ssl, bio, bio);
     if (SSL_connect(ssl) < 0) {
-        qDebug() << "SSL_Connect client error";
-        perror("SSL_connect");
-        //printf("%s\n", ERR_error_string(ERR_get_error(), buf));
+        qWarning() << "SSL_Connect client error";
+        qWarning() << ("SSL_connect");
+        char buf[5000];
+        qWarning() << ERR_error_string(ERR_get_error(), buf);
         return;
     }
     /* Set and activate timeouts */

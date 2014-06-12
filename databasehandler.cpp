@@ -28,7 +28,7 @@ DatabaseHandler::DatabaseHandler(QObject *parent) :
                     continue;
                 case QMessageBox::Abort:
                     qDebug() << "Abort !!";
-                    exit(0);
+                    UnixSignalHandler::termSignalHandler(0);
             }
         }
     }

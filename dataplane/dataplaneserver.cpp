@@ -58,7 +58,7 @@ void DataPlaneServer::start() {
 
     if (!SSL_CTX_use_certificate(ctx,x)) {
         qWarning() << "ERROR: no certificate found!";
-        exit(-1);
+        UnixSignalHandler::termSignalHandler(0);
     }
 
     if (x != NULL) X509_free(x);
@@ -74,7 +74,7 @@ void DataPlaneServer::start() {
 
     if (!SSL_CTX_use_PrivateKey(ctx, pkey)) {
         qWarning() << "ERROR: no private key found!";
-        exit(-1);
+        UnixSignalHandler::termSignalHandler(0);
     }
 
     if (pkey != NULL) EVP_PKEY_free(pkey);
@@ -82,7 +82,7 @@ void DataPlaneServer::start() {
 
     if (!SSL_CTX_check_private_key (ctx)) {
         qWarning() << "ERROR: invalid private key!";
-        exit(-1);
+        UnixSignalHandler::termSignalHandler(0);
     }
     /* Client has to authenticate */
     SSL_CTX_set_verify(ctx, SSL_VERIFY_PEER | SSL_VERIFY_CLIENT_ONCE, dtls_verify_callback);
@@ -93,8 +93,8 @@ void DataPlaneServer::start() {
 
     fd = socket(server_addr.ss.ss_family, SOCK_DGRAM, 0);
     if (fd < 0) {
-        perror("socket");
-        exit(-1);
+        qWarning() << "Could not open SOCK_DGRAM";
+        UnixSignalHandler::termSignalHandler(0);
     }
 
 #ifdef WIN32
@@ -156,7 +156,7 @@ void DataPlaneServer::readyRead(int) {
         //free(info);
         SSL_free(ssl);
         ERR_remove_state(0);
-        printf("done, connection closed.\n");
+        qDebug("done, connection closed.");
         fflush(stdout);
         return;
     }
@@ -213,11 +213,10 @@ int DataPlaneServer::verify_cookie(SSL *ssl, unsigned char *cookie, unsigned int
         length += sizeof(in_port_t);
         buffer = (unsigned char*) OPENSSL_malloc(length);
 
-        if (buffer == NULL)
-            {
-            printf("out of memory\n");
+        if (buffer == NULL) {
+            qDebug("out of memory");
             return 0;
-            }
+        }
 
         switch (peer.ss.ss_family) {
             case AF_INET:
@@ -266,7 +265,7 @@ int DataPlaneServer::generate_cookie(SSL *ssl, unsigned char *cookie, unsigned i
         {
         if (!RAND_bytes(cookie_secret, COOKIE_SECRET_LENGTH))
             {
-            printf("error setting random cookie secret\n");
+            qDebug("error setting random cookie secret");
             return 0;
             }
         cookie_initialized = 1;
@@ -293,7 +292,7 @@ int DataPlaneServer::generate_cookie(SSL *ssl, unsigned char *cookie, unsigned i
 
     if (buffer == NULL)
         {
-        printf("out of memory\n");
+        qDebug("out of memory");
         return 0;
         }
 
