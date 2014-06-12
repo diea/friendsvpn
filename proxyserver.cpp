@@ -7,9 +7,20 @@
 ProxyServer::~ProxyServer() {
 }
 
-ProxyServer::ProxyServer(const QString &friendUid, const QString &name, const QString &regType, const QString &domain,
-                       const QString &hostname, const QByteArray& txt, quint16 port, const QByteArray& md5) : Proxy(port, regType, md5)
+QHash<QString, QString> ProxyServer::hostnames;
+
+ProxyServer::ProxyServer(const QString &friendUid, const QString &name,
+                         const QString &regType, const QString &domain,
+                         const QString &hostname, const QByteArray& txt,
+                         quint16 port, const QByteArray& md5) : Proxy(port, regType, md5)
 {
+    QString hostnameUid = friendUid + hostname;
+    if (hostnames.contains(hostnameUid)) {
+        listenIp = hostnames.value(hostnameUid);
+    } else {
+        listenIp = newIP();
+        hostnames.insert(hostnameUid, listenIp);
+    }
     QString newip = listenIp;
     // create bonjour rec with new IP
     QList<QString> ip;

@@ -39,7 +39,6 @@ void Proxy::commonInit(QByteArray md5) {
     }
     idHash = md5;
     proxyHashes.insert(md5, this);
-    listenIp = newIP();
     UnixSignalHandler* u = UnixSignalHandler::getInstance();
     connect(u, SIGNAL(exiting()), this, SLOT(deleteLater()), Qt::DirectConnection);
 }

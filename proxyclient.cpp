@@ -7,6 +7,7 @@ ProxyClient::ProxyClient(QByteArray md5, QByteArray servermd5,  QString serversr
                          int sockType, int srcPort, DataPlaneConnection* con) :
     Proxy(srcPort, sockType, md5)
 {
+    listenIp = newIP();
     this->con = con;
     this->servermd5 = servermd5;
     this->serversrcIp = serversrcIp;

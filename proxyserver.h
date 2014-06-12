@@ -20,6 +20,12 @@ private:
     QString friendUid;
     BonjourRegistrar registrar;
 
+    /**
+      * We register using the same IP for a given hostname
+      * The key is the friendUid concatenated to the received hostname
+      */
+    static QHash<QString, QString> hostnames;
+
 public:
     explicit ProxyServer(const QString &friendUid, const QString &name, const QString &regType, const QString &domain,
                         const QString &hostname, const QByteArray& txt, quint16 port, const QByteArray& md5);
