@@ -44,7 +44,7 @@ ControlPlaneConnection::ControlPlaneConnection(QString uid, AbstractPlaneConnect
 {
     qSql = DatabaseHandler::getInstance();
     this->connect(this, SIGNAL(disconnected()), SLOT(wasDisconnected()));
-    this->connect(this, SIGNAL(connected()), SLOT(sendBonjour()));
+    //this->connect(this, SIGNAL(connected()), SLOT(sendBonjour()));
     this->connect(this, SIGNAL(connected()), SLOT(alive()));
 
     connect(SysTray::getInstance(), SIGNAL(sendBonjour()), this, SLOT(sendBonjour()));
