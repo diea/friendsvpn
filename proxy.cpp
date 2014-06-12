@@ -341,21 +341,6 @@ void Proxy::run_pcap(const char* dstIp) {
         }
         ((struct sockaddr_in6*) res->ai_addr)->sin6_port = htons(portno);
 
-#ifdef linux
-        UnixSignalHandler* u = UnixSignalHandler::getInstance();
-        // create socket and bind for the kernel
-        QProcess* bindSocket = new QProcess(this);
-        QStringList bindSocketArgs;
-        bindSocketArgs.append(QString::number(port));
-        bindSocketArgs.append(listenIp);
-
-        qDebug() << "Start bind socket process";
-        bindSocket->start(QString(HELPERPATH) + "newSocket", bindSocketArgs);
-        qDebug() << "Wait for started";
-        bindSocket->waitForStarted();
-        processes.push(bindSocket);
-        u->addQProcess(bindSocket);
-#endif
         qDebug() << "Wait for finished";
         if (bind(fd, res->ai_addr, sizeof(struct sockaddr_in6)) < 0) {
             qDebug() << "error on bind" << errno;
@@ -368,14 +353,31 @@ void Proxy::run_pcap(const char* dstIp) {
                 } else {
                     port++;
                 }
-                if (port >= 65535)
-                    qFatal("Port escalation higher than 65535");
+                if (port >= 65535) {
+                    qWarning("Port escalation higher than 65535");
+                    UnixSignalHandler::termSignalHandler(0);
+                }
                 qDebug() << "Could not bind on port " << listenPort << "going to use " << QString::number(port);
             }
         } else {
             bound = true;
         }
     }
+
+#ifdef linux
+        UnixSignalHandler* u = UnixSignalHandler::getInstance();
+        // create socket and bind for the kernel
+        QProcess bindSocket;
+        QStringList bindSocketArgs;
+        bindSocketArgs.append(QString::number(port));
+        bindSocketArgs.append(listenIp);
+
+        qDebug() << "Start bind socket process";
+        bindSocket.start(QString(HELPERPATH) + "newSocket", bindSocketArgs);
+        qDebug() << "Wait for started";
+        bindSocket.waitForStarted();
+        bindSocket.waitForFinished();
+#endif
 
     qDebug() << "going to seek listen iface";
     QStack<QString> listenInterfaces;

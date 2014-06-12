@@ -33,10 +33,6 @@ int main(int argc, char** argv) {
     sprintf(ip6tablesRule, "ip6tables -A OUTPUT -s %s -p tcp --sport %s --tcp-flags RST RST -j DROP", argv[2], argv[1]);
     system(ip6tablesRule);
 #endif
-    printf("all is well!\n");
-    fflush(stdout);
-
-    getchar(); // press any key to quit (releasing the "bind" call)
 
     return 0;
 }
