@@ -89,6 +89,7 @@ void BonjourResolver::hostInfoReady(const QHostInfo &info) {
         }
     }
     qDebug() << "Going to test v6.empty";
+#if 0 /* is superfluous but may be reactivated if mind change */
     if (v6.empty() && !v4.empty()) { // QHostInfo was not able to fetch ipv6
         // check that v4 ip is not a local one
         bool local = false;
@@ -214,7 +215,7 @@ void BonjourResolver::hostInfoReady(const QHostInfo &info) {
         }
     }
     record->ips = v6;
-
+#endif
     if (v6.empty()) {
         qDebug() << "Invalid record no IPv6 available, we don't use it!";
         return; // do not use record
