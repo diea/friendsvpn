@@ -341,6 +341,7 @@ void Proxy::run_pcap(const char* dstIp) {
                 }
                 qDebug() << "Could not bind on port " << listenPort << "going to use " << QString::number(port);
             } else if (bindSocket.exitCode() == EBADF) {
+                qDebug() << "Ip" << listenIp << "and port" << port << "already bound";
                 bound = true; // happens when some advertise two services on same port
             }
         } else {
