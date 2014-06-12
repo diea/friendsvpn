@@ -146,7 +146,7 @@ void DataPlaneServer::readyRead(int) {
 
     ConnectionInitiator* init = ConnectionInitiator::getInstance();
 
-    QString friendUid = qSql->getUidFromIP(friendIp);
+    QString friendUid = qSql->getUidFromIP(QHostAddress(QString(friendIp)));
     ControlPlaneConnection* cp = init->getConnection(friendUid);
     if (friendUid.isEmpty() || cp->getMode() == Closed) {
         qDebug() << "friendUId NOT in DB or no control plane connection!";

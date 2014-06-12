@@ -27,6 +27,7 @@ private:
 
     void initDB();
     QMutex qryMut;
+    QHash<QHostAddress, QString> ipUid; // maintian IP-UID mapping for clients
     static DatabaseHandler* instance;
     explicit DatabaseHandler(QObject *parent = 0);
 public:
@@ -93,7 +94,8 @@ public:
      * @return the user's UID associated with the IP given as param
      *          the string "" if there was no IP for that user
      */
-    QString getUidFromIP(QString ip);
+    QString getUidFromIP(QHostAddress ip);
+    void addUidForIP(QHostAddress ip, QString uid);
 
     /**
      * @brief getName

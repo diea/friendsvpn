@@ -89,6 +89,8 @@ void ControlPlaneServer::sslSockReadyRead() {
                 qDebug() << "Uid is" << rcvdUid;
                 qDebug() << (r == "\r\n");
                 if (r == "\r\n") {
+                    DatabaseHandler* db = DatabaseHandler::getInstance();
+                    db->addUidForIP(sslSock->peerAddress(), rcvdUid);
                     ControlPlaneConnection* con = init->getConnection(rcvdUid);
                     con->addMode(Receiving, sslSock);
                     sslSock->setControlPlaneConnection(con);

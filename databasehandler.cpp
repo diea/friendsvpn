@@ -277,7 +277,10 @@ QString DatabaseHandler::getName(QString uid) {
     }
 }
 
-QString DatabaseHandler::getUidFromIP(QString IP) {
+QString DatabaseHandler::getUidFromIP(QHostAddress IP) {
+    if (ipUid.contains(IP)) {
+        return ipUid.value(IP);
+    }
     qryMut.lock();
     QSqlDatabase db = QSqlDatabase::database();
     while (!db.isOpen()) {
@@ -287,13 +290,14 @@ QString DatabaseHandler::getUidFromIP(QString IP) {
     }
     QSqlQuery query = QSqlQuery(QSqlDatabase::database());
     query.prepare("SELECT uid FROM User WHERE ipv6 = ?");
-    query.bindValue(0, IP);
+    query.bindValue(0, IP.toString());
     query.exec();
 
     if (query.next()) {
         QString user_uid = query.value(0).toString();
         db.close();
         qryMut.unlock();
+        ipUid.insert(IP, user_uid);
         return user_uid;
     } else {
         // error
@@ -302,6 +306,10 @@ QString DatabaseHandler::getUidFromIP(QString IP) {
         qryMut.unlock();
         return QString();
     }
+}
+
+void DatabaseHandler::addUidForIP(QHostAddress IP, QString uid) {
+    ipUid.insert(IP, uid);
 }
 
 
