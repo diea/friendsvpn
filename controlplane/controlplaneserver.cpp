@@ -82,13 +82,17 @@ void ControlPlaneServer::sslSockReadyRead() {
             qDebug() << "Got HELLO";
             QString bu = sslSock->readLine();
             QStringList uidList = bu.split(":");
-            QString r = sslSock->read(1); // get '\r'
-            qDebug() << "Got uid" << uidList.at(1);
-            qDebug() << (r == "\r\n");
-            if (uidList.length() == 2 && r == "\r\n") {
-                ControlPlaneConnection* con = init->getConnection(uidList.at(1));
-                con->addMode(Receiving, sslSock);
-                sslSock->setControlPlaneConnection(con);
+            QString r = sslSock->read(2); // get '\r\n'
+            if (uidList.length() == 2) {
+                QString rcvdUid = uidList.at(1);
+                rcvdUid.chop(2);
+                qDebug() << "Uid is" << rcvdUid;
+                qDebug() << (r == "\r\n");
+                if (r == "\r\n") {
+                    ControlPlaneConnection* con = init->getConnection(rcvdUid);
+                    con->addMode(Receiving, sslSock);
+                    sslSock->setControlPlaneConnection(con);
+                }
             }
         } else {
             qDebug() << "Error did not receive HELLO first";
