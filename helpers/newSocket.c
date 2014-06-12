@@ -64,7 +64,7 @@ int main(int argc, char** argv) {
     printf("OK\n");
     fflush(stdout);
 
-#ifndef __APPLE__ /* linux */
+#ifdef linux /* linux */
     /* on linux the "bind" trick does not work due to bind's implementation needing a "listen"
      * to accept connections, we will thus prevent the kernel from sending its RST using an ip6tables
      * rule
@@ -72,7 +72,7 @@ int main(int argc, char** argv) {
      */
 
     char* ip6tablesRule = malloc(400 * sizeof(char));
-    sprintf(ip6tablesRule, "ip6tables -A OUTPUT -s %s -p tcp --sport %s --tcp-flags RST RST -j DROP", argv[4], argv[]);
+    sprintf(ip6tablesRule, "ip6tables -A OUTPUT -s %s -p tcp --sport %s --tcp-flags RST RST -j DROP", argv[4], argv[3]);
     system(ip6tablesRule);
 #endif
 
