@@ -52,7 +52,7 @@ void ControlPlaneClient::connectionReady() {
     qDebug() << "Actual write call";
     sslClient->write(hello.toUtf8().constData());
     qDebug() << "Wait for bytes written";
-    sslClient->waitForBytesWritten();
+    //sslClient->waitForBytesWritten();
 
     qDebug() << "Set client connection";
     ControlPlaneConnection* con = init->getConnection(friendUid);
