@@ -45,14 +45,6 @@ int UnixSignalHandler::setup_unix_signal_handlers() {
     return 0;
 }
 
-void UnixSignalHandler::addQProcess(QProcess *p) {
-    listOfProcessToKill.append(p);
-}
-
-void UnixSignalHandler::removeQProcess(QProcess *p) {
-    listOfProcessToKill.removeAll(p);
-}
-
 void UnixSignalHandler::addIp(QString ip) {
     listOfIps.append(ip);
 }
@@ -75,19 +67,6 @@ void UnixSignalHandler::termSignalHandler(int) {
 void UnixSignalHandler::doExit() {
     static QMutex mutex;
     mutex.lock(); // no need to unlock we exit
-    foreach (QProcess* p, listOfProcessToKill) {
-        qDebug() << "Closing process";
-        if (p) {
-            if ((p->state() != QProcess::NotRunning)) {
-                qDebug() << p->state();
-                p->terminate();
-                p->waitForFinished(200);
-                if (p->state() != QProcess::NotRunning) {
-                    p->kill();
-                }
-            }
-        }
-    }
 
     foreach (Proxy* p, Proxy::proxyHashes.values()) {
         qDebug() << "Delete proxy";

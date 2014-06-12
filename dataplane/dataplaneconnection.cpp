@@ -65,13 +65,13 @@ bool DataPlaneConnection::addMode(plane_mode mode, QObject* socket) {
 }
 
 void DataPlaneConnection::readBuffer(char* buf, int bufLen) {
-    qDebug() << "readBuffer Thread" << QThread::currentThreadId();
     lastRcvdTimestamp = time(NULL); // we received a packet, update time
     struct dpHeader *header = (struct dpHeader*) buf;
     char* packetBuf = NULL;
     header->len = ntohs(header->len);
 
     if (header->fragType != 0) { /* handle fragment */
+        qDebug() << "Handling data plane fragment";
         struct dpFragHeader* fragHead = (struct dpFragHeader*) (buf + sizeof(struct dpHeader));
         fragHead->fragId = ntohl(fragHead->fragId);
         fragHead->offset = ntohs(fragHead->offset);
@@ -107,7 +107,7 @@ void DataPlaneConnection::readBuffer(char* buf, int bufLen) {
                 if (!frag->remainingBits) { /* got to 0, packet is arrived */
                     packetBuf = frag->fragBuf;
                 } else if (frag->remainingBits < 0) {
-                    qDebug() << "Should not happen, remaining bits is < 0";
+                    qWarning() << "Should not happen, remaining bits is < 0";
                 }
                 remainingBitsMutex.unlock();
             }
@@ -156,25 +156,11 @@ void DataPlaneConnection::readBuffer(char* buf, int bufLen) {
     }
 }
 
-char* printBits(quint16 x)
-{
-   char* bits = static_cast<char*>(malloc(16));
-   int i;
-   int cnt = 0;
-   for(i=(sizeof(quint16)*8)-1; i>=0; i--) {
-       (x & (1 << i) ) ? sprintf(bits + cnt,"1") : sprintf(bits + cnt, "0");
-       cnt++;
-   }
-   bits[16] = '\0';
-   return bits;
-}
-
 quint16 DataPlaneConnection::maxPayloadLen = IPV6_MIN_MTU - sizeof(struct dpHeader);
 
 void DataPlaneConnection::sendBytes(const char *buf, int len, QByteArray& hash, int sockType, QString& srcIp) {
-    qDebug() << "sendBytes thread ID" << QThread::currentThreadId();
     if (time(NULL) - lastRcvdTimestamp > TIMEOUT_DELAY) {
-        qDebug() << "Testing ALIVE";
+        qDebug() << "Data plane testing alive for" << friendUid;
         // is distant host still alive ?
         // get controlplaneconnection and ask it
         ConnectionInitiator* in = ConnectionInitiator::getInstance();
@@ -191,7 +177,7 @@ void DataPlaneConnection::sendBytes(const char *buf, int len, QByteArray& hash, 
     inet_pton(AF_INET6, srcIp.toUtf8().data(), &(header.srcIp));
 
     if (static_cast<unsigned long>(len) > maxPayloadLen) {
-        qDebug() << "Dataplane frag";
+        qDebug() << "Sending data plane fragments";
         // packet will use more than the min MTU, we fragment it
         quint16 dataFieldLen = maxPayloadLen - sizeof(struct dpFragHeader); //TODO remove dpHeader
         struct dpFragHeader dpFrag;
@@ -214,7 +200,7 @@ void DataPlaneConnection::sendBytes(const char *buf, int len, QByteArray& hash, 
                                                      + sizeof(struct dpHeader)
                                                      + sizeof(struct dpFragHeader)));
             if (!packet) {
-                qDebug() << "packet could not be allocated!";
+                qWarning() << "Packet could not be allocated!";
                 return;
             }
             dpFrag.offset = htons(pos);
@@ -266,26 +252,16 @@ void DataPlaneConnection::disconnect() {
         client->stop();
         server->stop();
     } else {
-        qDebug() << "Not in both mode";
         if (curMode == Receiving) {
-            qDebug() << "Stopping server";
             server->stop();
         }
         if (curMode == Emitting) {
-            qDebug() << "Stopping client";
             client->stop();
         }
     }
     curMode = Closed;
     mutex.unlock();
-    qDebug() << "Deleting client proxies";
-    /*while (!clientProxys.empty()) {
-        Proxy* c = clientProxys.pop();
-        if (c)
-            delete c;
-    }*/
-    qDebug() << "Removing from ConnectionInitiator";
+
     ConnectionInitiator::getInstance()->removeConnection(this);
-    qDebug() << "Delete self";
     this->deleteLater();
 }

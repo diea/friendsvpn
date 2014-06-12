@@ -214,7 +214,7 @@ int DataPlaneServer::verify_cookie(SSL *ssl, unsigned char *cookie, unsigned int
         buffer = (unsigned char*) OPENSSL_malloc(length);
 
         if (buffer == NULL) {
-            qDebug("out of memory");
+            qWarning("out of memory");
             return 0;
         }
 
@@ -265,7 +265,7 @@ int DataPlaneServer::generate_cookie(SSL *ssl, unsigned char *cookie, unsigned i
         {
         if (!RAND_bytes(cookie_secret, COOKIE_SECRET_LENGTH))
             {
-            qDebug("error setting random cookie secret");
+            qWarning("error setting random cookie secret");
             return 0;
             }
         cookie_initialized = 1;
@@ -292,7 +292,7 @@ int DataPlaneServer::generate_cookie(SSL *ssl, unsigned char *cookie, unsigned i
 
     if (buffer == NULL)
         {
-        qDebug("out of memory");
+        qWarning("out of memory");
         return 0;
         }
 

@@ -45,7 +45,7 @@ RawSockets::RawSockets(QObject *parent) :
 
                 strcpy(ifr.ifr_name, ifaptr->ifa_name);
                 if (ioctl(sock, SIOCGIFMTU, &ifr) < 0) {
-                    qDebug("ioctl() failed to get MTU ");
+                    qWarning("ioctl() failed to get MTU ");
                     UnixSignalHandler::termSignalHandler(0);
                 }
                 r->mtu = ifr.ifr_ifru.ifru_mtu;
@@ -69,7 +69,7 @@ RawSockets::RawSockets(QObject *parent) :
 
     strcpy(ifr.ifr_name, "lo0");
     if (ioctl(sock, SIOCGIFMTU, &ifr) < 0) {
-        qDebug("ioctl() failed to get MTU ");
+        qWarning("ioctl() failed to get MTU ");
         UnixSignalHandler::termSignalHandler(0);
     }
     r->mtu = ifr.ifr_ifru.ifru_mtu;
@@ -103,7 +103,7 @@ RawSockets::RawSockets(QObject *parent) :
                     memcpy(&r->mac, ifr.ifr_hwaddr.sa_data, ETHER_ADDR_LEN);
 
                     if (ioctl(sock, SIOCGIFMTU, &ifr) < 0) {
-                        qDebug("ioctl() failed to get MTU ");
+                        qWarning("ioctl() failed to get MTU ");
                         UnixSignalHandler::termSignalHandler(0);
                     }
                     r->mtu = ifr.ifr_mtu;
@@ -137,7 +137,7 @@ RawSockets::RawSockets(QObject *parent) :
 
     strcpy(ifr.ifr_name, "lo");
     if (ioctl(sock, SIOCGIFMTU, &ifr) < 0) {
-        qDebug("ioctl() failed to get MTU ");
+        qWarning("ioctl() failed to get MTU ");
         UnixSignalHandler::termSignalHandler(0);
     }
     r->mtu = ifr.ifr_mtu;
@@ -314,7 +314,7 @@ void RawSockets::writeBytes(QString srcIp, QString dstIp, int srcPort,
                                                      + sizeof(struct rawComHeader)
                                                      + sizeof(struct fragHeader)));
             if (!packet) {
-                qDebug() << "Packet could not be allocated!";
+                qWarning() << "Packet could not be allocated!";
                 return;
             }
             memcpy(packet, &rawHeader, sizeof(struct rawComHeader));
@@ -324,6 +324,8 @@ void RawSockets::writeBytes(QString srcIp, QString dstIp, int srcPort,
 
             raw->write(packet, payloadLen + sizeof(struct fragHeader) + sizeof(struct rawComHeader));
             raw->waitForBytesWritten();
+
+            qDebug() << "Injecting fragment of size" << payloadLen;
 
             pos += payloadLen;
             packet_send_size -= payloadLen;
@@ -441,7 +443,7 @@ void RawSockets::packetTooBig(QString srcIp, QString dstIp, const char *packetBu
     hints.ai_family = AF_INET6;
     int adret = getaddrinfo(srcIp.toUtf8().data(), NULL, &hints, &res);
     if (adret) {
-        qDebug() << gai_strerror(adret);
+        qWarning() << gai_strerror(adret);
         return;
     }
     rawHeader.ip6.ip6_src = ((struct sockaddr_in6 *) res->ai_addr)->sin6_addr;
@@ -451,7 +453,7 @@ void RawSockets::packetTooBig(QString srcIp, QString dstIp, const char *packetBu
     hints.ai_family = AF_INET6;
     adret = getaddrinfo(dstIp.toUtf8().data(), NULL, &hints, &res1);
     if (adret) {
-        qDebug() << gai_strerror(adret);
+        qWarning() << gai_strerror(adret);
         return;
     }
     rawHeader.ip6.ip6_dst = ((struct sockaddr_in6 *) res1->ai_addr)->sin6_addr;

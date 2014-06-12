@@ -21,7 +21,7 @@ ControlPlaneServer::ControlPlaneServer(QSslCertificate servCert, QSslKey myKey,
 
 ControlPlaneServer::~ControlPlaneServer()
 {
-    qDebug() << "Destroy control plane server";
+    qDebug() << "Destroying control plane server";
     foreach (SslSocket* sock, sslSockList) {
         sock->close();
         delete sock;
@@ -77,17 +77,13 @@ void ControlPlaneServer::sslSockReadyRead() {
     if (!sslSock->isAssociated()) {
         // not associated
         QString msg = sslSock->read(7);
-        qDebug() << "msg is" << msg;
         if (msg == "HELLO\r\n") {
-            qDebug() << "Got HELLO";
             QString bu = sslSock->readLine();
             QStringList uidList = bu.split(":");
             QString r = sslSock->read(2); // get '\r\n'
             if (uidList.length() == 2) {
                 QString rcvdUid = uidList.at(1);
                 rcvdUid.chop(2);
-                qDebug() << "Uid is" << rcvdUid;
-                qDebug() << (r == "\r\n");
                 if (r == "\r\n") {
                     DatabaseHandler* db = DatabaseHandler::getInstance();
                     db->addUidForIP(sslSock->peerAddress(), rcvdUid);
@@ -97,7 +93,7 @@ void ControlPlaneServer::sslSockReadyRead() {
                 }
             }
         } else {
-            qDebug() << "Error did not receive HELLO first";
+            qWarning() << "Error did not receive HELLO first";
             sslSock->close();
             sslSock->deleteLater();
         }

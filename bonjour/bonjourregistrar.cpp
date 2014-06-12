@@ -91,9 +91,6 @@ void BonjourRegistrar::registerRecordCallback(DNSServiceRef, DNSRecordRef, const
 void BonjourRegistrar::handleError(DNSServiceErrorType error) {
     qDebug() << "BonjourRegistrar had error" << error;
 
-    // could very for duplicate name error and not destruct (would allow to advertise using machine's hostname
-    // miming the dns-sd -R command (the DNSRegisterRecord would fail)
-
     //  deallocate the dnssrefs
     if (dnssref) {
         DNSServiceRefDeallocate(dnssref);

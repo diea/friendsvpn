@@ -56,7 +56,7 @@ ControlPlaneConnection::ControlPlaneConnection(QString uid, AbstractPlaneConnect
 }
 
 ControlPlaneConnection::~ControlPlaneConnection() {
-    qDebug() << "Destroyed control plane connection !";
+    qDebug() << "Destroying control plane connection";
     if (serverSock) {
         serverSock->close();
         delete serverSock;
@@ -71,7 +71,7 @@ ControlPlaneConnection::~ControlPlaneConnection() {
 void ControlPlaneConnection::alive() {
     QString alive = "PING\r\n\r\n";
     sendPacket(alive);
-    qDebug() << "Setting timeout";
+    qDebug() << "Testing if" << friendUid << "is alive";
     QTimer::singleShot(5000, this, SLOT(aliveTimeout()));
 }
 
@@ -85,10 +85,9 @@ void ControlPlaneConnection::aliveTimeout() {
 void ControlPlaneConnection::sendPacket(QString& packet) {
     mutex.lock();
     SslSocket* toWrite; // the socket on which the bonjour packets are to be sent
-    //qDebug() << "passed the lock in sendbonjour";
 
     if (curMode == Closed) {
-        qDebug() << "trying to write bonjour but mode is Closed";
+        qDebug() << "Trying to write bonjour but mode is closed";
         mutex.unlock();
         return;
     }
@@ -122,15 +121,14 @@ void ControlPlaneConnection::removeConnection() {
 }
 
 bool ControlPlaneConnection::addMode(plane_mode mode, QObject *socket) {
-    qDebug() << "adding mode " << mode << "controlplane";
     SslSocket* sslSocket = dynamic_cast<SslSocket*>(socket);
     if (!sslSocket) {
-        qDebug() << "add mode fail 1 controlplane";
+        qDebug() << "Add mode fail 1 controlplane";
         return false; // needs to be of type QSslSocket!
     }
 
     if ((curMode == Both) || (curMode == mode)) {
-        qDebug() << "add mode fail 2 controlplane";
+        qDebug() << "Add mode fail 2 controlplane";
         return false;
     }
     if (mode == Receiving)
@@ -146,7 +144,7 @@ bool ControlPlaneConnection::addMode(plane_mode mode, QObject *socket) {
     if (curMode == Both)
         this->removeConnection();
 
-    qDebug() << "returning from add mode with mode " << curMode;
+    qDebug() << "Added mode " << mode << "controlplane";
     return true;
 }
 
@@ -181,7 +179,7 @@ void ControlPlaneConnection::readBuffer(char* buf, int len) {
         }
 
         if (!headerLength) {
-            qDebug() << "ERROR: packet with header length 0";
+            qWarning() << "ERROR: packet with header length 0";
             return;
         }
 
@@ -228,7 +226,7 @@ void ControlPlaneConnection::readBuffer(char* buf, int len) {
             qDebug() << "MD5 is" << md5;
 
             if (hostname.isEmpty() || name.isEmpty() || type.isEmpty() || !port) {
-                qDebug() << "ERROR: Bonjour packet wrong format";
+                qWarning() << "ERROR: Bonjour packet wrong format";
                 return;
             }
 

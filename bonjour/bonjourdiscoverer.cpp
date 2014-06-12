@@ -12,7 +12,6 @@ BonjourDiscoverer* BonjourDiscoverer::instance = NULL;
 BonjourDiscoverer* BonjourDiscoverer::getInstance(QObject *parent) {
     if (!instance) {
         instance = new BonjourDiscoverer(parent);
-        qDebug() << "bonjourdiscoverer thread id" << QThread::currentThreadId();
     }
     return instance;
 }

@@ -53,8 +53,8 @@ void ServerWorker::connection_handle() {
     qDebug("------------------------------------------------------------");
     /*X509_NAME_print_ex_fp(stdout, X509_get_subject_name(SSL_get_peer_certificate(ssl)),
                           1, XN_FLAG_MULTILINE);*/
-    qDebug() << "\n\n Cipher: " << SSL_CIPHER_get_name(SSL_get_current_cipher(ssl));
-    qDebug("\n------------------------------------------------------------");
+    qDebug() << "Cipher: " << SSL_CIPHER_get_name(SSL_get_current_cipher(ssl));
+    qDebug("------------------------------------------------------------");
 
     notif = new QSocketNotifier(fd, QSocketNotifier::Read);
     connect(notif, SIGNAL(activated(int)), this, SLOT(readyRead(int)));
@@ -72,7 +72,6 @@ void ServerWorker::readyRead(int) {
         if ((len = SSL_read(ssl, buf, BUFFER_SIZE * sizeof(char))) > 0) {
             switch (SSL_get_error(ssl, len)) {
                 case SSL_ERROR_NONE:
-                qDebug() << "Reading in thread" << QThread::currentThreadId();
                  con->readBuffer(buf, len);
                  break;
                 case SSL_ERROR_WANT_READ:
@@ -83,16 +82,16 @@ void ServerWorker::readyRead(int) {
                 case SSL_ERROR_ZERO_RETURN:
                  break;
                 case SSL_ERROR_SYSCALL:
-                 qDebug("Socket read error: ");
-                 qDebug() << ERR_error_string(ERR_get_error(), buf);
-                 qDebug() << SSL_get_error(ssl, len);
+                 qWarning("Socket read error: ");
+                 qWarning() << ERR_error_string(ERR_get_error(), buf);
+                 qWarning() << SSL_get_error(ssl, len);
                  break;
                 case SSL_ERROR_SSL:
-                 qDebug("SSL read error: ");
-                 qDebug("%s (%d)\n", ERR_error_string(ERR_get_error(), buf), SSL_get_error(ssl, len));
+                 qWarning("SSL read error: ");
+                 qWarning("%s (%d)\n", ERR_error_string(ERR_get_error(), buf), SSL_get_error(ssl, len));
                  break;
                 default:
-                 qDebug("Unexpected error while reading!\n");
+                 qWarning("Unexpected error while reading!\n");
                  break;
             }
         }
@@ -116,34 +115,33 @@ void ServerWorker::stop() {
 
 void ServerWorker::sendBytes(const char* buf, int len) {
     if (len > 0) {
-        qDebug() << "Writing in thread" << QThread::currentThreadId();
         len = SSL_write(ssl, buf, len);
         switch (SSL_get_error(ssl, len)) {
          case SSL_ERROR_NONE:
-             qDebug() << "SSL_ERROR_NONE";
+            qDebug() << "Wrote" << len << "bytes on data plane connection";
              break;
          case SSL_ERROR_WANT_WRITE:
              /* Can't write because of a renegotiation, so
               * we actually have to retry sending this message...
               */
-             qDebug() << "SSL_ERROR_WANT_WRITE";
+             qWarning() << "SSL_ERROR_WANT_WRITE";
              break;
          case SSL_ERROR_WANT_READ:
-             qDebug() << "SSL_ERROR_WANT_READ";
+             qWarning() << "SSL_ERROR_WANT_READ";
              /* continue with reading */
              break;
          case SSL_ERROR_SYSCALL:
-             qDebug("Socket write error: ");
+             qWarning("Socket write error: ");
              break;
          case SSL_ERROR_SSL: { /* {} to help compiler understand scope of bufCpy */
-             qDebug("SSL write error: ");
+             qWarning("SSL write error: ");
              char bufCpy[len];
              memcpy(bufCpy, buf, len);
-             qDebug() << ERR_error_string(ERR_get_error(), bufCpy) << "(" << SSL_get_error(ssl, len) << ")";
+             qWarning() << ERR_error_string(ERR_get_error(), bufCpy) << "(" << SSL_get_error(ssl, len) << ")";
              break;
          }
          default:
-             qDebug("Unexpected error while writing!");
+             qWarning("Unexpected error while writing!");
              break;
         }
     }

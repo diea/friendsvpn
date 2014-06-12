@@ -96,7 +96,7 @@ void DataPlaneClient::run() {
     timeout.tv_usec = 0;
     BIO_ctrl(bio, BIO_CTRL_DGRAM_SET_RECV_TIMEOUT, 0, &timeout);
 
-    qDebug() <<  "\nConnected to \n" << inet_ntop(AF_INET6, &remote_addr.s6.sin6_addr, addrbuf, INET6_ADDRSTRLEN);
+    qDebug() <<  "Connected to" << inet_ntop(AF_INET6, &remote_addr.s6.sin6_addr, addrbuf, INET6_ADDRSTRLEN);
 
     if (SSL_get_peer_certificate(ssl)) {
         qDebug("------------------------------------------------------------");
@@ -116,7 +116,6 @@ void DataPlaneClient::readyRead(int) {
     //notif->setEnabled(false);
     size_t len;
     if (!(SSL_get_shutdown(ssl) & SSL_RECEIVED_SHUTDOWN)) {
-        qDebug() << "Reading in thread" << QThread::currentThreadId();
         char* buf = static_cast<char*>(malloc(BUFFER_SIZE * sizeof(char)));
         memset(buf, 0, BUFFER_SIZE * sizeof(char));
         closeProtect.lock();
@@ -131,20 +130,20 @@ void DataPlaneClient::readyRead(int) {
                  /* Just try again */
                  break;
                 case SSL_ERROR_ZERO_RETURN:
-                 qDebug() << "SSL_ERROR_ZERO_RETURN";
+                 qWarning() << "SSL_ERROR_ZERO_RETURN";
                  break;
                 case SSL_ERROR_SYSCALL:
-                 qDebug("Socket read error");
-                 qDebug() << ERR_error_string(ERR_get_error(), buf);
-                 qDebug() << SSL_get_error(ssl, len);
+                 qWarning("Socket read error");
+                 qWarning() << ERR_error_string(ERR_get_error(), buf);
+                 qWarning() << SSL_get_error(ssl, len);
                  break;
                 case SSL_ERROR_SSL:
-                 qDebug("SSL read error: ");
-                 qDebug() << ERR_error_string(ERR_get_error(), buf);
-                 qDebug() << SSL_get_error(ssl, len);
+                 qWarning("SSL read error: ");
+                 qWarning() << ERR_error_string(ERR_get_error(), buf);
+                 qWarning() << SSL_get_error(ssl, len);
                  break;
                 default:
-                 qDebug("Unexpected error while reading!\n");
+                 qWarning("Unexpected error while reading!\n");
                  break;
             }
         }
@@ -156,32 +155,31 @@ void DataPlaneClient::readyRead(int) {
 
 void DataPlaneClient::sendBytes(const char *bytes, socklen_t len) {
     if (!(SSL_get_shutdown(ssl) & SSL_RECEIVED_SHUTDOWN)) {
-        qDebug() << "Writing in thread" << QThread::currentThreadId();
         int nbWr = SSL_write(ssl, bytes, len);
-        qDebug() << "Wrote" << nbWr << "bytes";
+        qDebug() << "Wrote" << nbWr << "bytes on data plane connection";
         switch (SSL_get_error(ssl, len)) {
             case SSL_ERROR_NONE:
                 break;
             case SSL_ERROR_WANT_WRITE:
-                qDebug() << "SSL_ERROR_WANT_WRITE";
+                qWarning() << "SSL_ERROR_WANT_WRITE";
                 /* Just try again later */
                 break;
             case SSL_ERROR_WANT_READ:
-                qDebug() << "SSL_ERROR_WANT_READ";
+                qWarning() << "SSL_ERROR_WANT_READ";
                 /* continue with reading */
                 break;
             case SSL_ERROR_SYSCALL:
-                qDebug("Socket write error: ");
+                qWarning("Socket write error: ");
                 break;
             case SSL_ERROR_SSL: {
-                qDebug("SSL write error: ");
+                qWarning("SSL write error: ");
                 char errorBuf[50];
-                qDebug() << ERR_error_string(ERR_get_error(), errorBuf);
-                qDebug() << SSL_get_error(ssl, len);
+                qWarning() << ERR_error_string(ERR_get_error(), errorBuf);
+                qWarning() << SSL_get_error(ssl, len);
                 break;
             }
             default:
-                qDebug("Unexpected error while writing!");
+                qWarning("Unexpected error while writing!");
                 break;
         }
     }

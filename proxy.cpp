@@ -315,16 +315,13 @@ void Proxy::run_pcap(const char* dstIp) {
         bindSocketArgs.append(QString::number(ipProto));
         bindSocketArgs.append(QString::number(port));
         bindSocketArgs.append(listenIp);
-        qDebug() << "Start bind socket process";
-        qDebug() << "Bind args" << bindSocketArgs;
         bindSocket.start(QString(HELPERPATH) + "newSocket", bindSocketArgs);
-        qDebug() << "Wait for started";
         bindSocket.waitForStarted();
         bindSocket.waitForReadyRead();
         QString retStr = bindSocket.readAll();
         if (retStr != "OK\n") {
             bindSocket.waitForFinished();
-            qDebug() << "error on bind" << bindSocket.exitCode();
+            qDebug() << "Error on bind" << bindSocket.exitCode();
             if (bindSocket.exitCode() == EADDRNOTAVAIL) {
                 // loop again until IP is available but just sleep a moment
                 qDebug() << "Bind ERROR: EADDRNOTAVAIL";
@@ -349,7 +346,6 @@ void Proxy::run_pcap(const char* dstIp) {
         }
     }
 
-    qDebug() << "going to seek listen iface";
     QStack<QString> listenInterfaces;
     if (dstIp != 0) {
         struct ip_mac_mapping map = resolver->getMapping(dstIp);
@@ -363,7 +359,6 @@ void Proxy::run_pcap(const char* dstIp) {
     }
 
 
-    qDebug() << "Making worker pcap threads and current thread ID is" << QThread::currentThreadId();
     while (!listenInterfaces.empty()) {
         // listen for packets with pcap, forward on the secure UDP link
         QStringList args;

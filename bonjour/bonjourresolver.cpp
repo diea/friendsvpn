@@ -17,7 +17,6 @@ void BonjourResolver::resolve() {
     QList<void*>* context = new QList<void*>();
     context->append(record);
     context->append(this);
-    //qDebug() << "Calling DNS Service Resolve";
     DNSServiceErrorType err = DNSServiceResolve(&dnsref, 0, 0, record->serviceName.toUtf8().constData(),
                                                 record->registeredType.toUtf8().constData(),
                                                 record->replyDomain.toUtf8().constData(),
@@ -53,10 +52,6 @@ void BonjourResolver::resolveReply(DNSServiceRef , //sdRef
     } else {
         port = ntohs(port);
         if (txtLen > 1) {
-            qDebug() << "Got txt for record";
-            qDebug() << "txt is of len" << txtLen << "and is" << txtRecord;
-            /*char textRecord[txtLen];
-            memcpy(textRecord, txtRecord, txtLen);*/
             record->txt = QByteArray(static_cast<const char*>(static_cast<const void*>(txtRecord)), txtLen);
         }
         record->port = port;
@@ -88,7 +83,6 @@ void BonjourResolver::hostInfoReady(const QHostInfo &info) {
             v4.append(adr.toString());
         }
     }
-    qDebug() << "Going to test v6.empty";
 #if 0 /* is superfluous but may be reactivated if mind change */
     if (v6.empty() && !v4.empty()) { // QHostInfo was not able to fetch ipv6
         // check that v4 ip is not a local one

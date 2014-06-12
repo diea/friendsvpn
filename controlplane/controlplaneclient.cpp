@@ -39,22 +39,17 @@ void ControlPlaneClient::run() {
 }
 
 void ControlPlaneClient::sslErrors(const QList<QSslError>& errors) {
-    qDebug() << "SSL error:";
-    qDebug() << errors;
+    qWarning() << "SSL error:";
+    qWarning() << errors;
 }
 
 void ControlPlaneClient::connectionReady() {
     connect(sslClient, SIGNAL(readyRead()), this, SLOT(sslClientReadyRead()));
 
-    qDebug() << "Send HELLO";
     // Send HELLO packet
     QString hello("HELLO\r\nUid:" + init->getMyUid() + "\r\n\r\n");
-    qDebug() << "Actual write call";
     sslClient->write(hello.toUtf8().constData());
-    qDebug() << "Wait for bytes written";
-    //sslClient->waitForBytesWritten();
 
-    qDebug() << "Set client connection";
     ControlPlaneConnection* con = init->getConnection(friendUid);
     sslClient->setControlPlaneConnection(con);
     con->addMode(Emitting, sslClient);

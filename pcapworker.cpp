@@ -20,7 +20,6 @@ PcapWorker::~PcapWorker()
         connect(pcap, SIGNAL(finished(int)), pcap, SLOT(deleteLater()));
     }
     pcap = NULL;
-    qDebug() << "Closed";
 }
 
 void PcapWorker::run() {
@@ -33,9 +32,8 @@ void PcapWorker::run() {
     pcap->closeWriteChannel();
     pcap->setReadChannel(QProcess::StandardOutput);
 
-    qDebug() << "Pcap start wait for ready read";
+    qDebug() << "Pcap ready, waiting for bytes";
     while (pcap->waitForReadyRead(-1)) {
-        qDebug() << "Waiting for ready read";
         qDebug() << "Before reading header PCAP has" << pcap->bytesAvailable() << "bytes available";
 
         while (pcap->bytesAvailable() > qint64(sizeof(pcapComHeader))) {

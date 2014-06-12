@@ -52,8 +52,9 @@ void SysTray::createTrayIcon()
 {
     QIcon icon = QIcon(":images/favicon.png");
     trayIconMenu = new QMenu(this);
-    trayIconMenu->addAction(quitAction);
     trayIconMenu->addAction(sendBjr);
+    trayIconMenu->addSeparator();
+    trayIconMenu->addAction(quitAction);
 
     trayIcon = new QSystemTrayIcon(this);
     trayIcon->setContextMenu(trayIconMenu);

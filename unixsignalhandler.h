@@ -24,7 +24,6 @@ private:
      */
     static int setup_unix_signal_handlers();
 
-    QList<QProcess*> listOfProcessToKill;
     QList<QThread*> listOfThreads;
     QList<QString> listOfIps;
     explicit UnixSignalHandler(QObject *parent = 0);
@@ -32,13 +31,6 @@ private:
     static UnixSignalHandler* instance;
 public:
     static UnixSignalHandler* getInstance();
-
-    /**
-     * @brief addQProcess adds a QProcess to close before shutting down
-     * @param p
-     */
-    void addQProcess(QProcess* p);
-    void removeQProcess(QProcess *p);
 
     /**
      * @brief addIp add ip associated with the ifconfighelp process p
