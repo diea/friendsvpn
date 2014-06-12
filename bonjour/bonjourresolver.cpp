@@ -214,13 +214,14 @@ void BonjourResolver::hostInfoReady(const QHostInfo &info) {
             }
         }
     }
-    record->ips = v6;
+
 #endif
     if (v6.empty()) {
         qDebug() << "Invalid record no IPv6 available, we don't use it!";
         return; // do not use record
     }
 
+    record->ips = v6;
     record->resolved = true;
     record->hostname = info.hostName();
 
