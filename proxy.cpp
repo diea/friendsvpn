@@ -341,7 +341,7 @@ void Proxy::run_pcap(const char* dstIp) {
         }
         ((struct sockaddr_in6*) res->ai_addr)->sin6_port = htons(portno);
 
-        qDebug() << "Wait for finished";
+        qDebug() << "bind call";
         if (bind(fd, res->ai_addr, sizeof(struct sockaddr_in6)) < 0) {
             qDebug() << "error on bind" << errno;
             if (errno == EADDRNOTAVAIL) {
@@ -366,7 +366,6 @@ void Proxy::run_pcap(const char* dstIp) {
     }
 
 #ifdef linux
-        UnixSignalHandler* u = UnixSignalHandler::getInstance();
         // create socket and bind for the kernel
         QProcess bindSocket;
         QStringList bindSocketArgs;
