@@ -245,7 +245,6 @@ void BonjourResolver::hostInfoReady(const QHostInfo &info) {
         transProt = "udp";
     }
     QString serviceName = record->registeredType;
-    serviceName.chop(6);
     qSql->insertService(serviceName, transProt);
     qSql->insertDevice(record->hostname, record->port, serviceName, transProt, record->serviceName);
     emit resolved(record);
