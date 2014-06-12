@@ -83,6 +83,9 @@ void BonjourBrowser::reply(DNSServiceRef , DNSServiceFlags flags,
 void BonjourBrowser::recordIsReady(BonjourRecord* rec) {
     qDebug() << "Record is ready:" << rec->hostname << " " <<
              rec->registeredType << " IP " <<  rec->ips << " " << rec->port;
+    BonjourResolver* resolver = qobject_cast<BonjourResolver*>(sender());
+    qDebug() << "Delete resolver";
+    delete resolver;
 }
 
 void BonjourBrowser::bonjourSocketReadyRead() {

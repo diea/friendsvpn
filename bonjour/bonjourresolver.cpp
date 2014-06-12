@@ -250,7 +250,7 @@ void BonjourResolver::hostInfoReady(const QHostInfo &info) {
     qSql->insertDevice(record->hostname, record->port, serviceName, transProt, record->serviceName);
     emit resolved(record);
 
-    qDebug() << "Resolver deletes itself";
-    this->deleteLater();
+    /*qDebug() << "Resolver deletes itself";
+    this->deleteLater();*/
 }
 
