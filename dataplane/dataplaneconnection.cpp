@@ -140,7 +140,7 @@ void DataPlaneConnection::readBuffer(char* buf, int bufLen) {
         if (!prox) {
             prox = new ProxyClient(clientHash, hash, srcIp, header->sockType, srcPort, this);
             prox->run();
-            clientProxys.push(dynamic_cast<ProxyClient*>(prox));
+            //clientProxys.push(dynamic_cast<ProxyClient*>(prox));
         }
     }
 
@@ -279,11 +279,11 @@ void DataPlaneConnection::disconnect() {
     curMode = Closed;
     mutex.unlock();
     qDebug() << "Deleting client proxies";
-    while (!clientProxys.empty()) {
+    /*while (!clientProxys.empty()) {
         Proxy* c = clientProxys.pop();
         if (c)
             delete c;
-    }
+    }*/
     qDebug() << "Removing from ConnectionInitiator";
     ConnectionInitiator::getInstance()->removeConnection(this);
     qDebug() << "Delete self";

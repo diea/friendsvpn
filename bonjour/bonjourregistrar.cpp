@@ -36,8 +36,9 @@ void BonjourRegistrar::registerService(const BonjourRecord &record) {
     struct in6_addr newip6 = { };
     inet_pton(AF_INET6, record.ips.at(0).toUtf8().data(), &newip6);
     err = DNSServiceRegisterRecord(dnssref_pa, &dnsRecord, kDNSServiceFlagsUnique, 0,
-                                   QString(record.hostname + "." + record.replyDomain).toUtf8().data(), kDNSServiceType_AAAA,
-                             kDNSServiceClass_IN, 16, &newip6, 240, registerRecordCallback, this);
+                                   QString(record.hostname + "." + record.replyDomain).toUtf8().data(),
+                                   kDNSServiceType_AAAA,
+                                   kDNSServiceClass_IN, 16, &newip6, 240, registerRecordCallback, this);
     if (err != kDNSServiceErr_NoError) { emit error(err); }
     else {
         int sockfd = DNSServiceRefSockFD(dnssref_pa);

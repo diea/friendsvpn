@@ -29,7 +29,7 @@ ProxyServer::ProxyServer(const QString &friendUid, const QString &name,
     // we append the current ms time to hostname to avoid name collision
     QString username = DatabaseHandler::getInstance()->getName(friendUid);
     rec = BonjourRecord("fvpn_" + username + "_" + name, regType, domain,
-                        QString::number(QDateTime::currentMSecsSinceEpoch())+"_"+hostname, ip, port, txt);
+                        "fvpn_" + username + "_" + hostname, ip, port, txt);
 
     // get DataPlaneConnection associated with friendUid
     ConnectionInitiator* initiator = ConnectionInitiator::getInstance();

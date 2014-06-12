@@ -70,7 +70,7 @@ private:
     /**
      * @brief clientProxys contains the list of pointers of proxy clients for this connection
      */
-    QStack<ProxyClient*> clientProxys;
+    //QStack<ProxyClient*> clientProxys;
 
     void removeConnection();
 
