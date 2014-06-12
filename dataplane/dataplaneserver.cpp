@@ -138,6 +138,10 @@ void DataPlaneServer::readyRead(int) {
         if (errno == EINVAL) {
             qWarning() << "!!!!!!!!!!! Your openssl library does not support DTLSv1_listen !!!!!!!!!!!";
             qWarning() << "Cannot accept new connection";
+            SSL_shutdown(ssl);
+            close(fd);
+            SSL_free(ssl);
+            ERR_remove_state(0);
             return;
         }
     }
