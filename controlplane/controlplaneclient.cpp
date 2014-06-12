@@ -49,7 +49,9 @@ void ControlPlaneClient::connectionReady() {
     qDebug() << "Send HELLO";
     // Send HELLO packet
     QString hello("HELLO\r\nUid:" + init->getMyUid() + "\r\n\r\n");
+    qDebug() << "Actual write call";
     sslClient->write(hello.toUtf8().constData());
+    qDebug() << "Wait for bytes written";
     sslClient->waitForBytesWritten();
 
     qDebug() << "Set client connection";
