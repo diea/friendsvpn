@@ -327,7 +327,7 @@ void Proxy::run_pcap(const char* dstIp) {
                 // loop again until IP is available but just sleep a moment
                 qDebug() << "Bind ERROR: EADDRNOTAVAIL";
                 QThread::sleep(2);
-            } else if (bindSocket.exitCode() == EACCES) {
+            } else if (bindSocket.exitCode() == EADDRINUSE) {
                 if (port < 60000) {
                     port = 60001;
                 } else {
@@ -338,10 +338,10 @@ void Proxy::run_pcap(const char* dstIp) {
                     UnixSignalHandler::termSignalHandler(0);
                 }
                 qDebug() << "Could not bind on port " << listenPort << "going to use " << QString::number(port);
-            } else if (bindSocket.exitCode() == EADDRINUSE) {
+            } /*else if (bindSocket.exitCode() == EADDRINUSE) {
                 qDebug() << "Ip" << listenIp << "and port" << port << "already bound";
                 bound = true; // happens when some advertise two services on same port
-            }
+            }*/
         } else {
             bound = true;
         }
