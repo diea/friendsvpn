@@ -60,8 +60,8 @@ void ControlPlaneServer::sslSockReady() {
     connect(sslSock, SIGNAL(readyRead()), this, SLOT(sslSockReadyRead()));
 
     // send HELLO packet
-    QString hello("Uid:" + init->getMyUid() + "\r\n\r\n");
     sslSock->write("HELLO\r\n");
+    QString hello("Uid:" + init->getMyUid() + "\r\n\r\n");
     sslSock->write(hello.toLatin1().constData());
     sslSock->flush();
 }
@@ -84,8 +84,8 @@ void ControlPlaneServer::sslSockReadyRead() {
             QStringList uidList = bu.split(":");
             QString r = sslSock->read(1); // get '\r'
             qDebug() << "Got uid" << uidList.at(1);
-            qDebug() << (r == "\r");
-            if (uidList.length() == 2 && r == "\r") {
+            qDebug() << (r == "\r\n");
+            if (uidList.length() == 2 && r == "\r\n") {
                 ControlPlaneConnection* con = init->getConnection(uidList.at(1));
                 con->addMode(Receiving, sslSock);
                 sslSock->setControlPlaneConnection(con);
