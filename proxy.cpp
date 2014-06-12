@@ -347,7 +347,8 @@ void Proxy::run_pcap(const char* dstIp) {
             if (errno == EADDRNOTAVAIL) {
                 // loop again until IP is available but just sleep a moment
                 qDebug() << "Bind ERROR: EADDRNOTAVAIL";
-            } else {
+                QThread::sleep(2);
+            } else if (errno == EACCES) {
                 if (port < 60000) {
                     port = 60001;
                 } else {
