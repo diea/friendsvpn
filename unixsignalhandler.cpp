@@ -53,18 +53,11 @@ void UnixSignalHandler::removeQProcess(QProcess *p) {
     listOfProcessToKill.removeAll(p);
 }
 
-void UnixSignalHandler::addIp(QString ip, QProcess* p) {
-    listOfIps.insert(ip, p);
+void UnixSignalHandler::addIp(QString ip) {
+    listOfIps.append(ip);
 }
 
 void UnixSignalHandler::removeIp(QString ip) {
-    QProcess* p = listOfIps.value(ip);
-    if (p) {
-        qDebug() << "Close ifconfig help for" << ip;
-        connect(p, SIGNAL(finished(int)), p, SLOT(deleteLater()));
-        p->write("a few letters"); /* getchar() in helper before it exits */
-        p->waitForBytesWritten();
-    }
     qDebug() << "Clean ip";
     QProcess cleanup;
     QStringList cleanArgs;
@@ -72,7 +65,7 @@ void UnixSignalHandler::removeIp(QString ip) {
     cleanArgs.append(ip);
     cleanup.start(QString(HELPERPATH) + "/cleanup", cleanArgs);
     cleanup.waitForFinished();
-    listOfIps.remove(ip);
+    listOfIps.removeAll(ip);
 }
 
 void UnixSignalHandler::termSignalHandler(int) {
@@ -98,7 +91,7 @@ void UnixSignalHandler::doExit() {
         }
     }
 
-    foreach (QString ip, listOfIps.keys()) {
+    foreach (QString ip, listOfIps) {
         qDebug() << "Cleaning up ip" << ip;
         // cleanup listen Ip
         removeIp(ip);

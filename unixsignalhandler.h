@@ -24,7 +24,7 @@ private:
 
     QList<QProcess*> listOfProcessToKill;
     QList<QThread*> listOfThreads;
-    QMap<QString, QProcess*> listOfIps;
+    QList<QString> listOfIps;
     explicit UnixSignalHandler(QObject *parent = 0);
 
     static UnixSignalHandler* instance;
@@ -43,7 +43,7 @@ public:
      * @param ip
      * @param p
      */
-    void addIp(QString ip, QProcess* p);
+    void addIp(QString ip);
     void removeIp(QString ip);
 
     static void termSignalHandler(int unused);

@@ -124,21 +124,18 @@ void Proxy::gennewIP() {
         } while (!newIp);
 
         // add it with ifconfig
-        QProcess* ifconfig = new QProcess();
-        u->addQProcess(ifconfig);
+        QProcess ifconfig;
         QStringList newipArgs;
         newipArgs.append(defaultIface);
         newipArgs.append(newip);
-        ifconfig->start(QString(HELPERPATH) + "ifconfighelp", newipArgs);
-        ifconfig->waitForStarted();
+        ifconfig.start(QString(HELPERPATH) + "ifconfighelp", newipArgs);
+        ifconfig.waitForStarted();
+        ifconfig.waitForFinished();
 
-        // wait 6 seconds for ifconfig to fail
         qDebug() << "Trying to create IP...";
-        /*if (ifconfig->waitForFinished(6000)) {
-            qDebug() << "new Duplicate! we generate an other one";
-            u->removeQProcess(ifconfig);
-            delete ifconfig;
-        } else { TODO Uncomment*/
+        if (ifconfig.exitCode() == 3) {
+            qDebug() << "Duplicate has been found";
+        } else if (ifconfig.exitCode() == 0) {
             qDebug() << "New IP created!";
             newip.truncate(newip.length() - 3); // remove prefix
 
@@ -148,12 +145,15 @@ void Proxy::gennewIP() {
         #elif __GNUC__
             resolver->addMapping(newip, "", "lo");
         #endif
-            u->addIp(newip, ifconfig);
+            u->addIp(newip);
             poolOfIpsMutex.lock();
             poolOfIps.enqueue(newip);
             poolOfIpsMutex.unlock();
             length++;
-        //}
+        } else {
+            qWarning() << "Ifconfig helper exited with exit code" << ifconfig.exitCode();
+            UnixSignalHandler::termSignalHandler(0);
+        }
     }
 }
 
