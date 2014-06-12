@@ -52,7 +52,7 @@ void BonjourResolver::resolveReply(DNSServiceRef , //sdRef
         emit resolver->error(errorCode);
     } else {
         port = ntohs(port);
-        if (txtLen > 0) {
+        if (txtLen > 1) {
             qDebug() << "Got txt for record";
             qDebug() << "txt is of len" << txtLen << "and is" << txtRecord;
             /*char textRecord[txtLen];
