@@ -57,7 +57,7 @@ void BonjourResolver::resolveReply(DNSServiceRef , //sdRef
             qDebug() << "txt is of len" << txtLen << "and is" << txtRecord;
             /*char textRecord[txtLen];
             memcpy(textRecord, txtRecord, txtLen);*/
-            record->txt = QByteArray(txtRecord, txtLen);
+            record->txt = QByteArray(static_cast<const char*>(static_cast<const void*>(txtRecord)), txtLen);
         }
         record->port = port;
         qDebug() << "Lookup host!";
