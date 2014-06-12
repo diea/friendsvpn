@@ -231,6 +231,7 @@ void BonjourResolver::hostInfoReady(const QHostInfo &info) {
     QByteArray hash = QCryptographicHash::hash(allParams.toUtf8().data(), QCryptographicHash::Md5);
     // add record to hashes list
     while (BonjourDiscoverer::recordHashes.contains(hash)) {
+        qDebug() << "Impressive! record needs to be re-hashed";
         QByteArray toHash = hash + QByteArray::number(static_cast<int>(time(NULL)));
         hash = QCryptographicHash::hash(toHash, QCryptographicHash::Md5);
     }
@@ -249,6 +250,7 @@ void BonjourResolver::hostInfoReady(const QHostInfo &info) {
     qSql->insertDevice(record->hostname, record->port, serviceName, transProt, record->serviceName);
     emit resolved(record);
 
+    qDebug() << "Resolver deletes itself";
     this->deleteLater();
 }
 
