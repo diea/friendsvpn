@@ -17,7 +17,7 @@ QQueue<QString> Proxy::poolOfIps;
 QMutex Proxy::poolOfIpsMutex;
 
 Proxy::~Proxy() {
-    UnixSignalHandler* u = UnixSignalHandler::getInstance();
+    proxyHashes.remove(idHash);
 
     if (bindSocket.state() == QProcess::Running) {
         bindSocket.write("OK\n");
@@ -30,6 +30,7 @@ Proxy::~Proxy() {
         delete pcapWorkers.pop();
     }
 
+    UnixSignalHandler* u = UnixSignalHandler::getInstance();
     u->removeIp(listenIp);
 }
 

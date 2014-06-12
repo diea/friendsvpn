@@ -38,6 +38,5 @@ void ProxyClient::receiveBytes(const char* buf, int len, int sockType, QString) 
 
 void ProxyClient::timeout() {
     qDebug() << "Proxy client timeout";
-    proxyHashes.remove(idHash);
     this->deleteLater(); // delete myself
 }
