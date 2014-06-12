@@ -52,8 +52,8 @@ gcc cleanup.c -o cleanup
 echo "Please provide root password for setting the setuid bit to the helpers, thank you"
 
 if [[ $unamestr == "Darwin" ]]; then
-	sudo chown root:wheel pcapListen sendRaw ifconfighelp reqIp cleanup
-	sudo chmod u+s pcapListen sendRaw ifconfighelp reqIp cleanup
+	sudo chown root:wheel pcapListen sendRaw ifconfighelp reqIp newSocket cleanup
+	sudo chmod u+s pcapListen sendRaw ifconfighelp reqIp newSocket cleanup
 else
 	sudo chown root:`whoami` pcapListen sendRaw ifconfighelp reqIp newSocket cleanup
 	sudo chmod u+s pcapListen sendRaw ifconfighelp reqIp newSocket cleanup
