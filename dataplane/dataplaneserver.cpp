@@ -132,17 +132,19 @@ void DataPlaneServer::readyRead(int) {
     int dtlsRet;
     errno = 0;
     while ((dtlsRet = DTLSv1_listen(ssl, &client_addr)) <= 0) {
-        qWarning() << "DTLSv1_listen error";
-        qWarning() << SSL_get_error(ssl, dtlsRet);
-        qWarning() << "Errno is" << errno;
-        if (errno == EINVAL) {
-            qWarning() << "!!!!!!!!!!! Your openssl library does not support DTLSv1_listen !!!!!!!!!!!";
-            qWarning() << "Cannot accept new connection";
-            SSL_shutdown(ssl);
-            close(fd);
-            SSL_free(ssl);
-            ERR_remove_state(0);
-            return;
+        if (errno != EAGAIN) {
+            qWarning() << "DTLSv1_listen error";
+            qWarning() << SSL_get_error(ssl, dtlsRet);
+            qWarning() << "Errno is" << errno;
+            if (errno == EINVAL) {
+                qWarning() << "!!!!!!!!!!! Your openssl library does not support DTLSv1_listen !!!!!!!!!!!";
+                qWarning() << "Cannot accept new connection";
+                SSL_shutdown(ssl);
+                close(fd);
+                SSL_free(ssl);
+                ERR_remove_state(0);
+                return;
+            }
         }
     }
 
