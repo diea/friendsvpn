@@ -129,7 +129,11 @@ void DataPlaneServer::readyRead(int) {
     SSL_set_bio(ssl, bio, bio);
     SSL_set_options(ssl, SSL_OP_COOKIE_EXCHANGE);
 
-    while (DTLSv1_listen(ssl, &client_addr) <= 0);
+    int dtlsRet;
+    while ((dtlsRet = DTLSv1_listen(ssl, &client_addr)) <= 0) {
+        qWarning() << "DTLSv1_listen error";
+        qWarning() << SSL_get_error(ssl, dtlsRet);
+    }
 
     QThread* workerThread = new QThread();
     threads.append(workerThread);
