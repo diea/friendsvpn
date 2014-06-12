@@ -38,6 +38,7 @@ int main(int argc, char** argv) {
     }
     *found = '\0'; // terminate the IP, don't bother the prefix for deletion
 
+#if 0 /* DAD disabled for tests */
     char line[2000];
     /* Read the output a line at a time - output it. */
     FILE *fp;
@@ -54,6 +55,6 @@ int main(int argc, char** argv) {
     }
     fflush(stdout);
     pclose(fp);
-
+#endif
     return 0;
 }
