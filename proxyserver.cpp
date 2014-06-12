@@ -29,7 +29,7 @@ ProxyServer::ProxyServer(const QString &friendUid, const QString &name,
         listenIp = newIP();
         struct ip_and_nb ipnb;
         ipnb.ip = listenIp;
-        ipnb.nb = 0;
+        ipnb.nb = 1;
         hostnames.insert(hostnameUid, ipnb);
     }
     QString newip = listenIp;
