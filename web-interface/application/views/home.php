@@ -27,28 +27,32 @@ if (isset($needLogin)) {
         Your desktop app hasn't processed recent XML rpc requests, either it is not running or there is some delay.
     </div>
 </div>
+<div id="noservices">
+    <div class="alert alert-info">
+        You don't have any services yet. Launch the desktop application and refresh this page to see your services.
+    </div>
+</div>
 <div class="row">
-    <div class="col-xs-2" id="servicesList">
+    <div class="col-xs-2">
+        <div id="servicesList">
+        </div>
     </div>
-    <div class="col-xs-2" id="hostsList">
+    <div class="col-xs-3" id="hostsList">
     </div>
-    <div class="col-xs-5">
+    <div class="col-xs-7">
         <div class="row">
             <div id="serviceNamePortList"></div>
             <div class="permissionsField"></div>
         </div>
     </div>
-    <div class="col-xs-3">
-    <div class="alert">
-    <div class="friendSquare friendAuthorized">A user who is inside this box is authorized.</div>
-    <br>
-    <div class="friendSquare friendDenied ">A user who is inside this box is denied from using your service.</div>
-    </div>
-    
-    <button type="button" id ="deleteAll" class="btn btn-danger">Clean up all records</button>
-    
     </div>
 </div>
+<div class="row">
+    <div class="col-xs-offset-5 col-xs-7">
+    </div>
+</div>
+
+
 
 <div class="row">
     <div class="col-md-12 specialProtocolFeatures">
@@ -92,6 +96,11 @@ if (isset($needLogin)) {
         url: "bonjourgui/services/"
     }).done(function(data) {
         $("#servicesList").html(data);
+        if ($(".serviceli").length == 0) {
+            $("#noservices").css("display", "block");
+        } else {
+            $("#helpmenu").css("display", "block");
+        }
     });
     
     </script>
@@ -99,16 +108,3 @@ if (isset($needLogin)) {
     <?php
 }
 ?>
-<script>
-$("#deleteAll").click(function(event) {
-    event.preventDefault();
-    // deauthorize
-    $.ajax({
-        url: "/bonjourGui/deleteAll",
-        type: "GET",
-    }).done(function() {
-        // reload page
-        location.reload(); // refresh page
-    });
-});
-</script>

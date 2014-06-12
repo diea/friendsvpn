@@ -1,12 +1,17 @@
 <ul class="nav nav-pills nav-stacked">
   <?php
-  foreach($hostnames as $hostname) {
-      echo "<li class=\"lihost\">";
-      ?>
-      <a href="#" class="hostnameli"><?php echo $hostname["hostname"]; ?></a>
-      <?php
-      echo "</li>";
+  if ($hostnames) {
+      foreach($hostnames as $hostname) {
+          echo "<li class=\"lihost\">";
+          ?>
+          <a href="#" class="hostnameli"><?php echo $hostname["hostname"]; ?></a>
+          <?php
+          echo "</li>";
+      }
+  } else {
+      echo "<p>ERROR: No hostname found</p>";
   }
+
   ?>
 </ul>
 
@@ -23,7 +28,7 @@
             url:"bonjourgui/serviceNamePortList/",
             data: {
                 "hostname": hostname,
-                "service": $(".active.liservice").children().first().html()
+                "service": $(".active.liservice").children().first().data("name")
             }
         }).done(function(data) {
             $("#serviceNamePortList").html(data);

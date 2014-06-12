@@ -4,10 +4,14 @@ if ($services) {
   foreach($services as $service) {
       echo "<li class=\"liservice\">";
       ?>
-      <a href="#" class="serviceli"><?php echo $service["name"]; ?></a>
+      <a href="#" data-name="<?php echo $service["name"]; ?>" class="serviceli"><?php echo $service["fancy_name"]; ?></a>
       <?php
       echo "</li>";
   }
+  ?>
+  <br>
+  <button type="button" id ="deleteAll" class="btn btn-danger">Clean up all records</button>
+  <?php
 }
   ?>
 </ul>
@@ -26,7 +30,7 @@ if ($services) {
         $(".permissionsField").html("")
         $(".specialProtocolFeatures").html("");
         
-        var service = $(this).html();
+        var service = $(this).data("name");
         $.ajax({
             type: "POST",
             url:"bonjourgui/hostnames/",
@@ -37,4 +41,16 @@ if ($services) {
             $("#hostsList").html(data);
         });
     });
+    
+$("#deleteAll").click(function(event) {
+    event.preventDefault();
+    // deauthorize
+    $.ajax({
+        url: "/bonjourGui/deleteAll",
+        type: "GET",
+    }).done(function() {
+        // reload page
+        location.reload(); // refresh page
+    });
+});
 </script>

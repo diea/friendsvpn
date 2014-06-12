@@ -14,6 +14,22 @@ class BonjourGui extends MY_Controller {
      */
     public function services() {
         $data["services"] = $this->UserSQL->getServices($this->facebook->getUser());
+        
+        $this->load->helper('plist_helper');
+        
+        $mappings = new DOMDocument();
+        $mappings->load(base_url(APPPATH . "/assets/Services.plist"));
+        
+        $parsed = parsePlist($mappings)["Services"];
+        
+        for ($i = 0; $i < count($data["services"]); $i++) {
+            foreach ($parsed as $mapping) {
+                if ($mapping["Service"] === $data["services"][$i]["name"]) {
+                    $data["services"][$i]["fancy_name"] = $mapping["Name"];
+                }
+            }
+        }
+        
         $this->load->view("bonjourGuiComponents/services.php", $data);
     }
     
@@ -54,17 +70,24 @@ class BonjourGui extends MY_Controller {
         // get facebook friends and permissions
         $this->load->model("FacebookFQL");
         $appFriends = [];
+        $appFriendsDenied = [];
         $friends = $this->FacebookFQL->getFriends();
-        $i = 0;
+        $i = $j = 0;
         foreach ($friends as $friend) {
             if ($this->UserSQL->friendInDb($friend["uid"])) {
                 $friend["authorized"] = $this->UserSQL->friendAuthorized($this->facebook->getUser(), $friend["uid"], $service, $hostname, $name, $port, $transProt);
-                $appFriends[$i] = $friend;
+                if ($friend["authorized"]) {
+                    $appFriends[$i] = $friend;
+                    $i++;
+                } else {
+                    $appFriendsDenied[$j] = $friend;
+                    $j++;
+                }
             }
-            $i++;
         }
         
-        $data["friends"] = $appFriends;
+        $data["friends_auth"] = $appFriends;
+        $data["friends_denied"] = $appFriendsDenied;
         $this->load->view("bonjourGuiComponents/details.php", $data);
     }
     

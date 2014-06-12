@@ -7,15 +7,32 @@
 <div class="row">
 <div class="col-xs-10" id="friends">
 <h2>Current Permissions</h2>
-
-        <?php
-    foreach($friends as $friend) {
-        // left out $friend["uid"]
+    <div class="bs-callout bs-callout-success">
+    <h4>Authorized users</h4>
+    <div id="authorizedLinks">
+            <?php
+        foreach($friends_auth as $friend) {
+            // left out $friend["uid"]
+            ?>
+            <a href="#" class="friendPic" data-uid="<?php echo $friend["uid"]; ?>"><span class="friendSquare friendAuthorized"><?php echo $friend["name"]; ?><img src="<?php echo $friend["pic_square"]; ?>"></span></a>
+            <?php
+        }
         ?>
-        <a href="#" class="friendPic" data-uid="<?php echo $friend["uid"]; ?>"><div class="friendSquare <?php if ($friend["authorized"] == true) echo "friendAuthorized"; else echo "friendDenied"; ?>"><?php echo $friend["name"]; ?><img src="<?php echo $friend["pic_square"]; ?>"></div></a><br>
-        <?php
-    }
-    ?>
+    </div>
+    </div>
+    <div class="bs-callout bs-callout-danger">
+    <div id="deniedLinks">
+    <h4>Denied users</h4>
+            <?php
+        foreach($friends_denied as $friend) {
+            // left out $friend["uid"]
+            ?>
+            <a href="#" class="friendPic" data-uid="<?php echo $friend["uid"]; ?>"><span class="friendSquare friendDenied"><?php echo $friend["name"]; ?><img src="<?php echo $friend["pic_square"]; ?>"></span></a>
+            <?php
+        }
+        ?>
+    </div>
+    </div>
 </div>
 
 
@@ -25,13 +42,14 @@
 $(".friendPic").click(function(event) {
     event.preventDefault();
     var divChild = $(this).children().first();
+    var friendPic = $(this);
     if (divChild.hasClass("friendAuthorized")) {
         // deauthorize
         $.ajax({
             url: "/bonjourGui/deAuthorizeUser",
             type: "POST",
             data: {
-                "service": $(".active.liservice").children().first().html(),
+                "service": $(".active.liservice").children().first().data("name"),
                 "hostname": $(".active.lihost").children().first().html(),
                 "name": $(".active.liport").children().first().data("name"),
                 "port": $(".active.liport").children().first().data("port"),
@@ -42,6 +60,7 @@ $(".friendPic").click(function(event) {
             // change class
             divChild.removeClass("friendAuthorized");
             divChild.addClass("friendDenied");
+            friendPic.detach().appendTo("#deniedLinks");
         });
     } else {
         // authorize
@@ -49,7 +68,7 @@ $(".friendPic").click(function(event) {
             url: "/bonjourGui/authorizeUser",
             type: "POST",
             data: {
-                "service": $(".active.liservice").children().first().html(),
+                "service": $(".active.liservice").children().first().data("name"),
                 "hostname": $(".active.lihost").children().first().html(),
                 "name": $(".active.liport").children().first().data("name"),
                 "port": $(".active.liport").children().first().data("port"),
@@ -60,6 +79,7 @@ $(".friendPic").click(function(event) {
             // change class
             divChild.removeClass("friendDenied");
             divChild.addClass("friendAuthorized");
+            friendPic.detach().appendTo("#authorizedLinks");
         });
     }
 });
@@ -70,7 +90,7 @@ $(".delete").click(function(event) {
         url: "/bonjourGui/deleteRecord",
         type: "POST",
         data: {
-            "service": $(".active.liservice").children().first().html(),
+            "service": $(".active.liservice").children().first().data("name"),
             "hostname": $(".active.lihost").children().first().html(),
             "name": $(".active.liport").children().first().data("name"),
             "port": $(".active.liport").children().first().data("port"),

@@ -5,29 +5,66 @@ body {
 #appNotRunningDiv {
     display:none;
 }
-
-.friendAuthorized {
-    background-image:url("/application/assets/img/friendAuthorizedBorder.png");
-    background-repeat:no-repeat;
-    background-position: right bottom;
-    border-style: solid;
-    border-width: medium;
-    border-color: lime;
-    text-align: left;
-    padding: 1px;
+#noservices {
+    display:none;
+}
+#helpmenu {
+    display:none;
 }
 
-.friendDenied {
-    background-image:url("/application/assets/img/friendDeniedBorder.png");
-    background-repeat:no-repeat;
-    background-position: right bottom;
-    border-style: solid;
-    border-width: medium;
-    border-color:red;
-    text-align: left;
-    padding: 1px;
+
+.bs-callout{
+	margin:20px 0;
+	padding:20px;
+	border-left:3px solid #eee
 }
 
-.friendSquare {
-    margin-right: 40px;
+.bs-callout h4{
+	margin-top:0;
+	margin-bottom:5px
+}
+
+.bs-callout p:last-child{
+	margin-bottom:0
+}
+
+.bs-callout code{
+	background-color:#fff;
+	border-radius:3px
+}
+
+.bs-callout-danger{
+	background-color:#fdf7f7;
+	border-color:#d9534f
+}
+
+.bs-callout-danger h4{
+	color:#d9534f
+}
+
+.bs-callout-warning{
+	background-color:#fcf8f2;
+	border-color:#f0ad4e
+}
+
+.bs-callout-warning h4{
+	color:#f0ad4e
+}
+
+.bs-callout-success{
+	background-color:#F4FAF5;
+	border-color:#72e381
+}
+
+.bs-callout-success h4{
+	color:#72e381
+}
+
+.bs-callout-info{
+	background-color:#f4faf7;
+	border-color:#5bc0de
+}
+
+.bs-callout-info h4{
+	color:#5bc0de
 }
