@@ -54,9 +54,10 @@ void BonjourResolver::resolveReply(DNSServiceRef , //sdRef
         port = ntohs(port);
         if (txtLen > 0) {
             qDebug() << "Got txt for record";
-            char textRecord[txtLen];
-            memcpy(textRecord, txtRecord, txtLen);
-            record->txt = QByteArray(textRecord, txtLen);
+            qDebug() << "txt is of len" << txtLen << "and is" << txtRecord;
+            /*char textRecord[txtLen];
+            memcpy(textRecord, txtRecord, txtLen);*/
+            record->txt = QByteArray(txtRecord, txtLen);
         }
         record->port = port;
         qDebug() << "Lookup host!";
