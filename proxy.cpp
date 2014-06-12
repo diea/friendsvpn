@@ -321,6 +321,7 @@ void Proxy::run_pcap(const char* dstIp) {
         qDebug() << "Proxy client not bound yet";
 
         // create socket and bind for the kernel
+        if (fd) close(fd);
         fd = socket(AF_INET6, sockType, ipProto);
         if (fd < 0) {
             qDebug() << "Could not create socket";
