@@ -77,6 +77,7 @@ void ControlPlaneServer::sslSockReadyRead() {
     if (!sslSock->isAssociated()) {
         // not associated
         QString msg = sslSock->read(7);
+        qDebug() << "msg is" << msg;
         if (msg == "HELLO\r\n") {
             qDebug() << "Got HELLO";
             QString bu = sslSock->readLine();
