@@ -61,7 +61,7 @@ int main(int argc, char** argv) {
         return errno;
     }
 
-    printf("bind OK\n");
+    printf("OK\n");
     fflush(stdout);
 
 #ifndef __APPLE__ /* linux */
@@ -72,7 +72,7 @@ int main(int argc, char** argv) {
      */
 
     char* ip6tablesRule = malloc(400 * sizeof(char));
-    sprintf(ip6tablesRule, "ip6tables -A OUTPUT -s %s -p tcp --sport %s --tcp-flags RST RST -j DROP", argv[2], argv[1]);
+    sprintf(ip6tablesRule, "ip6tables -A OUTPUT -s %s -p tcp --sport %s --tcp-flags RST RST -j DROP", argv[4], argv[]);
     system(ip6tablesRule);
 #endif
 

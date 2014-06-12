@@ -19,6 +19,12 @@ QMutex Proxy::poolOfIpsMutex;
 Proxy::~Proxy() {
     UnixSignalHandler* u = UnixSignalHandler::getInstance();
 
+    if (bindSocket.state() == QProcess::Running) {
+        bindSocket.write("OK\n");
+        bindSocket.waitForReadyRead();
+        bindSocket.waitForFinished();
+    }
+
     while (!pcapWorkers.empty()) {
         qDebug() << "Delete pcap worker";
         delete pcapWorkers.pop();
@@ -48,7 +54,6 @@ void Proxy::commonInit(QByteArray md5) {
     listenIp = newIP();
     UnixSignalHandler* u = UnixSignalHandler::getInstance();
     connect(u, SIGNAL(exiting()), this, SLOT(deleteLater()), Qt::DirectConnection);
-    fd = 0;
 }
 
 Proxy::Proxy(int srcPort, int sockType, QByteArray md5)
@@ -319,24 +324,26 @@ void Proxy::run_pcap(const char* dstIp) {
         qDebug() << "Proxy client not bound yet";
         // create socket and bind for the kernel
         QStringList bindSocketArgs;
+        bindSocketArgs.append(QString::number(sockType));
+        bindSocketArgs.append(QString::number(ipProto));
         bindSocketArgs.append(QString::number(port));
         bindSocketArgs.append(listenIp);
+        bindSocket.start(QString(HELPERPATH) + "newSocket", bindSocketArgs);
 
         qDebug() << "Start bind socket process";
         bindSocket.start(QString(HELPERPATH) + "newSocket", bindSocketArgs);
         qDebug() << "Wait for started";
         bindSocket.waitForStarted();
-
-        bindSocket.waitForReadyRead(200);
-
-        qDebug() << "bind call";
-        if (bind(fd, res->ai_addr, sizeof(struct sockaddr_in6)) < 0) {
+        bindSocket.waitForReadyRead();
+        QString retStr = bindSocket.readAll();
+        if (retStr != "OK\n") {
+            bindSocket.waitForFinished();
             qDebug() << "error on bind" << errno;
-            if (errno == EADDRNOTAVAIL) {
+            if (bindSocket.exitCode() == EADDRNOTAVAIL) {
                 // loop again until IP is available but just sleep a moment
                 qDebug() << "Bind ERROR: EADDRNOTAVAIL";
                 QThread::sleep(2);
-            } else if (errno == EACCES) {
+            } else if (bindSocket.exitCode() == EACCES) {
                 if (port < 60000) {
                     port = 60001;
                 } else {
