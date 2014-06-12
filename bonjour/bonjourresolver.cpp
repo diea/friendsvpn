@@ -51,21 +51,18 @@ void BonjourResolver::resolveReply(DNSServiceRef , //sdRef
     if (errorCode != kDNSServiceErr_NoError) {
         emit resolver->error(errorCode);
     } else {
-
-#if Q_BYTE_ORDER == Q_LITTLE_ENDIAN
-        {
-            port  =  0 | ((port & 0x00ff) << 8) | ((port & 0xff00) >> 8);
-        }
-#endif
+        port = ntohs(port);
         if (txtLen > 0) {
-            char* textRecord = static_cast<char*>(malloc(sizeof(char) * txtLen));
+            qDebug() << "Got txt for record";
+            char textRecord[txtLen];
             memcpy(textRecord, txtRecord, txtLen);
-            record->txt = QByteArray(textRecord, txtLen); //QString::fromUtf8(textRecord, txtLen);
-            free(textRecord);
+            record->txt = QByteArray(textRecord, txtLen);
         }
         record->port = port;
-        QHostInfo::lookupHost(QString::fromUtf8(hosttarget), resolver,
-                              SLOT(hostInfoReady(const QHostInfo &)));
+        qDebug() << "Lookup host!";
+        /*QHostInfo::lookupHost(QString::fromUtf8(hosttarget), resolver,
+                              SLOT(hostInfoReady(const QHostInfo &)));*/
+        resolver->hostInfoReady(QHostInfo::fromName(QString::fromUtf8(hosttarget)));
     }
     delete context_list; // remove allocated context list (@see resolve())
 }
@@ -90,7 +87,6 @@ void BonjourResolver::hostInfoReady(const QHostInfo &info) {
             v4.append(adr.toString());
         }
     }
-#if 1
     qDebug() << "Going to test v6.empty";
     if (v6.empty() && !v4.empty()) { // QHostInfo was not able to fetch ipv6
         // check that v4 ip is not a local one
@@ -175,22 +171,21 @@ void BonjourResolver::hostInfoReady(const QHostInfo &info) {
                     QString curLine(buf);
                     QStringList list = curLine.split(" ", QString::SkipEmptyParts);
 
-                    if (list.length() < 6)
-                        continue;
+                    if (list.length() == 6) {
+                        if (list.at(1) == macs.at(i)) {
+                            QString ipv6 = list.at(0);
+                            if (ipv6.startsWith("fe80")) {
+                                // remove everything after %; % included
+                                int percentIndex = ipv6.indexOf("%");
+                                ipv6.truncate(percentIndex);
+                            }
 
-                    if (list.at(1) == macs.at(i)) {
-                        QString ipv6 = list.at(0);
-                        if (ipv6.startsWith("fe80")) {
-                            // remove everything after %; % included
-                            int percentIndex = ipv6.indexOf("%");
-                            ipv6.truncate(percentIndex);
+                            // at the same time we can add the mapping to our resolver
+                            IpResolver* r = IpResolver::getInstance();
+                            r->addMapping(ipv6, macs.at(i), ifaces.at(i));
+
+                            v6.append(ipv6);
                         }
-
-                        // at the same time we can add the mapping to our resolver
-                        IpResolver* r = IpResolver::getInstance();
-                        r->addMapping(ipv6, macs.at(i), ifaces.at(i));
-
-                        v6.append(ipv6);
                     }
                 }
                 ndp.close();
@@ -217,7 +212,6 @@ void BonjourResolver::hostInfoReady(const QHostInfo &info) {
             }
         }
     }
-#endif
     record->ips = v6;
 
     if (v6.empty()) {
