@@ -30,12 +30,12 @@ class Proxy : public QObject
 {
     Q_OBJECT
     friend class PcapWorker;
+    friend class UnixSignalHandler;
 private:
     static IpResolver* resolver;
     static RawSockets* rawSockets;
 
     QStack<PcapWorker*> pcapWorkers;
-    QStack<QProcess*> processes; // QProcesses associated with this Proxy
 
 protected:
     QString listenIp; // the new IP on which this proxy listens for answers

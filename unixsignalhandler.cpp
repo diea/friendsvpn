@@ -1,6 +1,7 @@
 #include "unixsignalhandler.h"
 #include "ipresolver.h"
 #include "config.h"
+#include "proxy.h"
 #include <signal.h>
 #include <QDebug>
 #include <sys/types.h>
@@ -75,6 +76,7 @@ void UnixSignalHandler::doExit() {
     static QMutex mutex;
     mutex.lock(); // no need to unlock we exit
     foreach (QProcess* p, listOfProcessToKill) {
+        qDebug() << "Closing process";
         if (p) {
             if ((p->state() != QProcess::NotRunning)) {
                 qDebug() << p->state();
@@ -85,6 +87,11 @@ void UnixSignalHandler::doExit() {
                 }
             }
         }
+    }
+
+    foreach (Proxy* p, Proxy::proxyHashes.values()) {
+        qDebug() << "Delete proxy";
+        delete p;
     }
 
     foreach (QString ip, listOfIps) {

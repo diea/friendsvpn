@@ -6,6 +6,7 @@
 #include "dataplane/dataplaneserver.h"
 #include "dataplane/dataplaneclient.h"
 #include "dataplane/dataplaneconnection.h"
+#include "databasehandler.h"
 #include "unixsignalhandler.h"
 
 ConnectionInitiator* ConnectionInitiator::instance = NULL;

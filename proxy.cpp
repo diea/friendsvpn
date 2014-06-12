@@ -30,18 +30,6 @@ Proxy::~Proxy() {
         delete pcapWorkers.pop();
     }
 
-    while (!processes.empty()) {
-        QProcess* p = processes.pop();
-        p->terminate();
-        p->waitForFinished(200);
-        if (p->state() != QProcess::NotRunning) {
-            p->kill();
-        }
-        u->removeQProcess(p);
-        connect(p, SIGNAL(finished(int)), p, SLOT(deleteLater()));
-        proxyHashes.remove(idHash);
-    }
-
     u->removeIp(listenIp);
 }
 

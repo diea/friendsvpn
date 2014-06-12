@@ -5,6 +5,8 @@
 #include <QProcess>
 #include <QMutex>
 #include <QMap>
+
+class Proxy;
 /**
  * @brief The UnixSignalHandler class will handle the SIGTERM and SIGINT signals to clearup things
  * that the app must clean before exiting.

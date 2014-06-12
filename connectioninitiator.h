@@ -3,9 +3,10 @@
 
 #include <QObject>
 #include <QMutex>
+#include <QThread>
 #include "user.h"
-#include "databasehandler.h"
 
+class DatabaseHandler;
 class ControlPlaneConnection;
 class DataPlaneConnection;
 class DataPlaneServer;
