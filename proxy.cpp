@@ -30,8 +30,7 @@ Proxy::~Proxy() {
         delete pcapWorkers.pop();
     }
 
-    UnixSignalHandler* u = UnixSignalHandler::getInstance();
-    u->removeIp(listenIp);
+    // the children must take care of removing the listenIp if necessary
 }
 
 void Proxy::commonInit(QByteArray md5) {

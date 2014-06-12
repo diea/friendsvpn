@@ -25,6 +25,7 @@ private:
 
 public:
     ProxyClient(QByteArray md5, QByteArray servermd5, QString serversrcIp, int sockType, int srcPort, DataPlaneConnection* con);
+    ~ProxyClient();
 
     /**
      * @brief receiveBytes pcap has captured a response which should be sent over the data plane

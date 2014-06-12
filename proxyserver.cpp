@@ -5,21 +5,30 @@
 #include <arpa/inet.h>
 
 ProxyServer::~ProxyServer() {
+    if (--hostnames[hostnameUid].nb == 0) {
+        hostnames.remove(hostnameUid);
+        UnixSignalHandler* u = UnixSignalHandler::getInstance();
+        u->removeIp(listenIp);
+    }
 }
 
-QHash<QString, QString> ProxyServer::hostnames;
+QHash<QString, struct ProxyServer::ip_and_nb> ProxyServer::hostnames;
 
 ProxyServer::ProxyServer(const QString &friendUid, const QString &name,
                          const QString &regType, const QString &domain,
                          const QString &hostname, const QByteArray& txt,
                          quint16 port, const QByteArray& md5) : Proxy(port, regType, md5)
 {
-    QString hostnameUid = friendUid + hostname;
+    hostnameUid = friendUid + hostname;
     if (hostnames.contains(hostnameUid)) {
-        listenIp = hostnames.value(hostnameUid);
+        listenIp = hostnames[hostnameUid].ip;
+        hostnames[hostnameUid].nb++;
     } else {
         listenIp = newIP();
-        hostnames.insert(hostnameUid, listenIp);
+        struct ip_and_nb ipnb;
+        ipnb.ip = listenIp;
+        ipnb.nb = 0;
+        hostnames.insert(hostnameUid, ipnb);
     }
     QString newip = listenIp;
     // create bonjour rec with new IP

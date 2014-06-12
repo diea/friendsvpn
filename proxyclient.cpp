@@ -3,6 +3,12 @@
 #include "bonjour/bonjourdiscoverer.h"
 #include "rawsockets.h"
 
+ProxyClient::~ProxyClient()
+{
+    UnixSignalHandler* u = UnixSignalHandler::getInstance();
+    u->removeIp(listenIp);
+}
+
 ProxyClient::ProxyClient(QByteArray md5, QByteArray servermd5,  QString serversrcIp,
                          int sockType, int srcPort, DataPlaneConnection* con) :
     Proxy(srcPort, sockType, md5)

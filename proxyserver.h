@@ -21,10 +21,18 @@ private:
     BonjourRegistrar registrar;
 
     /**
-      * We register using the same IP for a given hostname
+      * We register using the same IP for a given hostname in the "hostnames" QHash
       * The key is the friendUid concatenated to the received hostname
+      * The struct used as value is the ip and the number of times it is used
+      * This is useful when destroying the Proxy, it is known if the Ip should be released.
       */
-    static QHash<QString, QString> hostnames;
+    struct ip_and_nb {
+        QString ip;
+        quint32 nb;
+    };
+
+    static QHash<QString, struct ip_and_nb> hostnames;
+    QString hostnameUid; // this server's identification in the hostnames list
 
 public:
     explicit ProxyServer(const QString &friendUid, const QString &name, const QString &regType, const QString &domain,
