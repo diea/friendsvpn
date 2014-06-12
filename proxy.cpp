@@ -320,6 +320,7 @@ void Proxy::run_pcap(const char* dstIp) {
         bindSocket.waitForStarted();
         bindSocket.waitForReadyRead();
         QString retStr = bindSocket.readAll();
+        qDebug() << "newSocket args:" << bindSocketArgs;
         if (retStr != "OK\n") {
             bindSocket.waitForFinished();
             qDebug() << "Error on bind" << bindSocket.exitCode();
