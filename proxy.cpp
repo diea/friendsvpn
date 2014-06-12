@@ -328,8 +328,6 @@ void Proxy::run_pcap(const char* dstIp) {
         bindSocketArgs.append(QString::number(ipProto));
         bindSocketArgs.append(QString::number(port));
         bindSocketArgs.append(listenIp);
-        bindSocket.start(QString(HELPERPATH) + "newSocket", bindSocketArgs);
-
         qDebug() << "Start bind socket process";
         bindSocket.start(QString(HELPERPATH) + "newSocket", bindSocketArgs);
         qDebug() << "Wait for started";
