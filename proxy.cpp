@@ -37,8 +37,6 @@ Proxy::~Proxy() {
     }
 
     u->removeIp(listenIp);
-    if (fd)
-        close(fd);
 }
 
 void Proxy::commonInit(QByteArray md5) {
@@ -322,7 +320,7 @@ void Proxy::run_pcap(const char* dstIp) {
 
         // create socket and bind for the kernel
         if (fd) close(fd);
-        fd = socket(AF_INET6, sockType, ipProto);
+        int fd = socket(AF_INET6, sockType, ipProto);
         if (fd < 0) {
             qDebug() << "Could not create socket";
             UnixSignalHandler::termSignalHandler(0);

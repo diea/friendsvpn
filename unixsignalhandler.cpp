@@ -8,7 +8,6 @@
 #include <errno.h>
 #include <QThread>
 #include <unistd.h>
-//#include <ncurses.h>
 
 UnixSignalHandler* UnixSignalHandler::instance = NULL;
 
@@ -58,7 +57,6 @@ void UnixSignalHandler::addIp(QString ip) {
 }
 
 void UnixSignalHandler::removeIp(QString ip) {
-    qDebug() << "Clean ip";
     QProcess cleanup;
     QStringList cleanArgs;
     cleanArgs.append(IpResolver::getDefaultInterface());
@@ -80,11 +78,9 @@ void UnixSignalHandler::doExit() {
         if (p) {
             if ((p->state() != QProcess::NotRunning)) {
                 qDebug() << p->state();
-                qDebug() << "Closing " << p->pid();
                 p->terminate();
                 p->waitForFinished(200);
                 if (p->state() != QProcess::NotRunning) {
-                    qDebug() << "Killing process";
                     p->kill();
                 }
             }
@@ -92,7 +88,6 @@ void UnixSignalHandler::doExit() {
     }
 
     foreach (QString ip, listOfIps) {
-        qDebug() << "Cleaning up ip" << ip;
         // cleanup listen Ip
         removeIp(ip);
     }

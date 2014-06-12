@@ -47,7 +47,7 @@ protected:
     int sockType; // to know if SOCK_STREAM or SOCK_DATAGRAM
     int ipProto; // again, TCP or UDP
 
-    int fd; // socket to bind on
+    QProcess newSocket; // process which binds new IP
 
     QByteArray idHash; // the proxy's 128bit long identifier
 
