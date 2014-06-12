@@ -45,13 +45,15 @@ void ControlPlaneClient::sslErrors(const QList<QSslError>& errors) {
 
 void ControlPlaneClient::connectionReady() {
     connect(sslClient, SIGNAL(readyRead()), this, SLOT(sslClientReadyRead()));
-    ControlPlaneConnection* con = init->getConnection(friendUid);
 
+    qDebug() << "Send HELLO";
     // Send HELLO packet
     QString hello("HELLO\r\nUid:" + init->getMyUid() + "\r\n\r\n");
     sslClient->write(hello.toUtf8().constData());
-    sslClient->flush();
+    sslClient->waitForBytesWritten();
 
+    qDebug() << "Set client connection";
+    ControlPlaneConnection* con = init->getConnection(friendUid);
     sslClient->setControlPlaneConnection(con);
     con->addMode(Emitting, sslClient);
 }
