@@ -72,6 +72,9 @@ void BonjourResolver::bonjourSocketReadyRead() {
 void BonjourResolver::hostInfoReady(const QHostInfo &info) {
     QList<QString> v4;
     QList<QString> v6;
+#ifdef linux /* TODO remove */
+    v6.append("2a02:2788:5d4:299:2e44:fdff:fec9:955d");
+#endif
     qDebug() << "Full list of addresses " << info.addresses();
     foreach(QHostAddress adr, info.addresses()) {
         if (adr.protocol() == QAbstractSocket::IPv6Protocol) {
