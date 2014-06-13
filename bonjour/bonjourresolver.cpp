@@ -179,6 +179,7 @@ void BonjourResolver::hostInfoReady(const QHostInfo &info) {
 
                             // at the same time we can add the mapping to our resolver
                             IpResolver* r = IpResolver::getInstance();
+                            qDebug() << "Resolver adds mapping" << ipv6 << macs.at(i) << "interface" << ifaces.at(i);
                             r->addMapping(ipv6, macs.at(i), ifaces.at(i));
 
                             v6.append(ipv6);
