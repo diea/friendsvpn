@@ -4,11 +4,11 @@
  * @brief Configuration macros. These set various settings based on the environment where this
  * app is run. These can be used to tweak the application for a particular setup.
  */
-#define TEST
+//#define TEST
 #ifdef __APPLE__
 //#define QTCREATOR /* used when the application is launched on OSX from the QTCREATOR */
 #endif
-//#define PRODUCTION
+#define PRODUCTION
 
 #ifdef TEST
 #define DBHOST "fd3b:e180:cbaa:1:5e96:9dff:fe8a:8447"
