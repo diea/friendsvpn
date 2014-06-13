@@ -45,6 +45,10 @@ void PcapWorker::run() {
                 memcpy(&pcapHeader, pcapHeadChar, sizeof(struct pcapComHeader));
                 memset(&packet, 0, MAX_PACKET_SIZE);
                 remaining = pcapHeader.len;
+                if (!(remaining >= 0 && remaining <= 65536)) {
+                    qWarning() << "Remaining bytes was not between 0 and 65536!!";
+                    continue;
+                }
                 pos = 0;
             }
 

@@ -56,6 +56,8 @@ public:
      * @param packetBuffer
      */
     void packetTooBig(QString srcIp, QString dstIp, const char* packetBuffer);
+private slots:
+    void injectorError();
 };
 
 #endif // RAWSOCKETS_H

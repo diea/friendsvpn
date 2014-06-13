@@ -64,9 +64,7 @@ int main(int argc,const char* argv[]) {
 
         // Write the frame to the interface.
         if (pcap_inject(pcap, frame, sizeof(frame)) == -1) {
-            pcap_perror(pcap,0);
-            pcap_close(pcap);
-            exit(1);
+            fprintf(stderr, "Inject returned value of -1\n");
         }
     }
 

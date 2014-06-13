@@ -51,6 +51,7 @@ RawSockets::RawSockets(QObject *parent) :
                 r->mtu = ifr.ifr_ifru.ifru_mtu;
 
                 r->process = new QProcess(); // can always connect signals in each Proxy's constructor.
+                connect(r->process, SIGNAL(readyReadStandardError()), this, SLOT(injectorError()));
                 QStringList arguments;
                 arguments.append(ifaptr->ifa_name);
                 r->process->start(QString(HELPERPATH) + "sendRaw", arguments);
@@ -75,6 +76,7 @@ RawSockets::RawSockets(QObject *parent) :
     r->mtu = ifr.ifr_ifru.ifru_mtu;
 
     r->process = new QProcess();
+    connect(r->process, SIGNAL(readyReadStandardError()), this, SLOT(injectorError()));
     QStringList arguments;
     arguments.append("lo0");
     r->process->start(QString(HELPERPATH) + "sendRaw", arguments);
@@ -112,6 +114,7 @@ RawSockets::RawSockets(QObject *parent) :
                     qDebug() << "MTU is" << ifr.ifr_mtu;
 
                     r->process = new QProcess(); // can always connect signals in each Proxy's constructor.
+                    connect(r->process, SIGNAL(readyReadStandardError()), this, SLOT(injectorError()));
                     QStringList arguments;
                     arguments.append(ifr.ifr_ifrn.ifrn_name);
                     r->process->start(QString(HELPERPATH) + "sendRaw", arguments);
@@ -132,6 +135,7 @@ RawSockets::RawSockets(QObject *parent) :
     memset(r, 0, sizeof(struct rawProcess));
     r->linkType = DLT_EN10MB; /* loopback is Ethernet on linux */
     r->process = new QProcess();
+    connect(r->process, SIGNAL(readyReadStandardError()), this, SLOT(injectorError()));
     QStringList arguments;
     arguments.append("lo");
     r->process->start(QString(HELPERPATH) + "sendRaw", arguments);
@@ -157,6 +161,12 @@ RawSockets* RawSockets::getInstance() {
     }
     mutex.unlock();
     return instance;
+}
+
+void RawSockets::injectorError() {
+    QProcess* r = qobject_cast<QProcess*>(sender());
+    qWarning() << "Raw injector got error";
+    qWarning() << r->readAllStandardError();
 }
 
 void RawSockets::writeBytes(QString srcIp, QString dstIp, int srcPort,
