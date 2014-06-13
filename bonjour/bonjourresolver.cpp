@@ -45,6 +45,8 @@ void BonjourResolver::resolveReply(DNSServiceRef , //sdRef
                             quint16 txtLen,
                             const unsigned char * txtRecord,
                             void *context) {
+    if (!context)
+        return;
     QList<void*>* context_list = static_cast<QList<void*>*>(context);
     BonjourRecord* record = static_cast<BonjourRecord*>(context_list->at(0));
     BonjourResolver* resolver = static_cast<BonjourResolver*>(context_list->at(1));
@@ -60,7 +62,7 @@ void BonjourResolver::resolveReply(DNSServiceRef , //sdRef
                               SLOT(hostInfoReady(const QHostInfo &)));*/
         resolver->hostInfoReady(QHostInfo::fromName(QString::fromUtf8(hosttarget)));
     }
-    delete context_list; // remove allocated context list (@see resolve())
+    //delete context_list; // remove allocated context list (@see resolve())
 }
 
 void BonjourResolver::bonjourSocketReadyRead() {
