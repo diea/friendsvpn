@@ -34,6 +34,10 @@ void IpResolver::addMapping(QString ip, QString mac, QString interface) {
     newmap.mac = mac;
     newmap.ip = QHostAddress(ip);
 
+    if (mappings.contains(ip)) {
+        return;
+    }
+
     mutex.lock();
     mappings.insert(ip, newmap);
     mutex.unlock();
