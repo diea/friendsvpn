@@ -232,7 +232,6 @@ void ControlPlaneConnection::readBuffer(char* buf, int len) {
 
             ProxyServer* newProxy = NULL;
             try {
-                /* TODO, change "" in .local. ? */
                 newProxy = new ProxyServer(friendUid, name, type, "local.", hostname, QByteArray::fromHex(txt.toUtf8()), port, QByteArray::fromHex(md5.toUtf8()));
                 proxyServers.push(newProxy);
                 newProxy->run();

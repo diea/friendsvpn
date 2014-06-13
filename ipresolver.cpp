@@ -14,7 +14,6 @@ IpResolver::IpResolver() :
     addMapping("::1", "", "lo0");
 #elif __GNUC__
     addMapping("::1", "", "lo");
-    addMapping("2a02:2788:5d4:299:2e44:fdff:fec9:955d", "2c:44:fd:c9:95:5d", "eth1");
 #endif
 }
 

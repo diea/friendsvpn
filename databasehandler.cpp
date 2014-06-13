@@ -264,7 +264,6 @@ QString DatabaseHandler::getName(QString uid) {
 
     if (query.next()) {
         QString firstname = query.value(0).toString();
-        firstname.chop(2); // TODO remove
         QString lastname = query.value(1).toString();
         db.close();
         qryMut.unlock();

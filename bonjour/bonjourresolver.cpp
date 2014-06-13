@@ -72,9 +72,6 @@ void BonjourResolver::bonjourSocketReadyRead() {
 void BonjourResolver::hostInfoReady(const QHostInfo &info) {
     QList<QString> v4;
     QList<QString> v6;
-#ifdef linux /* TODO remove */
-    v6.append("2a02:2788:5d4:299:2e44:fdff:fec9:955d");
-#endif
     qDebug() << "Full list of addresses " << info.addresses();
     foreach(QHostAddress adr, info.addresses()) {
         if (adr.protocol() == QAbstractSocket::IPv6Protocol) {
@@ -86,7 +83,7 @@ void BonjourResolver::hostInfoReady(const QHostInfo &info) {
             v4.append(adr.toString());
         }
     }
-#ifdef linux /* is superfluous but may be reactivated if mind change */
+#if 0 /* is superfluous but may be reactivated if mind change */
     if (v6.empty() && !v4.empty()) { // QHostInfo was not able to fetch ipv6
         // check that v4 ip is not a local one
         bool local = false;
