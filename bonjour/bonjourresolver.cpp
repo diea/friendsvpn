@@ -219,19 +219,28 @@ void BonjourResolver::hostInfoReady(const QHostInfo &info) {
         return; // do not use record
     }
 
+    if (!record) {
+        qDebug() << "Record is null";
+        return;
+    }
+    qDebug() << "Copy v6 array";
     record->ips = v6;
     record->resolved = true;
+    qDebug() << "Set hostname in record";
     record->hostname = info.hostName();
 
+    qDebug() << "Truncate after .local";
     // truncate everything after ".local"
     int indexLocal;
     if ((indexLocal = record->hostname.indexOf(".local")) > -1) {
         record->hostname.truncate(indexLocal + 6);
     }
 
+    qDebug() << "Compute record hash";
     // compute record hash
     QString allParams = qSql->getLocalUid() + record->serviceName +
             record->registeredType + record->hostname + QString::number(record->port);
+    qDebug() << "Going in hash";
     QByteArray hash = QCryptographicHash::hash(allParams.toUtf8().data(), QCryptographicHash::Md5);
     // add record to hashes list
     while (BonjourDiscoverer::recordHashes.contains(hash)) {
@@ -239,18 +248,25 @@ void BonjourResolver::hostInfoReady(const QHostInfo &info) {
         QByteArray toHash = hash + QByteArray::number(static_cast<int>(time(NULL)));
         hash = QCryptographicHash::hash(toHash, QCryptographicHash::Md5);
     }
-    BonjourDiscoverer::recordHashes.insert(hash, record);
+    qDebug() << "Set record md5";
     record->md5 = hash;
+    qDebug() << "Insert inside recordHashes";
+    BonjourDiscoverer::recordHashes.insert(hash, record);
 
     QString transProt;
+    qDebug() << "Getting transProt";
     if (record->registeredType.indexOf("tcp") > -1) {
         transProt = "tcp";
     } else {
         transProt = "udp";
     }
+    qDebug() << "Going to insert in qSql";
     QString serviceName = record->registeredType;
+    qDebug() << "insertService";
     qSql->insertService(serviceName, transProt);
+    qDebug() << "insertDevice";
     qSql->insertDevice(record->hostname, record->port, serviceName, transProt, record->serviceName);
+    qDebug() << "Emitting signal";
     emit resolved(record);
 
     /*qDebug() << "Resolver deletes itself";
