@@ -83,7 +83,7 @@ void BonjourResolver::hostInfoReady(const QHostInfo &info) {
             v4.append(adr.toString());
         }
     }
-#if 0 /* is superfluous but may be reactivated if mind change */
+#ifdef linux /* is superfluous but may be reactivated if mind change */
     if (v6.empty() && !v4.empty()) { // QHostInfo was not able to fetch ipv6
         // check that v4 ip is not a local one
         bool local = false;
