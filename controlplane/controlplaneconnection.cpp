@@ -281,7 +281,7 @@ void ControlPlaneConnection::sendBonjour() {
         sendPacket(packet);
     }
 
-#if linux /* TODO enable on OSX after tests */
+#if 0 /* TODO enable on OSX after tests */
     static bool first = true;
     if (first) {
         QTimer::singleShot(10000, this, SLOT(sendBonjour())); // first call, let the time to the Bonjour discoverer

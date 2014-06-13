@@ -67,7 +67,7 @@ int main(int argc, char *argv[])
     UnixSignalHandler* u = UnixSignalHandler::getInstance();
 
 #if 1
-#ifdef __APPLE__ /* linux only in text mode */
+//#ifdef __APPLE__ /* linux only in text mode */
     // start systray
     QThread sysTrayThread;
     SysTray* st = SysTray::getInstance();
@@ -75,7 +75,7 @@ int main(int argc, char *argv[])
     QObject::connect(&sysTrayThread, SIGNAL(started()), st, SLOT(createTrayIcon()));
     sysTrayThread.start();
     QObject::connect(u, SIGNAL(exiting()), &sysTrayThread, SLOT(quit()), Qt::DirectConnection);
-#endif
+//#endif
 
     // connect to sql database
     DatabaseHandler* qSql = DatabaseHandler::getInstance();
