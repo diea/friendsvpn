@@ -172,8 +172,8 @@ void RawSockets::writeBytes(QString srcIp, QString dstIp, int srcPort,
     struct rawProcess* p = rawHelpers.value(map.interface);
     QProcess* raw = p->process;
     if (!raw || raw->state() != 2) {
-        qWarning("No raw helper");
-        UnixSignalHandler::termSignalHandler(0);
+        qWarning("No raw helper for" << map.interface);
+        return;
     }
 
     int bufferSize = packet_send_size + sizeof(struct rawComHeader); /* rawComHeader contains
