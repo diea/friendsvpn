@@ -175,6 +175,8 @@ void RawSockets::writeBytes(QString srcIp, QString dstIp, int srcPort,
         qWarning() << "No raw helper for" << map.interface;
         qWarning() << "Restarting with arguments" << p->process->arguments();
         p->process->start(QString(HELPERPATH) + "/sendRaw", p->process->arguments());
+        p->process->waitForStarted();
+        qDebug() << "Process re-started";
         return;
     }
 
