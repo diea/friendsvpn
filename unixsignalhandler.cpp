@@ -58,6 +58,7 @@ void UnixSignalHandler::removeIp(QString ip) {
 #elif linux
     cleanArgs.append(ip + "/64"); // TODO other prefixes!
 #endif
+    qDebug() << "Cleanup" << cleanArgs;
     cleanup.start(QString(HELPERPATH) + "/cleanup", cleanArgs);
     cleanup.waitForFinished();
     listOfIps.removeAll(ip);
