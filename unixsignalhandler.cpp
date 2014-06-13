@@ -53,7 +53,11 @@ void UnixSignalHandler::removeIp(QString ip) {
     QProcess cleanup;
     QStringList cleanArgs;
     cleanArgs.append(IpResolver::getDefaultInterface());
+#ifdef __APPLE__
     cleanArgs.append(ip);
+#elif linux
+    cleanArgs.append(ip + "/64"); // TODO other prefixes!
+#endif
     cleanup.start(QString(HELPERPATH) + "/cleanup", cleanArgs);
     cleanup.waitForFinished();
     listOfIps.removeAll(ip);
