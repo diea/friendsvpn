@@ -2,8 +2,9 @@
 #include "bonjourdiscoverer.h"
 #include "config.h"
 #include "ipresolver.h"
-
 #include "bonjourregistrar.h"
+#include <arpa/inet.h>
+
 BonjourResolver::BonjourResolver(BonjourRecord* record, QObject *parent) :
     QObject(parent)
 {

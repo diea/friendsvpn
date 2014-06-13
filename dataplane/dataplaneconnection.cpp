@@ -13,6 +13,7 @@ DataPlaneConnection::DataPlaneConnection(QString uid, AbstractPlaneConnection *p
 }
 
 void DataPlaneConnection::removeConnection() {
+    qDebug() << "Data plane remove connection";
     DatabaseHandler* qSql = DatabaseHandler::getInstance();
 
     if (friendUid.toULongLong() < qSql->getLocalUid().toULongLong()) { // friend is smaller, I am server
@@ -59,6 +60,8 @@ bool DataPlaneConnection::addMode(plane_mode mode, QObject* socket) {
 
     if (curMode == Both)
         this->removeConnection();
+
+    qDebug() << "Data plane is in mode" << mode;
 
     mutex.unlock();
     return true;
@@ -262,6 +265,7 @@ void DataPlaneConnection::disconnect() {
     curMode = Closed;
     mutex.unlock();
 
+    qDebug() << "Data plane is now in mode" << curMode;
     ConnectionInitiator::getInstance()->removeConnection(this);
     this->deleteLater();
 }
