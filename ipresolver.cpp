@@ -31,7 +31,7 @@ void IpResolver::addMapping(QString ip, QString mac, QString interface) {
     struct ip_mac_mapping newmap;
     newmap.interface = interface;
     newmap.mac = mac;
-    newmap.ip = ip;
+    newmap.ip = QHostAddress(ip);
 
     mutex.lock();
     mappings.insert(ip, newmap);

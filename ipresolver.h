@@ -4,6 +4,7 @@
 #include <QObject>
 #include <QHash>
 #include <QMutex>
+#include <QHostAddress>
 
 /**
  * @brief The ipResolver class will hold the local mappings of MAC - IPs. It will resolve the MAC
@@ -12,7 +13,7 @@
  */
 
 struct ip_mac_mapping {
-    QString ip;
+    QHostAddress ip;
     QString mac; // mac will be empty if loopback interface or no available mac
     QString interface;
 };
