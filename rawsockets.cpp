@@ -172,7 +172,7 @@ void RawSockets::writeBytes(QString srcIp, QString dstIp, int srcPort,
     struct rawProcess* p = rawHelpers.value(map.interface);
     QProcess* raw = p->process;
     if (!raw || raw->state() != 2) {
-        qWarning("No raw helper for" << map.interface);
+        qWarning() << "No raw helper for" << map.interface;
         return;
     }
 
