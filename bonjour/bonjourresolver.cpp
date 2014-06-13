@@ -131,6 +131,7 @@ void BonjourResolver::hostInfoReady(const QHostInfo &info) {
         #elif __GNUC__
                         if (list.length() > 6) {
                             if (list.at(1).contains(ipv4)) {
+                                qDebug() << "Got MAC of ipv4" << macs.append(list.at(3));
                                 macs.append(list.at(3));
                                 QString iface = list.at(6);
                                 iface.truncate(iface.length() - 1);
@@ -199,7 +200,7 @@ void BonjourResolver::hostInfoReady(const QHostInfo &info) {
                         // at the same time we can add the mapping to our resolver
                         IpResolver* r = IpResolver::getInstance();
                         r->addMapping(ipv6, macs.at(i), ifaces.at(i));
-
+                        qDebug() << "Got IPv6 from MAC" << ipv6;
                         v6.append(ipv6);
                     }
                 }
