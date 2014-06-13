@@ -131,7 +131,7 @@ void BonjourResolver::hostInfoReady(const QHostInfo &info) {
         #elif __GNUC__
                         if (list.length() > 6) {
                             if (list.at(1).contains(ipv4)) {
-                                qDebug() << "Got MAC of ipv4" << macs.append(list.at(3));
+                                qDebug() << "Got MAC of ipv4" << list.at(3);
                                 macs.append(list.at(3));
                                 QString iface = list.at(6);
                                 iface.truncate(iface.length() - 1);
