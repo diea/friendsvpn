@@ -8,31 +8,27 @@ sslVersion=$(openssl version)
 unamestr=$(uname)
 
 if ! [ -f "openssl-1.0.1g/libcrypto.a" ] || ! [ -f "openssl-1.0.1g/libssl.a" ]; then
-    if [[ $sslVersion != "zOpenSSL 1.0.1g"* ]]
-    then
-        echo "OpenSSL 1.0.1g or newer is required for the DTLS server to be able to function and it was not detected on your system"
-        echo "Your version is :" $sslVersion
-        echo "The application will still work but you will only be able to make outbound connections to your friends"
-        read -p "Would you like to download the openssl 1.0.1g library for the application to use ? (Requires wget and tar command) [y/n] " -n 1
-        echo
-        if [[ $REPLY =~ ^[Yy]$ ]]; then
-            wget https://www.openssl.org/source/openssl-1.0.1g.tar.gz --no-check-certificate
-            tar -xvf openssl-1.0.1g.tar.gz
-            cd openssl-1.0.1g
-            if [[ $unamestr == "Darwin" ]]; then
-                ./Configure darwin64-x86_64-cc
-            else
-                ./config
-            fi
-            make
-            cd ..
-            cp friendsvpn.1.0.1gssl friendsvpn.pro
+    echo "The installed openssl library (" $sslVersion ") will not be able to handle DTLSv1_listen calls, as specific compilation parameters for the openssl library are required"
+    echo "The application will still work but you will only be able to make outbound connections to your friends"
+    read -p "Would you like to download the openssl 1.0.1g library for the application to use ? (Requires wget and tar command) [y/n] " -n 1
+    echo
+    if [[ $REPLY =~ ^[Yy]$ ]]; then
+        wget https://www.openssl.org/source/openssl-1.0.1g.tar.gz --no-check-certificate
+        tar -xvf openssl-1.0.1g.tar.gz
+        cd openssl-1.0.1g
+        if [[ $unamestr == "Darwin" ]]; then
+            ./Configure darwin64-x86_64-cc
         else
-            cp friendsvpn.localssl friendsvpn.pro
+            ./config
         fi
+        make
+        cd ..
+        cp friendsvpn.1.0.1gssl friendsvpn.pro
     else
         cp friendsvpn.localssl friendsvpn.pro
     fi
+else
+    cp friendsvpn.1.0.1gssl friendsvpn.pro
 fi
 cd libmaia
 qmake
