@@ -23,6 +23,7 @@ class BonjourGui extends MY_Controller {
         $parsed = parsePlist($mappings)["Services"];
         
         for ($i = 0; $i < count($data["services"]); $i++) {
+            $data["services"][$i]["fancy_name"] = $data["services"][$i]["name"];
             foreach ($parsed as $mapping) {
                 if ($mapping["Service"] === $data["services"][$i]["name"]) {
                     $data["services"][$i]["fancy_name"] = $mapping["Name"];

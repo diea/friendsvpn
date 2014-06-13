@@ -4,11 +4,11 @@
  * @brief Configuration macros. These set various settings based on the environment where this
  * app is run. These can be used to tweak the application for a particular setup.
  */
-#define TEST
+//#define TEST
 #ifdef __APPLE__
 //#define QTCREATOR /* used when the application is launched on OSX from the QTCREATOR */
 #endif
-//#define PRODUCTION
+#define PRODUCTION
 
 #ifdef TEST
 #define DBHOST "fd3b:e180:cbaa:1:5e96:9dff:fe8a:8447"
@@ -41,8 +41,10 @@
 #define IPV6_MIN_MTU 1280 /* ipv6 minimum MTU from RFC 2460 */
 #define FRAG_BUFFER_SIZE 5
 
+#ifdef TEST
 #define DTLS_ENCRYPT "eNULL:NULL" /* used to debug the dataplane connection, disables the encryption */
-//#define DTLS_ENCRYPT "DEFAULT" /* enables encryption using "default" algorithms on the DTLS connection */
-
+#else
+#define DTLS_ENCRYPT "DEFAULT" /* enables encryption using "default" algorithms on the DTLS connection */
+#endif
 
 #endif // CONFIG_H

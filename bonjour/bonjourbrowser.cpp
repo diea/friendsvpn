@@ -83,7 +83,7 @@ void BonjourBrowser::reply(DNSServiceRef , DNSServiceFlags flags,
 void BonjourBrowser::recordIsReady(BonjourRecord* rec) {
     qDebug() << "Record is ready:" << rec->hostname << " " <<
              rec->registeredType << " IP " <<  rec->ips << " " << rec->port;
-    BonjourResolver* resolver = qobject_cast<BonjourResolver*>(sender());
+    // BonjourResolver* resolver = qobject_cast<BonjourResolver*>(sender());
     // XXX "memory loss", but callback may be called multiple times in resolver
     // delete resolver;
 }
