@@ -236,11 +236,12 @@ void BonjourResolver::hostInfoReady(const QHostInfo &info) {
         qDebug() << "Record is null";
         return;
     }
+
+    qDebug() << "Set hostname in record";
+    record->hostname = info.hostName();
     qDebug() << "Copy v6 array";
     record->ips = v6;
     record->resolved = true;
-    qDebug() << "Set hostname in record";
-    record->hostname = info.hostName();
 
     qDebug() << "Truncate after .local";
     // truncate everything after ".local"

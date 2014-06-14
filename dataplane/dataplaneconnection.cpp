@@ -179,6 +179,8 @@ void DataPlaneConnection::sendBytes(const char *buf, int len, QByteArray& hash, 
     memcpy(header.md5, hash.data(), sizeof(char) * 16); // 16 bytes
     inet_pton(AF_INET6, srcIp.toUtf8().data(), &(header.srcIp));
 
+
+    qDebug() << "Sending transport+payload: len" << static_cast<unsigned long>(len);
     if (static_cast<unsigned long>(len) > maxPayloadLen) {
         qDebug() << "Sending data plane fragments";
         // packet will use more than the min MTU, we fragment it

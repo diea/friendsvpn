@@ -73,6 +73,7 @@ void PcapWorker::run() {
                 *dstPort = htons(p->listenPort); // restore the original port
             }
 
+            qDebug() << "Pcap receives a packet of" << pcapHeader.len << "bytes";
             p->receiveBytes(packet, pcapHeader.len, p->sockType, pcapHeader.ipSrcStr);
         }
     }

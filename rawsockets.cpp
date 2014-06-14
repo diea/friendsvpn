@@ -342,7 +342,7 @@ void RawSockets::writeBytes(QString srcIp, QString dstIp, int srcPort,
             raw->write(packet, payloadLen + sizeof(struct fragHeader) + sizeof(struct rawComHeader));
             raw->waitForBytesWritten();
 
-            qDebug() << "Injecting fragment of size" << payloadLen;
+            qDebug() << "Injected fragment of size" << payloadLen - 4; // 4 bytes for size in rawComHeader
 
             pos += payloadLen;
             packet_send_size -= payloadLen;
@@ -352,7 +352,7 @@ void RawSockets::writeBytes(QString srcIp, QString dstIp, int srcPort,
     } else {
         raw->write(buffer, bufferSize);
         raw->waitForBytesWritten();
-        qDebug() << bufferSize << "bytes injected";
+        qDebug() << bufferSize - 4 << "bytes injected"; // 4 bytes for size in rawComHeader
     }
 }
 

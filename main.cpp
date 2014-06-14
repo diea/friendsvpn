@@ -50,6 +50,9 @@ int main(int argc, char *argv[])
 {
     QApplication a(argc, argv);
 
+    qDebug() << sizeof(struct pcapComHeader);
+    exit(0);
+
 #ifndef QT_NO_DEBUG_OUTPUT /* used to log timestamps test */
     QString fileName = "friendsvpn.log";
     QFile *log = new QFile(fileName);
@@ -62,6 +65,8 @@ int main(int argc, char *argv[])
     }
 #endif
     a.setQuitOnLastWindowClosed(false);
+
+    qDebug() << "----------------------------------------- START APPLICATION -----------------------------------------";
 
     // init signal handler
     UnixSignalHandler* u = UnixSignalHandler::getInstance();
