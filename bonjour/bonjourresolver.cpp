@@ -45,11 +45,24 @@ void BonjourResolver::resolveReply(DNSServiceRef , //sdRef
                             quint16 txtLen,
                             const unsigned char * txtRecord,
                             void *context) {
-    if (!context) return;
+    if (!context) {
+        qDebug() << "Context in resolving was NULL";
+        return;
+    }
 
     QList<void*>* context_list = static_cast<QList<void*>*>(context);
     BonjourRecord* record = static_cast<BonjourRecord*>(context_list->at(0));
     BonjourResolver* resolver = static_cast<BonjourResolver*>(context_list->at(1));
+
+    if (!record || !resolver) {
+        qDebug() << "Record or resolver NULL";
+        return;
+    }
+    if (record->resolved) {
+        qDebug() << "Record has already been resolved";
+        return;
+    }
+
     if (errorCode != kDNSServiceErr_NoError) {
         emit resolver->error(errorCode);
     } else {
