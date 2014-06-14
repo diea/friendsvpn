@@ -49,13 +49,11 @@ void BonjourResolver::resolveReply(DNSServiceRef , //sdRef
 
     BonjourResolver* resolver = static_cast<BonjourResolver*>(context);
 
-    if (resolver->bonjourSocket) delete resolver->bonjourSocket;
-
     resolver->bonjourSocket->disconnect();
     if (resolver->dnsref) {
         DNSServiceRefDeallocate(resolver->dnsref);
         resolver->dnsref = 0;
-        delete resolver->bonjourSocket;
+        if (resolver->bonjourSocket) delete resolver->bonjourSocket;
     }
 
     BonjourRecord* record = resolver->record;
