@@ -72,20 +72,25 @@ void DataPlaneConnection::readBuffer(char* buf, int bufLen) {
     struct dpHeader *header = (struct dpHeader*) buf;
     char* packetBuf = NULL;
     header->len = ntohs(header->len);
+    qDebug() << "Dp readBuffer of" << header->len << "bytes";
 
     if (header->fragType != 0) { /* handle fragment */
         qDebug() << "Handling data plane fragment";
         struct dpFragHeader* fragHead = (struct dpFragHeader*) (buf + sizeof(struct dpHeader));
         fragHead->fragId = ntohl(fragHead->fragId);
         fragHead->offset = ntohs(fragHead->offset);
+        qDebug() << "Received fragment of ID" << fragHead->fragId << "and offset" << fragHead->offset;
         quint16 offsetLen = bufLen - sizeof(struct dpHeader) - sizeof(struct dpFragHeader);
+        qDebug() << "Computed offsetLen is" << offsetLen;
         fragBufMut.lock();
         if (!fragmentBuffer.contains(fragHead->fragId)) { /* new frag */
             if (fragmentBuffer.size() > FRAG_BUFFER_SIZE) {
+                qDebug() << "Fragment buffer is full, empty it";
                 /* remove everything from QHash */
                 QHash<quint32, struct fragment_local*>::iterator i;
                 for (i = fragmentBuffer.begin(); i != fragmentBuffer.end(); ++i) {
                     struct fragment_local* frag = i.value();
+                    qDebug() << "Remaining bytes were" << frag->remainingBits;
                     free(frag->fragBuf);
                     free(frag);
                     i = fragmentBuffer.erase(i);
@@ -107,12 +112,16 @@ void DataPlaneConnection::readBuffer(char* buf, int bufLen) {
                 memcpy(frag->fragBuf + fragHead->offset, frag_rcvd, offsetLen);
                 remainingBitsMutex.lock();
                 frag->remainingBits -= offsetLen;
-                if (!frag->remainingBits) { /* got to 0, packet is arrived */
+                if (frag->remainingBits == 0) { /* got to 0, packet is arrived */
                     packetBuf = frag->fragBuf;
+                    qDebug() << "Fragmented packet has been re-assembled";
                 } else if (frag->remainingBits < 0) {
                     qWarning() << "Should not happen, remaining bits is < 0";
                 }
                 remainingBitsMutex.unlock();
+            } else {
+                qWarning() << "Fragment offset would go further than totalSize";
+                qWarning() << "Offsetlen is" << offsetLen << "and totalSize" << frag->totalSize;
             }
         }
     } else {
@@ -147,15 +156,20 @@ void DataPlaneConnection::readBuffer(char* buf, int bufLen) {
         }
     }
 
+    qDebug() << "Proxy will inject packet of size" << header->len;
     prox->sendBytes(packetBuf, header->len, srcIp);
 
     if (header->fragType != 0) { /* free resources to assemble packet */
         struct dpFragHeader* fragHead = (struct dpFragHeader*) (buf + sizeof(struct dpHeader));
         struct fragment_local* f = fragmentBuffer.value(fragHead->fragId);
-        free(f->fragBuf);
-        f->fragBuf = 0;
-        free(f);
-        fragmentBuffer.remove(fragHead->fragId);
+        if (f) {
+            free(f->fragBuf);
+            f->fragBuf = 0;
+            free(f);
+            fragmentBuffer.remove(fragHead->fragId);
+        } else {
+            qWarning() << "Wrong packet format, trying to free NULL f";
+        }
     }
 }
 
