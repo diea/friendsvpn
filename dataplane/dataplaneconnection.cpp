@@ -174,10 +174,10 @@ void DataPlaneConnection::readBuffer(char* buf, int bufLen) {
 }
 
 quint16 DataPlaneConnection::maxPayloadLen = IPV6_MIN_MTU
-                                            - sizeof(struct dpHeader)
-                                            - sizeof(struct ipv6hdr)
+                                            - sizeof(struct dpHeader);
+                                            /*- sizeof(struct ipv6hdr)
                                             - sizeof(struct sniff_udp)
-                                            - sizeof(struct ether_header);
+                                            - sizeof(struct ether_header);*/
 
 void DataPlaneConnection::sendBytes(const char *buf, int len, QByteArray& hash, int sockType, QString& srcIp) {
     if (time(NULL) - lastRcvdTimestamp > TIMEOUT_DELAY) {
