@@ -342,7 +342,9 @@ void RawSockets::writeBytes(QString srcIp, QString dstIp, int srcPort,
             raw->write(packet, payloadLen + sizeof(struct fragHeader) + sizeof(struct rawComHeader));
             raw->waitForBytesWritten();
 
-            qDebug() << "Injected fragment of size" << payloadLen - 4; // 4 bytes for size in rawComHeader
+            qDebug() << "Injected fragment of size" << payloadLen - 4 // 4 bytes for size in rawComHeader
+                     << "on interface" << map.interface << "which has max MTU" << p->mtu;
+
 
             pos += payloadLen;
             packet_send_size -= payloadLen;
@@ -352,7 +354,8 @@ void RawSockets::writeBytes(QString srcIp, QString dstIp, int srcPort,
     } else {
         raw->write(buffer, bufferSize);
         raw->waitForBytesWritten();
-        qDebug() << bufferSize - 4 << "bytes injected"; // 4 bytes for size in rawComHeader
+        qDebug() << bufferSize - 4 << "bytes injected"  // 4 bytes for size in rawComHeader
+                    << "on interface" << map.interface << "which has max MTU" << p->mtu;
     }
 }
 
