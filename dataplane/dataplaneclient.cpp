@@ -156,9 +156,9 @@ void DataPlaneClient::readyRead(int) {
 void DataPlaneClient::sendBytes(const char *bytes, socklen_t len) {
     if (!(SSL_get_shutdown(ssl) & SSL_RECEIVED_SHUTDOWN)) {
         int nbWr = SSL_write(ssl, bytes, len);
-        qDebug() << "Wrote" << nbWr << "bytes on data plane connection";
-        switch (SSL_get_error(ssl, len)) {
+        switch (SSL_get_error(ssl, nbWr)) {
             case SSL_ERROR_NONE:
+                qDebug() << "Wrote" << nbWr << "bytes on data plane connection";
                 break;
             case SSL_ERROR_WANT_WRITE:
                 qWarning() << "SSL_ERROR_WANT_WRITE";
