@@ -15,13 +15,10 @@ BonjourResolver::BonjourResolver(BonjourRecord* record, QObject *parent) :
 
 void BonjourResolver::resolve() {
     // get ip & port using DNSServiceResolve
-    QList<void*>* context = new QList<void*>();
-    context->append(record);
-    context->append(this);
     DNSServiceErrorType err = DNSServiceResolve(&dnsref, 0, 0, record->serviceName.toUtf8().constData(),
                                                 record->registeredType.toUtf8().constData(),
                                                 record->replyDomain.toUtf8().constData(),
-                                                resolveReply, context);
+                                                resolveReply, this);
     if (err != kDNSServiceErr_NoError) {
         emit error(err);
     } else {
@@ -50,9 +47,18 @@ void BonjourResolver::resolveReply(DNSServiceRef , //sdRef
         return;
     }
 
-    QList<void*>* context_list = static_cast<QList<void*>*>(context);
-    BonjourRecord* record = static_cast<BonjourRecord*>(context_list->at(0));
-    BonjourResolver* resolver = static_cast<BonjourResolver*>(context_list->at(1));
+    BonjourResolver* resolver = static_cast<BonjourResolver*>(context);
+
+    if (resolver->bonjourSocket) delete resolver->bonjourSocket;
+
+    resolver->bonjourSocket->disconnect();
+    if (resolver->dnsref) {
+        DNSServiceRefDeallocate(resolver->dnsref);
+        resolver->dnsref = 0;
+        delete resolver->bonjourSocket;
+    }
+
+    BonjourRecord* record = resolver->record;
 
     if (!record || !resolver) {
         qDebug() << "Record or resolver NULL";

@@ -17,6 +17,7 @@ if [[ $unamestr == "Darwin" ]]; then
 	do
     	echo "Cleaning $line"
     	./helpers/cleanup en1 $line
+    	./helpers/cleanup en0 $line
 	done
 
 else
