@@ -79,7 +79,6 @@ void BonjourResolver::resolveReply(DNSServiceRef , //sdRef
                               SLOT(hostInfoReady(const QHostInfo &)));*/
         resolver->hostInfoReady(QHostInfo::fromName(QString::fromUtf8(hosttarget)));
     }
-    //delete context_list; // remove allocated context list (@see resolve())
 }
 
 void BonjourResolver::bonjourSocketReadyRead() {
@@ -286,8 +285,5 @@ void BonjourResolver::hostInfoReady(const QHostInfo &info) {
     qSql->insertDevice(record->hostname, record->port, serviceName, transProt, record->serviceName);
     qDebug() << "Emitting signal";
     emit resolved(record);
-
-    /*qDebug() << "Resolver deletes itself";
-    this->deleteLater();*/
 }
 

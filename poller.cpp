@@ -23,3 +23,4 @@ bool Poller::setUid(QString uid) {
     qSql->uid = uid;
     return true;
 }
+
