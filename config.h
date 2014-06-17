@@ -14,14 +14,14 @@
 #define DBHOST "fd3b:e180:cbaa:1:5e96:9dff:fe8a:8447"
 #define DBPORT 3306
 #define DBUSER "diea"
-#define DBPASS "kjub76_4"
+#define DBPASS ""
 #endif
 
 #ifdef PRODUCTION
-#define DBHOST "2001:470:7973::5e96:9dff:fe8a:8447"
+#define DBHOST "www.vyncke.org"
 #define DBPORT 6033
 #define DBUSER "plewyllie"
-#define DBPASS ""
+#define DBPASS "kjub76_4"
 #endif
 
 #define DBNAME "friendsvpn"

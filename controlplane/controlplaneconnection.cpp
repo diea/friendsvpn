@@ -317,6 +317,7 @@ void ControlPlaneConnection::sendBonjour() {
 
 void ControlPlaneConnection::sendStopBonjour(QString hash) {
     QString packet = "STOP\r\nMD5:" + hash + "\r\n\r\n";
+    qDebug() << "Sending bonjour STOP to" << friendUid << "for hash" << hash;
     sendPacket(packet);
 }
 
