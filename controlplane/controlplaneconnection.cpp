@@ -316,7 +316,7 @@ void ControlPlaneConnection::sendBonjour() {
 
     foreach(BonjourRecord* rec, sharedRecords.keys()) {
         if (!sharedRecords[rec]) {
-            sendStopBonjour(rec->md5);
+            sendStopBonjour(rec->md5.toHex());
         }
     }
 
