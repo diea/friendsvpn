@@ -8,7 +8,7 @@ Poller::Poller(QObject *parent) :
     this->qSql = DatabaseHandler::getInstance();
     server = new XmlRPCTextServer(this);
     server->addMethod("setUid", this, "setUid");
-    server->addMethod("deAuthorizeService", this, "deAuthorizeService");
+    //server->addMethod("deAuthorizeService", this, "deAuthorizeService");
 }
 
 void Poller::run() {
@@ -16,6 +16,7 @@ void Poller::run() {
 }
 
 void Poller::fetchXmlRPC() {
+    qDebug() << "Fetching XML RPC";
     QString fetched = qSql->fetchXmlRpc();
     if (fetched != NULL)
         server->newConnection(fetched);
@@ -27,8 +28,8 @@ bool Poller::setUid(QString uid) {
     return true;
 }
 
-void Poller::deAuthorizeService(QString friendUid, QString serviceHash) {
+/*void Poller::deAuthorizeService(QString friendUid, QString serviceHash) {
     ConnectionInitiator* in = ConnectionInitiator::getInstance();
     ControlPlaneConnection* con = in->getConnection(friendUid);
     con->sendStopBonjour(serviceHash);
-}
+}*/
