@@ -16,7 +16,7 @@ void Poller::run() {
 }
 
 void Poller::fetchXmlRPC() {
-    qDebug() << "Fetching XML RPC";
+    //qDebug() << "Fetching XML RPC";
     QString fetched = qSql->fetchXmlRpc();
     if (fetched != NULL)
         server->newConnection(fetched);

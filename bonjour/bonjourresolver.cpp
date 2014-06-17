@@ -94,7 +94,15 @@ void BonjourResolver::hostInfoReady(const QHostInfo &info) {
     foreach(QHostAddress adr, info.addresses()) {
         if (adr.protocol() == QAbstractSocket::IPv6Protocol) {
             QString adrstr = adr.toString();
-            if (!adrstr.startsWith("fe80")) {
+            if (adrstr.startsWith("fe80")) {
+                // remove everything after %
+                int index = adrstr.indexOf("%");
+                if (index > 0) {
+                    adrstr.truncate(index - 1);
+                    qDebug() << "Adrstr is" << adrstr;
+                    v6.append(adrstr);
+                }
+            } else {
                 v6.append(adrstr);
             }
         } else if (adr.protocol() == QAbstractSocket::IPv4Protocol) {

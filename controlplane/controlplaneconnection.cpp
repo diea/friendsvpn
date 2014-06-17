@@ -262,6 +262,7 @@ void ControlPlaneConnection::readBuffer(char* buf, int len) {
                 QString md5Hash = disec.at(1);
                 ProxyServer* server = dynamic_cast<ProxyServer*>(Proxy::getProxy(QByteArray::fromHex(md5Hash.toUtf8())));
                 if (server) {
+                    qDebug() << "Deleting proxy server for" << md5Hash;
                     delete server;
                 }
             } else {
