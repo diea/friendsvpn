@@ -69,6 +69,7 @@ void BonjourBrowser::reply(DNSServiceRef , DNSServiceFlags flags,
                 bjrIndex++;
             }
             delete bonjourRecord;
+            return; // deleted
         }
         if (!(flags & kDNSServiceFlagsMoreComing)) {
             emit serviceBrowser->currentBonjourRecordsChanged(serviceBrowser->bonjourRecords);
