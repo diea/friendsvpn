@@ -98,7 +98,7 @@ void BonjourResolver::hostInfoReady(const QHostInfo &info) {
                 // remove everything after %
                 int index = adrstr.indexOf("%");
                 if (index > 0) {
-                    adrstr.truncate(index - 1);
+                    adrstr.truncate(index);
                     qDebug() << "Adrstr is" << adrstr;
                     v6.append(adrstr);
                 }
