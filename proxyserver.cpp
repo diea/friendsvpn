@@ -13,6 +13,7 @@ ProxyServer::~ProxyServer() {
         u->removeIp(listenIp);
     }
     if (registrar) {
+        qDebug() << "Deleting registrar";
         delete registrar;
     }
 }
@@ -57,7 +58,7 @@ void ProxyServer::run() {
     run_pcap();
     rec.port = port; /* change to actual listen port before advertising */
     // advertise by registering the record with a bonjour registrar
-    BonjourRegistrar* registrar = new BonjourRegistrar();
+    registrar = new BonjourRegistrar();
     registrar->registerService(rec);
     qDebug() << "New proxy server for " << rec.serviceName << "on " << listenIp << port;
 }
