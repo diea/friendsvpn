@@ -148,8 +148,8 @@ bool ControlPlaneConnection::addMode(plane_mode mode, QObject *socket) {
 }
 
 void ControlPlaneConnection::readBuffer(char* buf, int len) {
-    qDebug() << "Reading buffer";
-    qDebug() << buf;
+    //qDebug() << "Reading buffer";
+    //qDebug() << buf;
     memcpy(inputBuffer + bytesReceived, buf, len); // copy incoming buffer
     lastFullPacket = 0;
     if (len > 0) {
@@ -187,7 +187,7 @@ void ControlPlaneConnection::readBuffer(char* buf, int len) {
             headerLength = found - (inputBuffer + bufferPosition);
         } else {
             qDebug() << "No \r\n\r\n in packet";
-            qDebug() << "Buffer" << inputBuffer;
+            //qDebug() << "Buffer" << inputBuffer;
             return;
         }
 
