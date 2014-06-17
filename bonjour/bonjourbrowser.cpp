@@ -54,7 +54,6 @@ void BonjourBrowser::reply(DNSServiceRef , DNSServiceFlags flags,
         } else { // delete the record
             qDebug() << "Should delete" << bonjourRecord->serviceName;
             QList<BonjourRecord*>::iterator it;
-            //int bjrIndex = 0;
             // iterate through list to find the record to delete
             for (it = serviceBrowser->bonjourRecords.begin(); it != serviceBrowser->bonjourRecords.end();) {
                 BonjourRecord* oldBonjourRecord= *it;
@@ -69,7 +68,6 @@ void BonjourBrowser::reply(DNSServiceRef , DNSServiceFlags flags,
                 } else {
                     it++;
                 }
-                //bjrIndex++;
             }
             delete bonjourRecord;
             bonjourRecord = 0;
