@@ -30,13 +30,12 @@ char * my_strnstr(const char *s, const char *find, size_t slen) {
  * from stackoverflow.com/questions/1634359/is-there-a-reverse-fn-for-strstr
  */
 char * strrstr(char *string, const char *find, size_t len) {
-  char *cp;
-  for (cp = string + len - 4; cp >= string; cp--)
-  {
-    if (strncmp(cp, find, 4) == 0)
-        return cp;
-  }
-  return NULL;
+    char *cp;
+    for (cp = string + len - 4; cp >= string; cp--) {
+        if (strncmp(cp, find, 4) == 0)
+            return cp;
+    }
+    return NULL;
 }
 
 ControlPlaneConnection::ControlPlaneConnection(QString uid, AbstractPlaneConnection *parent) :
@@ -162,6 +161,7 @@ void ControlPlaneConnection::readBuffer(char* buf, int len) {
         } else {
             char* packetEnd = strrstr(inputBuffer, "\r\n\r\n", bytesReceived) + 4;
             int packetEndIndex = packetEnd - buf;
+            qDebug() << "Packet end index is" << packetEndIndex;
             if (packetEndIndex > 4) {
                 // one full packet
                 lastFullPacket = packetEndIndex;
