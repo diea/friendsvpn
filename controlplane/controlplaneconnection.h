@@ -37,7 +37,7 @@ private:
      * @brief proxyServers associates this control plane connection to proxy servers for each
      * of the received services from the distant host
      */
-    QStack<ProxyServer*> proxyServers;
+    QList<ProxyServer*> proxyServers;
 
     /**
      * @brief sharedRecords contains pointers to the records that are shared over this connection

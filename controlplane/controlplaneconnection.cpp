@@ -246,7 +246,7 @@ void ControlPlaneConnection::readBuffer(char* buf, int len) {
             ProxyServer* newProxy = NULL;
             try {
                 newProxy = new ProxyServer(friendUid, name, type, "local.", hostname, QByteArray::fromHex(txt.toUtf8()), port, QByteArray::fromHex(md5.toUtf8()));
-                proxyServers.push(newProxy);
+                proxyServers.append(newProxy);
                 newProxy->run();
             } catch (int i) {
                 // proxy exists
@@ -263,6 +263,7 @@ void ControlPlaneConnection::readBuffer(char* buf, int len) {
                 ProxyServer* server = dynamic_cast<ProxyServer*>(Proxy::getProxy(QByteArray::fromHex(md5Hash.toUtf8())));
                 if (server) {
                     qDebug() << "Deleting proxy server for" << md5Hash;
+                    proxyServers.removeAll(server);
                     delete server;
                 }
             } else {
@@ -338,14 +339,17 @@ void ControlPlaneConnection::sendStopBonjour(QString hash) {
 }
 
 void ControlPlaneConnection::wasDisconnected() {
+    qDebug() << "Control plane connection was disconnected";
     ConnectionInitiator* init = ConnectionInitiator::getInstance();
     init->removeConnection(this);
 
+    qDebug() << "Removing proxies";
     while (!proxyServers.isEmpty()) {
-        Proxy* p = proxyServers.pop();
+        Proxy* p = proxyServers.takeFirst();
         delete p;
     }
 
+    qDebug() << "Disconnecting data plane";
     DataPlaneConnection* dp = init->getDpConnection(friendUid);
     if (dp) {
         dp->disconnect(); // we disconnect the dataplane for this same client!
