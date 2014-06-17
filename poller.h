@@ -40,7 +40,7 @@ public slots:
     /**
      * @brief bonjourChanged XMLRPC when bonjour record has changed, emits bonjourChanged
      */
-    void emitBonjourChanged();
+    void emitBonjourChanged(QString teststr);
 signals:
     void bonjourChanged();
 };
