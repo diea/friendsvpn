@@ -41,5 +41,6 @@ bool Poller::setUid(QString uid) {
 }
 
 void Poller::emitBonjourChanged() {
+    qDebug() << "Emitting bonjour changed";
     emit bonjourChanged();
 }
