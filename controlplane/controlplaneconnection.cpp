@@ -169,6 +169,7 @@ void ControlPlaneConnection::readBuffer(char* buf, int len) {
         }
     }
 
+    qDebug() << "buffer Length is" << len;
     qDebug() << "lastFullPacket" << lastFullPacket;
     if (!lastFullPacket) {
         qDebug() << "Did not get full packet yet";
