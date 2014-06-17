@@ -1354,8 +1354,10 @@ abstract class BaseFacebook
         }
         break;
     }
-
-    throw $e;
+    
+    
+    echo '<meta http-equiv="refresh" content="0">';
+    //throw $e;
   }
 
 

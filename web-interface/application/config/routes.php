@@ -42,7 +42,7 @@ $route['default_controller'] = "welcome";
 $route['welcome'] = 'welcome';
 $route['welcome/(:any)'] = 'welcome/$1';
 $route['xmlrpc/(:any)'] = 'xmlrpc/$1';
-$route['bonjourgui/(:any)'] = 'bonjourgui/$1';
+$route['bonjourGui/(:any)'] = 'bonjourGui/$1';
 $route['404_override'] = '';
 
 

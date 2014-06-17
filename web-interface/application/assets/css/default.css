@@ -2,6 +2,10 @@ body {
     margin-top: 10px;
 }
 
+a {
+    word-wrap: break-word;
+}
+
 #appNotRunningDiv {
     display:none;
 }
@@ -12,6 +16,11 @@ body {
     display:none;
 }
 
+.friendSquare {
+    white-space: nowrap;
+    display:inline-block;
+    margin-top:5px;
+}
 
 .bs-callout{
 	margin:20px 0;

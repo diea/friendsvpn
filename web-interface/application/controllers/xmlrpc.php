@@ -26,6 +26,7 @@ class Xmlrpc extends MY_Controller {
         echo json_encode(array("request_id" => $requestId));
     }
     
+    
     /**
      * Returns a JSON array containing key "request_processed" with value 1 if
      * the request is not in the database anymore - meaning the desktop client

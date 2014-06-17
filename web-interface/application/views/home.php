@@ -2,7 +2,7 @@
 if (empty($_SERVER['HTTPS'])) {
 ?>
     <div class="alert alert-danger">
-        You are not using a secure protocol to access this application. The certificate to access the secure version can be downloaded <a href="<?php echo base_url(APPPATH . '/assets/localhostssl.crt'); ?>">here</a>
+        You are not using a secure protocol to access this application. Please use <a href="<?php echo base_url();?>">HTTPS</a>. <!--The certificate to access the secure version can be downloaded <a href="<?php echo base_url(APPPATH . '/assets/localhostssl.crt'); ?>">here</a>-->
     </div>
 <?php
 }
@@ -32,14 +32,15 @@ if (isset($needLogin)) {
         You don't have any services yet. Launch the desktop application and refresh this page to see your services.
     </div>
 </div>
+<div id="otherAlerts"></div>
 <div class="row">
-    <div class="col-xs-2">
+    <div class="col-xs-3">
         <div id="servicesList">
         </div>
     </div>
     <div class="col-xs-3" id="hostsList">
     </div>
-    <div class="col-xs-7">
+    <div class="col-xs-6">
         <div class="row">
             <div id="serviceNamePortList"></div>
             <div class="permissionsField"></div>
@@ -91,9 +92,14 @@ if (isset($needLogin)) {
     /* send xml rpc to give user id to desktop client */
     testUidParserTimer = window.setTimeout("testUidParsed()", 10000);
     
+    /*function reload() {
+        $("#otherAlerts").
+    }
+    setTimeout(*/
+    
     /* Display the bonjour browser */
     $.ajax({
-        url: "bonjourgui/services/"
+        url: "bonjourGui/services/"
     }).done(function(data) {
         $("#servicesList").html(data);
         if ($(".serviceli").length == 0) {

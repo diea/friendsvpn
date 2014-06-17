@@ -35,7 +35,7 @@
         var transProt = $(this).data("transprot");
         $.ajax({
             type: "post",
-            url:"bonjourgui/details/",
+            url:"bonjourGui/details/",
             data: {
                 "service": service,
                 "hostname": hostname,
@@ -44,7 +44,7 @@
                 "transProt": transProt
             }
         }).done(function(data) {
-            $(".permissionsField").html(data);
+            $(".permissionsField").html(data).css(style);
         });
     });
 </script>

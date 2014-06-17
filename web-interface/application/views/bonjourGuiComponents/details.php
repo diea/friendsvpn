@@ -1,7 +1,7 @@
 <div class="row">
 <div class="col-xs-2" id="options">
 <h2>Options</h2>
-<button type="button" class="delete btn btn-danger">Delete record</button>
+<button type="button" class="delete btn btn-danger">Delete service</button>
 </div>
 </div>
 <div class="row">
@@ -34,8 +34,6 @@
     </div>
     </div>
 </div>
-
-
 </div>
 
 <script>
@@ -46,7 +44,7 @@ $(".friendPic").click(function(event) {
     if (divChild.hasClass("friendAuthorized")) {
         // deauthorize
         $.ajax({
-            url: "/bonjourGui/deAuthorizeUser",
+            url: "bonjourGui/deAuthorizeUser",
             type: "POST",
             data: {
                 "service": $(".active.liservice").children().first().data("name"),
@@ -65,7 +63,7 @@ $(".friendPic").click(function(event) {
     } else {
         // authorize
         $.ajax({
-            url: "/bonjourGui/authorizeUser",
+            url: "bonjourGui/authorizeUser/",
             type: "POST",
             data: {
                 "service": $(".active.liservice").children().first().data("name"),
@@ -83,11 +81,14 @@ $(".friendPic").click(function(event) {
         });
     }
 });
+var alertTimeout;
 $(".delete").click(function(event) {
     event.preventDefault();
     // deauthorize
+    serviceName = $(".active.liport").children().first().data("name");
+    clearTimeout(alertTimeout);
     $.ajax({
-        url: "/bonjourGui/deleteRecord",
+        url: "bonjourGui/deleteRecord",
         type: "POST",
         data: {
             "service": $(".active.liservice").children().first().data("name"),
@@ -99,7 +100,20 @@ $(".delete").click(function(event) {
         }
     }).done(function() {
         // reload page
-        location.reload(); // refresh page
+        //location.reload(); // refresh page
+        $(".active.liservice").remove();
+        $(".active.lihost").remove();
+        $(".active.liport").remove();
+        $(".permissionsField").html("");
+        $("#otherAlerts").html('<div class="alert alert-info">The service ' + serviceName + ' has been deleted</div>');
+        if ($("#unFold").css("display") == "block") {
+            $("#unFold").css("display", "none");
+            $(".liservice:not(.active)").toggle("fold");
+        }
+
+        alertTimeout = setTimeout(function() {
+            $("#otherAlerts").html(""); // remove alert
+        }, 10000);
     });
 });
 

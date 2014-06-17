@@ -25,7 +25,7 @@
         var hostname = $(this).html();
         $.ajax({
             type: "POST",
-            url:"bonjourgui/serviceNamePortList/",
+            url:"bonjourGui/serviceNamePortList/",
             data: {
                 "hostname": hostname,
                 "service": $(".active.liservice").children().first().data("name")

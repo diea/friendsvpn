@@ -7,6 +7,8 @@ class BonjourGui extends MY_Controller {
         parent::__construct();
         $this->load->model('UserSQL');
         $this->load->library('Facebook');
+        $this->load->library('xmlrpc');
+        $this->load->model('RpcSQL');
     }
     
     /**
@@ -22,14 +24,18 @@ class BonjourGui extends MY_Controller {
         
         $parsed = parsePlist($mappings)["Services"];
         
-        for ($i = 0; $i < count($data["services"]); $i++) {
-            $data["services"][$i]["fancy_name"] = $data["services"][$i]["name"];
-            foreach ($parsed as $mapping) {
-                if ($mapping["Service"] === $data["services"][$i]["name"]) {
-                    $data["services"][$i]["fancy_name"] = $mapping["Name"];
+        if ($data["services"]) {
+            for ($i = 0; $i < count($data["services"]); $i++) {
+                $name = $data["services"][$i]["name"];
+                $data["services"][$i]["fancy_name"] = $name;
+                foreach ($parsed as $mapping) {
+                    if ($mapping["Service"] === $name) {
+                        $data["services"][$i]["fancy_name"] = $mapping["Name"];
+                    }
                 }
             }
         }
+
         
         $this->load->view("bonjourGuiComponents/services.php", $data);
     }
@@ -100,8 +106,14 @@ class BonjourGui extends MY_Controller {
         $port = $this->input->post("port");
         $transProt = $this->input->post("transProt");
         $uid = $this->input->post("uid");
-        
         $this->UserSQL->deAuthorizeUser($this->facebook->getUser(), $uid, $service, $hostname, $name, $port, $transProt);
+        
+        /* add xmlrpc notif */
+        $request = array("test");
+        $this->xmlrpc->request($request);
+		$this->xmlrpc->method('emitBonjourChanged');
+        $requestRPCString = $this->xmlrpc->get_request();
+        $requestId = $this->RpcSQL->addRequest($_SERVER["REMOTE_ADDR"], $requestRPCString);
     }
     
     public function authorizeUser() {
@@ -112,8 +124,14 @@ class BonjourGui extends MY_Controller {
         $port = $this->input->post("port");
         $transProt = $this->input->post("transProt");
         $uid = $this->input->post("uid");
-        
         $this->UserSQL->authorizeUser($this->facebook->getUser(), $uid, $service, $hostname, $name, $port, $transProt);
+        
+        /* add xmlrpc notif */
+        $request = array("test");
+        $this->xmlrpc->request($request);
+		$this->xmlrpc->method('emitBonjourChanged');
+        $requestRPCString = $this->xmlrpc->get_request();
+        $requestId = $this->RpcSQL->addRequest($_SERVER["REMOTE_ADDR"], $requestRPCString);
     }
     
     public function deleteRecord() {
@@ -126,6 +144,13 @@ class BonjourGui extends MY_Controller {
         $uid = $this->input->post("uid");
         
         $this->UserSQL->removeRecord($this->facebook->getUser(), $uid, $service, $hostname, $name, $port, $transProt);
+        
+        /* add xmlrpc notif */
+        $request = array("test");
+        $this->xmlrpc->request($request);
+		$this->xmlrpc->method('emitBonjourChanged');
+        $requestRPCString = $this->xmlrpc->get_request();
+        $requestId = $this->RpcSQL->addRequest($_SERVER["REMOTE_ADDR"], $requestRPCString);
     }
     
     public function deleteAll() {

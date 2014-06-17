@@ -50,8 +50,8 @@ $active_record = TRUE;
 
 //$db['default']['hostname'] = 'fd3b:e180:cbaa:1:5e96:9dff:fe8a:8447';
 $db['default']['hostname'] = 'localhost';
-$db['default']['username'] = 'diea';
-$db['default']['password'] = '';
+$db['default']['username'] = 'plewyllie';
+$db['default']['password'] = 'kjub76_4';
 $db['default']['database'] = 'friendsvpn';
 $db['default']['dbdriver'] = 'mysql';
 //$db['default']['dbdriver'] = 'sqlsrv';
