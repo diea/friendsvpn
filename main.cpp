@@ -84,7 +84,7 @@ int main(int argc, char *argv[])
 
     // create facebook app xmlrpc poller
     QThread pollerThread;
-    Poller* poller = new Poller();
+    Poller* poller = Poller::getInstance();
     poller->moveToThread(&pollerThread);
     poller->connect(&pollerThread, SIGNAL(started()), SLOT(run()));
     QObject::connect(u, SIGNAL(exiting()), &pollerThread, SLOT(quit()), Qt::DirectConnection);

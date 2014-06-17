@@ -16,8 +16,12 @@ private:
     XmlRPCTextServer* server;
     DatabaseHandler* qSql;
 
-public:
+    static Poller* instance;
+
     explicit Poller(QObject *parent = 0);
+
+public:
+    static Poller* getInstance();
 
 private slots:
     /**
@@ -34,10 +38,11 @@ public slots:
      */
     bool setUid(QString uid);
     /**
-     * @brief deAuthorizeService is called through XMLRPC when a user is denied a given service and
-     * was previously authorized.
+     * @brief bonjourChanged XMLRPC when bonjour record has changed, emits bonjourChanged
      */
-    //void deAuthorizeService(QString friendUid, QString serviceHash);
+    void emitBonjourChanged();
+signals:
+    void bonjourChanged();
 };
 
 #endif // POLLER_H

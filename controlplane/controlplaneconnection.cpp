@@ -3,6 +3,7 @@
 #include "proxyserver.h"
 #include "sslsocket.h"
 #include "graphic/systray.h"
+#include "poller.h"
 #include <time.h>
 #include <QDebug>
 
@@ -45,8 +46,9 @@ ControlPlaneConnection::ControlPlaneConnection(QString uid, AbstractPlaneConnect
     this->connect(this, SIGNAL(disconnected()), SLOT(wasDisconnected()));
     this->connect(this, SIGNAL(connected()), SLOT(sendBonjour()));
     this->connect(this, SIGNAL(connected()), SLOT(alive()));
-
     connect(SysTray::getInstance(), SIGNAL(sendBonjour()), this, SLOT(sendBonjour()));
+    connect(Poller::getInstance(), SIGNAL(bonjourChanged()), this, SLOT(sendBonjour()));
+
     serverSock = NULL;
     clientSock = NULL;
     inputBuffer = static_cast<char*>(malloc(100000 * sizeof(char)));
