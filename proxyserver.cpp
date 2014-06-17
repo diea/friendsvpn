@@ -12,6 +12,9 @@ ProxyServer::~ProxyServer() {
         UnixSignalHandler* u = UnixSignalHandler::getInstance();
         u->removeIp(listenIp);
     }
+    if (registrar) {
+        delete registrar;
+    }
 }
 
 QHash<QString, struct ProxyServer::ip_and_nb> ProxyServer::hostnames;
@@ -47,13 +50,15 @@ ProxyServer::ProxyServer(const QString &friendUid, const QString &name,
     ConnectionInitiator* initiator = ConnectionInitiator::getInstance();
     con = initiator->getDpConnection(friendUid);
     rawSocks = RawSockets::getInstance();
+    registrar = NULL;
 }
 
 void ProxyServer::run() {
     run_pcap();
     rec.port = port; /* change to actual listen port before advertising */
     // advertise by registering the record with a bonjour registrar
-    registrar.registerService(rec);
+    BonjourRegistrar* registrar = new BonjourRegistrar();
+    registrar->registerService(rec);
     qDebug() << "New proxy server for " << rec.serviceName << "on " << listenIp << port;
 }
 

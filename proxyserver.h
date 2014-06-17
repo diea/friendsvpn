@@ -18,7 +18,7 @@ private:
     RawSockets* rawSocks;
 
     QString friendUid;
-    BonjourRegistrar registrar;
+    BonjourRegistrar* registrar;
 
     /**
       * We register using the same IP for a given hostname in the "hostnames" QHash
