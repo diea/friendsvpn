@@ -69,12 +69,12 @@ void BonjourBrowser::reply(DNSServiceRef , DNSServiceFlags flags,
                 bjrIndex++;
             }
             delete bonjourRecord;
-            return; // deleted
         }
         if (!(flags & kDNSServiceFlagsMoreComing)) {
             emit serviceBrowser->currentBonjourRecordsChanged(serviceBrowser->bonjourRecords);
         }
         if (flags & kDNSServiceFlagsAdd) {
+            qDebug() << "Resolving!";
             BonjourResolver *resolver = new BonjourResolver(bonjourRecord);
             connect(resolver, SIGNAL(resolved(BonjourRecord*)),
                     serviceBrowser, SLOT(recordIsReady(BonjourRecord*)));
