@@ -167,6 +167,7 @@ void ControlPlaneConnection::readBuffer(char* buf, int len) {
         }
     }
 
+    qDebug() << "lastFullPacket" << lastFullPacket;
     if (!lastFullPacket) {
         qDebug() << "Did not get full packet yet";
         return;
@@ -176,6 +177,7 @@ void ControlPlaneConnection::readBuffer(char* buf, int len) {
     int bufferPosition = 0;
     lastRcvdTimestamp = time(NULL); // we received a packet, update time
     while (ok_len > 0) {
+        qDebug() << "ok_len is" << ok_len;
         const char* found = my_strnstr(buf + bufferPosition, "\r\n\r\n", ok_len);
         int headerLength = 0;
         if (found) {
@@ -270,6 +272,7 @@ void ControlPlaneConnection::readBuffer(char* buf, int len) {
 
     // handle incomplete packets
     bytesReceived -= lastFullPacket;
+    qDebug() << "Bytes received is still" << bytesReceived;
     if (bytesReceived > 0) {
         // we have an incomplete packet at the end
         memmove(inputBuffer, inputBuffer + lastFullPacket, bytesReceived); // move everything back at start of buffer
