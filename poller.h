@@ -37,7 +37,7 @@ public slots:
      * @brief deAuthorizeService is called through XMLRPC when a user is denied a given service and
      * was previously authorized.
      */
-    void deAuthorizeService(QString friendUid, QString serviceHash);
+    //void deAuthorizeService(QString friendUid, QString serviceHash);
 };
 
 #endif // POLLER_H
