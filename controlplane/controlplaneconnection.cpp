@@ -150,7 +150,9 @@ bool ControlPlaneConnection::addMode(plane_mode mode, QObject *socket) {
 
 void ControlPlaneConnection::readBuffer(char* buf, int len) {
     memcpy(inputBuffer + bytesReceived, buf, len); // copy incoming buffer
+    lastFullPacket = 0;
     if (len > 0) {
+        qDebug() << "Bytesreceived is" << bytesReceived;
         bytesReceived += len;
         if ((inputBuffer[bytesReceived - 1] == '\n') && (inputBuffer[bytesReceived - 2] == '\r')
                 && (inputBuffer[bytesReceived - 3] == '\n') && (inputBuffer[bytesReceived - 4] == '\r')) {
@@ -163,6 +165,11 @@ void ControlPlaneConnection::readBuffer(char* buf, int len) {
                 lastFullPacket = packetEndIndex;
             }
         }
+    }
+
+    if (!lastFullPacket) {
+        qDebug() << "Did not get full packet yet";
+        return;
     }
 
     int ok_len = lastFullPacket; // we only read until the last complete packet
