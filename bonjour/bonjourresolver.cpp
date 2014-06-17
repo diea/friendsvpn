@@ -103,7 +103,7 @@ void BonjourResolver::hostInfoReady(const QHostInfo &info) {
                     v6.append(adrstr);
                 }
             } else {
-                v6.append(adrstr);
+                v6.prepend(adrstr);
             }
         } else if (adr.protocol() == QAbstractSocket::IPv4Protocol) {
             v4.append(adr.toString());
