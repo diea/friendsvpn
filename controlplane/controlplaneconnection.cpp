@@ -175,6 +175,7 @@ void ControlPlaneConnection::readBuffer(char* buf, int len) {
             headerLength = found - (buf + bufferPosition);
         } else {
             qDebug() << "No \r\n\r\n in packet";
+            qDebug() << "Buffer" << buf;
             return;
         }
 
