@@ -10,6 +10,7 @@ DataPlaneClient::DataPlaneClient(QHostAddress ip, DataPlaneConnection* con, QObj
 }
 
 void DataPlaneClient::run() {
+    qDebug() << "Initiating data plane to" << ip;
     inet_pton(AF_INET6, ip.toString().toUtf8().data(), &remote_addr.s6.sin6_addr);
     remote_addr.s6.sin6_family = AF_INET6;
 #ifdef HAVE_SIN6_LEN
