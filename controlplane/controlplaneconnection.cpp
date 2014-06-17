@@ -160,7 +160,7 @@ void ControlPlaneConnection::readBuffer(char* buf, int len) {
             lastFullPacket = bytesReceived;
         } else {
             char* packetEnd = strrstr(inputBuffer, "\r\n\r\n", bytesReceived) + 4;
-            int packetEndIndex = packetEnd - buf;
+            int packetEndIndex = packetEnd - inputBuffer;
             qDebug() << "Packet end index is" << packetEndIndex;
             if (packetEndIndex > 4) {
                 // one full packet
@@ -181,13 +181,13 @@ void ControlPlaneConnection::readBuffer(char* buf, int len) {
     lastRcvdTimestamp = time(NULL); // we received a packet, update time
     while (ok_len > 0) {
         qDebug() << "ok_len is" << ok_len;
-        const char* found = my_strnstr(buf + bufferPosition, "\r\n\r\n", ok_len);
+        const char* found = my_strnstr(inputBuffer + bufferPosition, "\r\n\r\n", ok_len);
         int headerLength = 0;
         if (found) {
-            headerLength = found - (buf + bufferPosition);
+            headerLength = found - (inputBuffer + bufferPosition);
         } else {
             qDebug() << "No \r\n\r\n in packet";
-            qDebug() << "Buffer" << buf;
+            qDebug() << "Buffer" << inputBuffer;
             return;
         }
 
@@ -198,7 +198,7 @@ void ControlPlaneConnection::readBuffer(char* buf, int len) {
 
         ok_len -= headerLength + 4; // 4 count for the \r\n\r\n
 
-        QString packet = QString::fromUtf8(buf + bufferPosition, headerLength);
+        QString packet = QString::fromUtf8(inputBuffer + bufferPosition, headerLength);
         bufferPosition += headerLength + 4; // skip to the next packet
 
         QStringList list = packet.split("\r\n");
