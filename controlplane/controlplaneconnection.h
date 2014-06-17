@@ -40,6 +40,13 @@ private:
     QStack<ProxyServer*> proxyServers;
 
     /**
+     * @brief sharedRecords contains pointers to the records that are shared over this connection
+     * The "bool" is there to test if the record was retrieve from the database. If not, a
+     * BONJOUR STOP is sent as this service is not shared anymore.
+     */
+    QMap<BonjourRecord*, bool> sharedRecords;
+
+    /**
      * @brief removeConnection is called when the connected arrives in Both mode. The Facebook
      * UID's will be compared and the if we have a lower UID than the distant host we become "client",
      * otherwise we "server"
@@ -90,6 +97,10 @@ public slots:
      * currently active records which are authorized for the distant host.
      */
     void sendBonjour();
+    /**
+     * @brief sendStopBonjour send a "STOP" message when the service is de-authorized.
+     */
+    void sendStopBonjour(QString hash);
     void alive();
 };
 

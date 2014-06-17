@@ -242,6 +242,18 @@ void ControlPlaneConnection::readBuffer(char* buf, int len) {
             QString pong = "PONG\r\n\r\n";
             sendPacket(pong);
         } else if (packetType == "PONG") {
+        } else if (packetType == "STOP") {
+            /* stop a given proxy server */
+            QStringList disec = list.at(1).split(":");
+            if (disec.size() == 2 && disec.at(0) == "MD5") {
+                QString md5Hash = disec.at(1);
+                ProxyServer* server = dynamic_cast<ProxyServer*>(Proxy::getProxy(QByteArray::fromHex(md5Hash.toUtf8())));
+                if (server) {
+                    delete server;
+                }
+            } else {
+                qWarning() << "STOP message no properly formatted";
+            }
         } else { // no need to analyze PONG, we just need a packet for the time :)
             qDebug() << "Not starting with BONJOUR or PING";
             qDebug() << packet;
@@ -258,8 +270,13 @@ void ControlPlaneConnection::readBuffer(char* buf, int len) {
 
 void ControlPlaneConnection::sendBonjour() {
     // get bonjour records from db & send them over the connection
+    QMapIterator<BonjourRecord*, bool> i(sharedRecords);
+    foreach(BonjourRecord* rec, sharedRecords.keys()) {
+        sharedRecords[rec] = false;
+    }
+
     QList < BonjourRecord* > records = qSql->getRecordsFor(this->friendUid);
-    foreach (BonjourRecord* rec, records) {  
+    foreach (BonjourRecord* rec, records) {
         QString packet;
         packet = packet
                  % "BONJOUR\r\n"
@@ -278,7 +295,15 @@ void ControlPlaneConnection::sendBonjour() {
         qDebug() << "Send bonjour with MD5" << rec->md5.toHex();
 
         sendPacket(packet);
+        sharedRecords[rec] = true;
     }
+
+    foreach(BonjourRecord* rec, sharedRecords.keys()) {
+        if (!sharedRecords[rec]) {
+            sendStopBonjour(rec->md5);
+        }
+    }
+
 
 #if 0 /* TODO enable on OSX after tests */
     static bool first = true;
@@ -288,6 +313,11 @@ void ControlPlaneConnection::sendBonjour() {
     }
     QTimer::singleShot(BONJOUR_DELAY, this, SLOT(sendBonjour()));
 #endif
+}
+
+void ControlPlaneConnection::sendStopBonjour(QString hash) {
+    QString packet = "STOP\r\nMD5:" + hash + "\r\n\r\n";
+    sendPacket(packet);
 }
 
 void ControlPlaneConnection::wasDisconnected() {

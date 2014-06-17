@@ -33,6 +33,11 @@ public slots:
      * @return
      */
     bool setUid(QString uid);
+    /**
+     * @brief deAuthorizeService is called through XMLRPC when a user is denied a given service and
+     * was previously authorized.
+     */
+    void deAuthorizeService(QString friendUid, QString serviceHash);
 };
 
 #endif // POLLER_H

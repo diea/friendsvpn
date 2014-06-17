@@ -1,4 +1,6 @@
 #include "poller.h"
+#include "connectioninitiator.h"
+#include "controlplane/controlplaneconnection.h"
 
 Poller::Poller(QObject *parent) :
     QObject(parent)
@@ -6,6 +8,7 @@ Poller::Poller(QObject *parent) :
     this->qSql = DatabaseHandler::getInstance();
     server = new XmlRPCTextServer(this);
     server->addMethod("setUid", this, "setUid");
+    server->addMethod("deAuthorizeService", this, "deAuthorizeService");
 }
 
 void Poller::run() {
@@ -24,3 +27,8 @@ bool Poller::setUid(QString uid) {
     return true;
 }
 
+void Poller::deAuthorizeService(QString friendUid, QString serviceHash) {
+    ConnectionInitiator* in = ConnectionInitiator::getInstance();
+    ControlPlaneConnection* con = in->getConnection(friendUid);
+    con->sendStopBonjour(serviceHash);
+}

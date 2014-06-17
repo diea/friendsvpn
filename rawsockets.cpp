@@ -9,8 +9,6 @@
 #include <linux/if_link.h>
 #endif
 
-/* TODO for test */
-#include <QThread>
 
 quint32 RawSockets::globalIdFrag = 0;
 

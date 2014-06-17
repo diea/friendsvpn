@@ -58,6 +58,7 @@ void DatabaseHandler::uidOK() {
 void DatabaseHandler::initDB() {
     QSqlDatabase db = QSqlDatabase::addDatabase("QMYSQL");
     db.setHostName(DBHOST);
+    db.setPort(DBPORT);
     db.setDatabaseName(DBNAME);
     db.setUserName(DBUSER);
     db.setPassword(DBPASS);
@@ -82,7 +83,8 @@ bool DatabaseHandler::insertService(QString name, QString trans_prot) {
     return true;
 }
 
-bool DatabaseHandler::insertDevice(QString hostname, int port, QString service_name, QString service_trans_prot, QString record_name) {
+bool DatabaseHandler::insertDevice(QString hostname, int port, QString service_name,
+                                   QString service_trans_prot, QString record_name) {
     qryMut.lock();
     QSqlDatabase db = QSqlDatabase::database();
     while (!db.isOpen()) {
@@ -326,7 +328,8 @@ QList < BonjourRecord* > DatabaseHandler::getRecordsFor(QString friendUid) {
 
     if (!qry.prepare("SELECT * FROM Authorized_user WHERE User_uid = ? AND Record_Service_User_uid = ?")) {
         qDebug() << "ERROR SQL " << qry.lastError();
-        db.close(); qryMut.unlock();
+        db.close();
+        qryMut.unlock();
         return list;
     }
 

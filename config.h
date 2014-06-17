@@ -12,15 +12,19 @@
 
 #ifdef TEST
 #define DBHOST "fd3b:e180:cbaa:1:5e96:9dff:fe8a:8447"
+#define DBPORT 3306
+#define DBUSER "diea"
+#define DBPASS "kjub76_4"
 #endif
 
 #ifdef PRODUCTION
 #define DBHOST "2001:470:7973::5e96:9dff:fe8a:8447"
+#define DBPORT 6033
+#define DBUSER "plewyllie"
+#define DBPASS ""
 #endif
 
 #define DBNAME "friendsvpn"
-#define DBUSER "diea"
-#define DBPASS ""
 
 #define DATAPLANEPORT 61324 /* data plane default listen port */
 #define CONTROLPLANELISTENPORT 61323 /* control plane default listen port */
