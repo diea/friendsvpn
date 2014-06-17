@@ -307,6 +307,7 @@ void ControlPlaneConnection::sendBonjour() {
         packet = packet % "\r\n";
 
         qDebug() << "Send bonjour with MD5" << rec->md5.toHex();
+        qDebug() << packet;
 
         sendPacket(packet);
         sharedRecords[rec] = true;
