@@ -28,6 +28,8 @@ private slots:
     void createTrayIcon();
     void quit();
     void sendBjrSlot();
+public slots:
+    void run();
 public:
     static SysTray* getInstance();
     void closeEvent(QCloseEvent *event);

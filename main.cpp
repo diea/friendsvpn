@@ -15,8 +15,8 @@
 /* used for test */
 #include "proxyserver.h"
 #include "helpers/raw_structs.h"
-#ifndef QT_NO_DEBUG_OUTPUT
 
+#ifndef QT_NO_DEBUG_OUTPUT
 QTextStream out;
 
 void logOutput(QtMsgType type, const QMessageLogContext&, const QString &msg)
@@ -55,11 +55,6 @@ void logOutput(QtMsgType type, const QMessageLogContext&, const QString &msg)
 int main(int argc, char *argv[])
 {
     QApplication a(argc, argv);
-
-    QPixmap pixmap(":images/splash.png");
-    QSplashScreen *splash = new QSplashScreen(pixmap);
-    splash->show();
-
 #ifndef QT_NO_DEBUG_OUTPUT /* used to log timestamps test */
     QString fileName = QCoreApplication::applicationDirPath() + "/../friendsvpn.log";
     QFile *log = new QFile(fileName);
@@ -72,18 +67,23 @@ int main(int argc, char *argv[])
 #endif
     a.setQuitOnLastWindowClosed(false);
 
-    qDebug() << "----------------------------------------- START APPLICATION -----------------------------------------";
-
     // init signal handler
     UnixSignalHandler* u = UnixSignalHandler::getInstance();
 
     // start systray
     QThread sysTrayThread;
     SysTray* st = SysTray::getInstance();
-    QObject::connect(&sysTrayThread, SIGNAL(started()), st, SLOT(createActions()));
-    QObject::connect(&sysTrayThread, SIGNAL(started()), st, SLOT(createTrayIcon()));
-    sysTrayThread.start();
+    st->run();
+    /*st->moveToThread(&sysTrayThread); // cannot move Widgets to thread
+    QObject::connect(&sysTrayThread, SIGNAL(started()), st, SLOT(run()));
     QObject::connect(u, SIGNAL(exiting()), &sysTrayThread, SLOT(quit()), Qt::DirectConnection);
+    sysTrayThread.start();*/
+
+    QPixmap pixmap(":images/splash.png");
+    QSplashScreen *splash = new QSplashScreen(pixmap);
+    splash->show();
+
+    qDebug() << "----------------------------------------- START APPLICATION -----------------------------------------";
 
     // connect to sql database
     DatabaseHandler* qSql = DatabaseHandler::getInstance();

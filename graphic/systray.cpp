@@ -32,6 +32,11 @@ QAction* SysTray::getSendBonjour() {
     return sendBjr;
 }
 
+void SysTray::run() {
+    createActions();
+    createTrayIcon();
+}
+
 void SysTray::createActions()
 {
     sendBjr = new QAction(tr("&Send bonjour"), this);
@@ -60,4 +65,5 @@ void SysTray::createTrayIcon()
     trayIcon->setContextMenu(trayIconMenu);
     trayIcon->setIcon(icon);
     trayIcon->show();
+    qDebug() << "trayIcon";
 }
