@@ -33,7 +33,7 @@
 #ifdef QTCREATOR
 #define HELPERPATH "../../../../friendsvpn/helpers/"
 #elif __GNUC__
-#define HELPERPATH "./helpers/"
+#define HELPERPATH "../helpers/"
 #endif
 
 #define PROXYCLIENT_TIMEOUT 10000 /* a ProxyClient times out after * ms */
