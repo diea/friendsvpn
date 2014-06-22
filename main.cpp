@@ -9,6 +9,8 @@
 #if QT_VERSION >= 0x50000 
 #include <QtConcurrent>
 #endif
+#include <QPixMap>
+#include <QSplashScreen>
 
 /* used for test */
 #include "proxyserver.h"
@@ -24,6 +26,10 @@ void logOutput(QtMsgType type, const QMessageLogContext&, const QString &msg)
     QString debugdate = QDateTime::currentDateTime().toString("yyyy.MM.dd hh:mm:ss");
     switch (type) {
     case QtDebugMsg:
+#ifdef NODEBUG
+        logMutx.unlock();
+        return;
+#endif
         debugdate += "[D]";
         break;
     case QtWarningMsg:
@@ -54,7 +60,6 @@ int main(int argc, char *argv[])
     QString fileName = QCoreApplication::applicationDirPath() + "/../friendsvpn.log";
     QFile *log = new QFile(fileName);
     if (log->open(QIODevice::WriteOnly | QIODevice::Append | QIODevice::Text)) {
-        //out = new QTextStream(log);
         out.setDevice(log);
         qInstallMessageHandler(&logOutput);
     } else {
@@ -68,8 +73,10 @@ int main(int argc, char *argv[])
     // init signal handler
     UnixSignalHandler* u = UnixSignalHandler::getInstance();
 
-#if 1
-//#ifdef __APPLE__ /* linux only in text mode */
+    QPixmap pixmap(":/splash.png");
+    QSplashScreen *splash = new QSplashScreen(pixmap);
+    splash->show();
+
     // start systray
     QThread sysTrayThread;
     SysTray* st = SysTray::getInstance();
@@ -77,7 +84,6 @@ int main(int argc, char *argv[])
     QObject::connect(&sysTrayThread, SIGNAL(started()), st, SLOT(createTrayIcon()));
     sysTrayThread.start();
     QObject::connect(u, SIGNAL(exiting()), &sysTrayThread, SLOT(quit()), Qt::DirectConnection);
-//#endif
 
     // connect to sql database
     DatabaseHandler* qSql = DatabaseHandler::getInstance();
@@ -106,6 +112,6 @@ int main(int argc, char *argv[])
     discovererThread.start();
 
     con->run();
-#endif
+    splash->close();
     return a.exec();
 }

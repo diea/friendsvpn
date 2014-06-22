@@ -7,9 +7,9 @@
  */
 //#define TEST
 #ifdef __APPLE__
-//#define QTCREATOR /* used when the application is launched on OSX from the QTCREATOR */
 #endif
 #define PRODUCTION
+#define NODEBUG
 
 #ifdef TEST
 #define DBHOST "fd3b:e180:cbaa:1:5e96:9dff:fe8a:8447"
@@ -31,11 +31,7 @@
 #define CONTROLPLANELISTENPORT 61323 /* control plane default listen port */
 /* careful: if the default listen ports are changed, the outgoing queries will happen on those same ports */
 
-#ifdef QTCREATOR
-#define HELPERPATH "../../../../friendsvpn/helpers/"
-#elif __GNUC__
-#define HELPERPATH QCoreApplication::applicationDirPath() + "/../helpers/"
-#endif
+#define HELPERPATH "/../helpers/"
 
 #define PROXYCLIENT_TIMEOUT 10000 /* a ProxyClient times out after * ms */
 #define IP_BUFFER_LENGTH 24 /* The number of IPs prepared in advance */

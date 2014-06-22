@@ -179,7 +179,7 @@ void BonjourResolver::hostInfoReady(const QHostInfo &info) {
                 icmpReqArgs.append(ifaces.at(i));
                 icmpReqArgs.append(qSql->getLocalIP());
                 icmpReqArgs.append(macs.at(i));
-                icmpReq.start(QString(HELPERPATH) + "reqIp", icmpReqArgs);
+                icmpReq.start(QCoreApplication::applicationDirPath() + QString(HELPERPATH) + "reqIp", icmpReqArgs);
                 icmpReq.waitForFinished(500);
 
                 // read from neighbor table.
