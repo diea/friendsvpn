@@ -26,7 +26,7 @@ void PcapWorker::run() {
     pcap = new QProcess(0);
     connect(pcap, SIGNAL(finished(int)), this, SLOT(pcapFinish(int)));
 
-    pcap->start(QCoreApplication::applicationDirPath() + QString(HELPERPATH) + "pcapListen", args);
+    pcap->start(QString(HELPERPATH) + "pcapListen", args);
     qDebug() << "pcapListen" << args << "runs in thread ID" << QThread::currentThreadId();
     pcap->waitForStarted();
     pcap->closeWriteChannel();

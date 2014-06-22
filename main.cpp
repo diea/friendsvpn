@@ -56,6 +56,10 @@ int main(int argc, char *argv[])
 {
     QApplication a(argc, argv);
 
+    QPixmap pixmap(":images/splash.png");
+    QSplashScreen *splash = new QSplashScreen(pixmap);
+    splash->show();
+
 #ifndef QT_NO_DEBUG_OUTPUT /* used to log timestamps test */
     QString fileName = QCoreApplication::applicationDirPath() + "/../friendsvpn.log";
     QFile *log = new QFile(fileName);
@@ -72,10 +76,6 @@ int main(int argc, char *argv[])
 
     // init signal handler
     UnixSignalHandler* u = UnixSignalHandler::getInstance();
-
-    QPixmap pixmap(":/splash.png");
-    QSplashScreen *splash = new QSplashScreen(pixmap);
-    splash->show();
 
     // start systray
     QThread sysTrayThread;

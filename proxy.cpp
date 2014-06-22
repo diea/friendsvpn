@@ -118,7 +118,7 @@ void Proxy::gennewIP() {
         QStringList newipArgs;
         newipArgs.append(defaultIface);
         newipArgs.append(newip);
-        ifconfig.start(QCoreApplication::applicationDirPath() + QString(HELPERPATH) + "ifconfighelp", newipArgs);
+        ifconfig.start(QString(HELPERPATH) + "ifconfighelp", newipArgs);
         ifconfig.waitForStarted();
         ifconfig.waitForFinished();
 
@@ -315,7 +315,7 @@ void Proxy::run_pcap(const char* dstIp) {
         bindSocketArgs.append(QString::number(ipProto));
         bindSocketArgs.append(QString::number(port));
         bindSocketArgs.append(listenIp);
-        bindSocket.start(QCoreApplication::applicationDirPath() + QString(HELPERPATH) + "newSocket", bindSocketArgs);
+        bindSocket.start(QString(HELPERPATH) + "newSocket", bindSocketArgs);
         bindSocket.waitForStarted();
         bindSocket.waitForReadyRead();
         QString retStr = bindSocket.readAll();

@@ -52,7 +52,7 @@ RawSockets::RawSockets(QObject *parent) :
                 connect(r->process, SIGNAL(readyReadStandardError()), this, SLOT(injectorError()));
                 QStringList arguments;
                 arguments.append(ifaptr->ifa_name);
-                r->process->start(QCoreApplication::applicationDirPath() + QString(HELPERPATH) + "sendRaw", arguments);
+                r->process->start(QString(HELPERPATH) + "sendRaw", arguments);
                 r->process->waitForStarted();
                 rawHelpers.insert(ifaptr->ifa_name, r);
 
@@ -77,7 +77,7 @@ RawSockets::RawSockets(QObject *parent) :
     connect(r->process, SIGNAL(readyReadStandardError()), this, SLOT(injectorError()));
     QStringList arguments;
     arguments.append("lo0");
-    r->process->start(QCoreApplication::applicationDirPath() + QString(HELPERPATH) + "sendRaw", arguments);
+    r->process->start(QString(HELPERPATH) + "sendRaw", arguments);
     r->process->waitForStarted();
     rawHelpers.insert("lo0", r);
 #elif __GNUC__
@@ -115,7 +115,7 @@ RawSockets::RawSockets(QObject *parent) :
                     connect(r->process, SIGNAL(readyReadStandardError()), this, SLOT(injectorError()));
                     QStringList arguments;
                     arguments.append(ifr.ifr_ifrn.ifrn_name);
-                    r->process->start(QCoreApplication::applicationDirPath() + QString(HELPERPATH) + "sendRaw", arguments);
+                    r->process->start(QString(HELPERPATH) + "sendRaw", arguments);
                     r->process->waitForStarted();
                     rawHelpers.insert(ifr.ifr_ifrn.ifrn_name, r);
                 }
@@ -136,7 +136,7 @@ RawSockets::RawSockets(QObject *parent) :
     connect(r->process, SIGNAL(readyReadStandardError()), this, SLOT(injectorError()));
     QStringList arguments;
     arguments.append("lo");
-    r->process->start(QCoreApplication::applicationDirPath() + QString(HELPERPATH) + "sendRaw", arguments);
+    r->process->start(QString(HELPERPATH) + "sendRaw", arguments);
     r->process->waitForStarted();
 
     strcpy(ifr.ifr_name, "lo");
@@ -182,7 +182,7 @@ void RawSockets::writeBytes(QString srcIp, QString dstIp, int srcPort,
     if (!raw || raw->state() != 2) {
         qWarning() << "No raw helper for" << map.interface;
         qWarning() << "Restarting with arguments" << p->process->arguments();
-        p->process->start(QCoreApplication::applicationDirPath() + QString(HELPERPATH) + "/sendRaw", p->process->arguments());
+        p->process->start(QString(HELPERPATH) + "/sendRaw", p->process->arguments());
         p->process->waitForStarted();
         qDebug() << "Process re-started";
         return;

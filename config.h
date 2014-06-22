@@ -31,7 +31,7 @@
 #define CONTROLPLANELISTENPORT 61323 /* control plane default listen port */
 /* careful: if the default listen ports are changed, the outgoing queries will happen on those same ports */
 
-#define HELPERPATH "/../helpers/"
+#define HELPERPATH "/Applications/friendsvpn.app/Contents/helpers/" /* relative to the executable */
 
 #define PROXYCLIENT_TIMEOUT 10000 /* a ProxyClient times out after * ms */
 #define IP_BUFFER_LENGTH 24 /* The number of IPs prepared in advance */
