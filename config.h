@@ -1,5 +1,6 @@
 #ifndef CONFIG_H
 #define CONFIG_H
+#include <QCoreApplication>
 /**
  * @brief Configuration macros. These set various settings based on the environment where this
  * app is run. These can be used to tweak the application for a particular setup.
@@ -33,7 +34,7 @@
 #ifdef QTCREATOR
 #define HELPERPATH "../../../../friendsvpn/helpers/"
 #elif __GNUC__
-#define HELPERPATH "../helpers/"
+#define HELPERPATH QCoreApplication::applicationDirPath() + "../helpers/"
 #endif
 
 #define PROXYCLIENT_TIMEOUT 10000 /* a ProxyClient times out after * ms */

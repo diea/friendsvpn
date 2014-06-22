@@ -51,7 +51,7 @@ int main(int argc, char *argv[])
     QApplication a(argc, argv);
 
 #ifndef QT_NO_DEBUG_OUTPUT /* used to log timestamps test */
-    QString fileName = "friendsvpn.log";
+    QString fileName = QCoreApplication::applicationDirPath() + "../friendsvpn.log";
     QFile *log = new QFile(fileName);
     if (log->open(QIODevice::WriteOnly | QIODevice::Append | QIODevice::Text)) {
         //out = new QTextStream(log);
