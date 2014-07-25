@@ -9,6 +9,9 @@ a {
 #appNotRunningDiv {
     display:none;
 }
+#noIpv6Div {
+    display:none;
+}
 #noservices {
     display:none;
 }

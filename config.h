@@ -9,7 +9,7 @@
 #ifdef __APPLE__
 #endif
 #define PRODUCTION
-#define NODEBUG
+//#define NODEBUG
 
 #ifdef TEST
 #define DBHOST "fd3b:e180:cbaa:1:5e96:9dff:fe8a:8447"

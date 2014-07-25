@@ -74,19 +74,16 @@ int main(int argc, char *argv[])
     QThread sysTrayThread;
     SysTray* st = SysTray::getInstance();
     st->run();
-    /*st->moveToThread(&sysTrayThread); // cannot move Widgets to thread
-    QObject::connect(&sysTrayThread, SIGNAL(started()), st, SLOT(run()));
-    QObject::connect(u, SIGNAL(exiting()), &sysTrayThread, SLOT(quit()), Qt::DirectConnection);
-    sysTrayThread.start();*/
 
+    qDebug() << "----------------------------------------- START APPLICATION -----------------------------------------";
     QPixmap pixmap(":images/splash.png");
     QSplashScreen *splash = new QSplashScreen(pixmap);
     splash->show();
 
-    qDebug() << "----------------------------------------- START APPLICATION -----------------------------------------";
-
     // connect to sql database
+    qDebug() << "Connecting to database";
     DatabaseHandler* qSql = DatabaseHandler::getInstance();
+    qDebug() << "Connected!";
 
     // create facebook app xmlrpc poller
     QThread pollerThread;

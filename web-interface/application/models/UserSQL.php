@@ -8,10 +8,13 @@ class UserSQL extends CI_Model {
      * Initializes a user of uid $uid; if not in the database the user is created, otherwise his IP is updated
      */
     public function initUser($uid) {
+        // get user v6, if it fails return false
+        $user_v6 = $_SERVER["REMOTE_ADDR"]; // make sure user will use his IPv6 !
+    
         $userSQL = "SELECT uid, firstname, lastname FROM User WHERE uid = ?";
         $query = $this->db->query($userSQL, array($uid));
         if ($query->num_rows() > 0) {
-            $sqlUpdateIp = "UPDATE User SET ipv6 =\"".$_SERVER["REMOTE_ADDR"]."\" WHERE uid = ?";
+            $sqlUpdateIp = "UPDATE User SET ipv6 =\"".$user_v6."\" WHERE uid = ?";
             $this->db->query($sqlUpdateIp, array($uid));
         } else {
             $this->load->model("FacebookFQL");
@@ -19,8 +22,22 @@ class UserSQL extends CI_Model {
             
             
             $newUserSQL = "INSERT INTO User VALUES(?, ?, ?, ?, ?)";
-            $this->db->query($newUserSQL, array($uid, $info[0]["first_name"], $info[0]["last_name"], $_SERVER["REMOTE_ADDR"], ""));
+            $this->db->query($newUserSQL, array($uid, $info[0]["first_name"], $info[0]["last_name"], $user_v6, ""));
         }
+    }
+    
+    /**
+     * Get user v6 from DB
+     */
+    public function getIpFromDB($uid) {
+        $sql = "SELECT ipv6 from User WHERE uid = ?";
+        $query = $this->db->query($sql, array($uid));
+        
+        if ($query->num_rows() > 0) {
+            return $query->result_array()[0]["ipv6"];
+        }
+        return false;
+        
     }
     
     /**

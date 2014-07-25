@@ -7,6 +7,7 @@ class Xmlrpc extends MY_Controller {
         parent::__construct();
         $this->load->library('xmlrpc');
         $this->load->model('RpcSQL');
+        $this->load->model('usersql');
     }
     
     /**
@@ -21,7 +22,7 @@ class Xmlrpc extends MY_Controller {
         
         $requestRPCString = $this->xmlrpc->get_request();
         
-        $requestId = $this->RpcSQL->addRequest($_SERVER["REMOTE_ADDR"], $requestRPCString);
+        $requestId = $this->RpcSQL->addRequest($this->usersql->getIpFromDB($uid), $requestRPCString);
         
         echo json_encode(array("request_id" => $requestId));
     }
@@ -33,7 +34,7 @@ class Xmlrpc extends MY_Controller {
      * has processed it. Returns 0 otherwise.
      */
     public function requestProcessed($uid) {
-        if ($this->RpcSQL->processedRequest($uid, $_SERVER["REMOTE_ADDR"])) {
+        if ($this->RpcSQL->processedRequest($uid, $this->usersql->getIpFromDB($uid))) {
             echo json_encode(array("request_processed" => 1));
         } else {
             echo json_encode(array("request_processed" => 0));

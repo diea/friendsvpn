@@ -151,10 +151,12 @@ QString DatabaseHandler::fetchXmlRpc() {
         query.bindValue(0, id);
         query.bindValue(1, ipv6);
         query.exec();
-        db.close(); qryMut.unlock();
+        db.close();
+        qryMut.unlock();
         return xmlrpcReq;
     }
-    db.close(); qryMut.unlock();
+    db.close();
+    qryMut.unlock();
     return NULL;
 }
 
