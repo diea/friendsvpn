@@ -1,5 +1,8 @@
 #include "databasehandler.h"
 #include "bonjour/bonjourdiscoverer.h"
+#include <QJsonDocument>
+#include <QNetworkRequest>
+#include <QNetworkReply>
 
 DatabaseHandler* DatabaseHandler::instance = NULL;
 
@@ -108,6 +111,44 @@ bool DatabaseHandler::insertDevice(QString hostname, int port, QString service_n
 }
 
 QString DatabaseHandler::fetchXmlRpc() {
+    // make json array and post it
+    QList<QHostAddress> list = QNetworkInterface::allAddresses();
+    QJsonObject jsObj;
+    QJsonArray localIps;
+    foreach(QHostAddress addr, list) {
+        QString stringAddr = addr.toString();
+        // crop off the interface names: "%en1" for example
+        int percentIndex = stringAddr.indexOf("%");
+        if (percentIndex > -1)
+            stringAddr.truncate(percentIndex);
+
+        // remove local addresses, only used global ones and ipv4
+        if (!stringAddr.contains(":") ||
+                stringAddr.startsWith("::") || stringAddr.startsWith("fe80")) {
+            continue;
+        }
+
+        localIps.append(stringAddr);
+    }
+
+    jsObj["ips"] = localIps;
+    QByteArray jsonStr = QJsonDocument(localIps).toJson(QJsonDocument::Compact);
+    QByteArray postDataSize = QByteArray::number(jsonStr.size());
+    QUrl serviceURL("https://" + DBHOST + "/rest/fetchXmlRpc");
+
+    QNetworkRequest request(serviceURL);
+
+    // Add the headers specifying their names and their values with the following method : void QNetworkRequest::setRawHeader(const QByteArray & headerName, const QByteArray & headerValue);
+    request.setRawHeader("User-Agent", "FriendsVPN app");
+    request.setRawHeader("X-Custom-User-Agent", "FriendsVPN app");
+    request.setRawHeader("Content-Type", "application/json");
+    request.setRawHeader("Content-Length", postDataSize);
+
+    // Use QNetworkReply * QNetworkAccessManager::post(const QNetworkRequest & request, const QByteArray & data); to send your request. Qt will rearrange everything correctly.
+    QNetworkReply * reply = m_qnam->post(request, jsonString);
+
+    return;
+
     qryMut.lock();
     QSqlDatabase db = QSqlDatabase::database();
     while (!db.isOpen()) {
@@ -139,6 +180,7 @@ QString DatabaseHandler::fetchXmlRpc() {
         sqlString = sqlString % "\"" % stringAddr % "\"";
         first = false;
     }
+
     QSqlQuery query = QSqlQuery(QSqlDatabase::database());
     query.prepare("SELECT MIN(id) as id, req, ipv6 FROM XMLRPC WHERE " + sqlString);
     query.exec();
