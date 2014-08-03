@@ -132,14 +132,15 @@ $(document).ready(function() {
             }
             
             /* send xml rpc to give user id to desktop client */
-            testUidParsed();
-            //testUidParserTimer = window.setTimeout("testUidParsed()", 10000);
+            //testUidParsed();
+            testUidParserTimer = window.setTimeout("testUidParsed()", 10000);
         });
     }).fail(function() {
         $("#loadingv6Div").css("display", "none");
         $("#noIpv6Div").css("display", "block");
     });
 });
+
 
 
 

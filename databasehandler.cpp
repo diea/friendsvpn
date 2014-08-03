@@ -9,32 +9,17 @@ DatabaseHandler* DatabaseHandler::instance = NULL;
 DatabaseHandler::DatabaseHandler(QObject *parent) :
     QObject(parent)
 {
-#ifdef TEST
+#ifdef TEST_PROD
 #ifdef __APPLE__
     uid = "1086104828";
 #elif __GNUC__
     uid = "100008078109463";
 #endif
 #endif
-    QSqlDatabase db;
-    while (!db.open()) {
-        initDB();
-        db = QSqlDatabase::database();
-        if (!db.open()) {
-            QMessageBox msgBox;
-            msgBox.setText(db.lastError().text());
-            msgBox.setStandardButtons(QMessageBox::Retry | QMessageBox::Abort);
-            msgBox.setDefaultButton(QMessageBox::Retry);
-            int ret = msgBox.exec();
-            switch (ret) {
-                case QMessageBox::Retry:
-                    continue;
-                case QMessageBox::Abort:
-                    qDebug() << "Abort !!";
-                    UnixSignalHandler::termSignalHandler(0);
-            }
-        }
-    }
+
+    strServiceURL = QString("http://"); // TODO change to https
+    strServiceURL += DBHOST;
+    strServiceURL += "/~plewyllie/rest";
 }
 
 DatabaseHandler* DatabaseHandler::getInstance() {
@@ -58,55 +43,59 @@ void DatabaseHandler::uidOK() {
     }
 }
 
-void DatabaseHandler::initDB() {
-    QSqlDatabase db = QSqlDatabase::addDatabase("QMYSQL");
-    db.setHostName(DBHOST);
-    db.setPort(DBPORT);
-    db.setDatabaseName(DBNAME);
-    db.setUserName(DBUSER);
-    db.setPassword(DBPASS);
-}
-
 bool DatabaseHandler::insertService(QString name, QString trans_prot) {
-    qryMut.lock();
-    QSqlDatabase db = QSqlDatabase::database();
-    while (!db.isOpen()) {
-        db.open();
-        qDebug() << "Trying to reach DB";
-        QThread::sleep(1);
-    }
-    QSqlQuery query = QSqlQuery(QSqlDatabase::database());
-    query.prepare("INSERT INTO Service VALUES(?, ?, ?)");
-    query.bindValue(0, name);
-    query.bindValue(1, uid);
-    query.bindValue(2, trans_prot);
-    query.exec();
-    db.close();
-    qryMut.unlock();
+    QJsonArray values; // array used to do the SQL request, used by the REST API
+    values.append(name);
+    values.append(uid);
+    values.append(trans_prot);
+
+    QByteArray jsonStr = QJsonDocument(values).toJson(QJsonDocument::Compact);
+    QByteArray postDataSize = QByteArray::number(jsonStr.size());
+
+    QNetworkRequest request(QUrl(strServiceURL + "/insertService"));
+    request.setRawHeader("User-Agent", "FriendsVPN app");
+    request.setRawHeader("X-Custom-User-Agent", "FriendsVPN app");
+    request.setRawHeader("Content-Type", "application/json");
+    request.setRawHeader("Content-Length", postDataSize);
+
+    QNetworkAccessManager manager;
+    QNetworkReply * reply = manager.post(request, jsonStr);
+
+    QEventLoop loop; // local event loop to wait for the qnetwork reply
+    QObject::connect(reply, SIGNAL(finished()), &loop, SLOT(quit()));
+    // Execute the event loop here, now we will wait here until finished() signal is emitted
+    // which in turn will trigger event loop quit.
+    loop.exec();
     return true;
 }
 
 bool DatabaseHandler::insertDevice(QString hostname, int port, QString service_name,
                                    QString service_trans_prot, QString record_name) {
-    qryMut.lock();
-    QSqlDatabase db = QSqlDatabase::database();
-    while (!db.isOpen()) {
-        db.open();
-        qDebug() << "Trying to reach DB";
-        QThread::sleep(1);
-    }
-    QSqlQuery query = QSqlQuery(QSqlDatabase::database());
-    query.prepare("INSERT INTO Record VALUES(?, ?, ?, ?, ?, ?)");
-    query.bindValue(0, hostname);
-    query.bindValue(1, port);
-    query.bindValue(2, service_name);
-    query.bindValue(3, uid);
-    query.bindValue(4, service_trans_prot);
-    query.bindValue(5, record_name);
-    query.exec();
-    // test qry
-    db.close();
-    qryMut.unlock();
+    QJsonArray values; // array used to do the SQL request, used by the REST API
+    values.append(hostname);
+    values.append(port);
+    values.append(service_name);
+    values.append(uid);
+    values.append(service_trans_prot);
+    values.append(record_name);
+
+    QByteArray jsonStr = QJsonDocument(values).toJson(QJsonDocument::Compact);
+    QByteArray postDataSize = QByteArray::number(jsonStr.size());
+
+    QNetworkRequest request(QUrl(strServiceURL + "/insertDevice"));
+    request.setRawHeader("User-Agent", "FriendsVPN app");
+    request.setRawHeader("X-Custom-User-Agent", "FriendsVPN app");
+    request.setRawHeader("Content-Type", "application/json");
+    request.setRawHeader("Content-Length", postDataSize);
+
+    QNetworkAccessManager manager;
+    QNetworkReply * reply = manager.post(request, jsonStr);
+
+    QEventLoop loop; // local event loop to wait for the qnetwork reply
+    QObject::connect(reply, SIGNAL(finished()), &loop, SLOT(quit()));
+    // Execute the event loop here, now we will wait here until finished() signal is emitted
+    // which in turn will trigger event loop quit.
+    loop.exec();
     return true;
 }
 
@@ -134,136 +123,92 @@ QString DatabaseHandler::fetchXmlRpc() {
     jsObj["ips"] = localIps;
     QByteArray jsonStr = QJsonDocument(localIps).toJson(QJsonDocument::Compact);
     QByteArray postDataSize = QByteArray::number(jsonStr.size());
-    QUrl serviceURL("https://" + DBHOST + "/rest/fetchXmlRpc");
 
-    QNetworkRequest request(serviceURL);
-
-    // Add the headers specifying their names and their values with the following method : void QNetworkRequest::setRawHeader(const QByteArray & headerName, const QByteArray & headerValue);
+    QNetworkRequest request(QUrl(strServiceURL + "/fetchXmlRpc"));
     request.setRawHeader("User-Agent", "FriendsVPN app");
     request.setRawHeader("X-Custom-User-Agent", "FriendsVPN app");
     request.setRawHeader("Content-Type", "application/json");
     request.setRawHeader("Content-Length", postDataSize);
 
-    // Use QNetworkReply * QNetworkAccessManager::post(const QNetworkRequest & request, const QByteArray & data); to send your request. Qt will rearrange everything correctly.
-    QNetworkReply * reply = m_qnam->post(request, jsonString);
+    QNetworkAccessManager manager;
+    QNetworkReply * reply = manager.post(request, jsonStr);
 
-    return;
+    QEventLoop loop; // local event loop to wait for the qnetwork reply
+    QObject::connect(reply, SIGNAL(finished()), &loop, SLOT(quit()));
+    // Execute the event loop here, now we will wait here until finished() signal is emitted
+    // which in turn will trigger event loop quit.
+    loop.exec();
 
-    qryMut.lock();
-    QSqlDatabase db = QSqlDatabase::database();
-    while (!db.isOpen()) {
-        db.open();
-        qDebug() << "Trying to reach DB";
-        QThread::sleep(1);
+    QJsonParseError jerror;
+    QJsonDocument responseJdoc = QJsonDocument::fromJson(reply->readAll(), &jerror);
+    if (jerror.error != QJsonParseError::NoError) {
+        qWarning() << "Error parsing JSON:" << jerror.errorString();
+        return QString(); // error parsing JSON
     }
-    QList<QHostAddress> list = QNetworkInterface::allAddresses();
-    QString sqlString;
-    bool first = true;
-    bool skipOr = false;
-    sqlString = sqlString % "ipv6 = ";
-    foreach(QHostAddress addr, list) {
-        QString stringAddr = addr.toString();
-        // crop off the interface names: "%en1" for example
-        int percentIndex = stringAddr.indexOf("%");
-        if (percentIndex > -1)
-            stringAddr.truncate(percentIndex);
+    QJsonObject obj = responseJdoc.object();
 
-        // remove local addresses, only used global ones and ipv4
-        if (!stringAddr.contains(":") ||
-                stringAddr.startsWith("::") || stringAddr.startsWith("fe80")) {
-            skipOr = true;
-            continue;
-        } else skipOr = false;
-
-        if (!first && !skipOr)
-            sqlString = sqlString % " OR ipv6 = ";
-        sqlString = sqlString % "\"" % stringAddr % "\"";
-        first = false;
-    }
-
-    QSqlQuery query = QSqlQuery(QSqlDatabase::database());
-    query.prepare("SELECT MIN(id) as id, req, ipv6 FROM XMLRPC WHERE " + sqlString);
-    query.exec();
-    if (query.next()) {
-        QString ipv6 = query.value(2).toString();
-        QString id = query.value(0).toString();
-        QString xmlrpcReq = query.value(1).toString();
-
-        query.prepare("DELETE FROM XMLRPC WHERE id = ? AND ipv6 = ?");
-        query.bindValue(0, id);
-        query.bindValue(1, ipv6);
-        query.exec();
-        db.close();
-        qryMut.unlock();
-        return xmlrpcReq;
-    }
-    db.close();
-    qryMut.unlock();
-    return NULL;
+    return obj["req"].toString();
 }
 
-
 QList< User* > DatabaseHandler::getFriends() {
-    qryMut.lock();
-    QSqlDatabase db = QSqlDatabase::database();
-    while (!db.isOpen()) {
-        db.open();
-        qDebug() << "Trying to reach DB";
-        QThread::sleep(1);
+    QJsonObject jsObj;
+    jsObj["uid"] = uid;
+    QByteArray jsonStr = QJsonDocument(jsObj).toJson(QJsonDocument::Compact);
+    QByteArray postDataSize = QByteArray::number(jsonStr.size());
+    QNetworkRequest request(QUrl(strServiceURL + "/getFriends"));
+    request.setRawHeader("User-Agent", "FriendsVPN app");
+    request.setRawHeader("X-Custom-User-Agent", "FriendsVPN app");
+    request.setRawHeader("Content-Type", "application/json");
+    request.setRawHeader("Content-Length", postDataSize);
+
+    QNetworkAccessManager manager;
+    QNetworkReply * reply = manager.post(request, jsonStr);
+
+    QEventLoop loop; // local event loop to wait for the qnetwork reply
+    QObject::connect(reply, SIGNAL(finished()), &loop, SLOT(quit()));
+    // Execute the event loop here, now we will wait here until finished() signal is emitted
+    // which in turn will trigger event loop quit.
+    loop.exec();
+
+    QJsonParseError jerror;
+    QJsonDocument responseJdoc = QJsonDocument::fromJson(reply->readAll(), &jerror);
+    if (jerror.error != QJsonParseError::NoError) {
+        qWarning() << "Error parsing JSON:" << jerror.errorString();
+        return QList< User* >(); // error parsing JSON
     }
-    QSqlQuery query = QSqlQuery(QSqlDatabase::database());
-    query.prepare("SELECT uid, ipv6, certificate FROM User WHERE uid IN (SELECT User_uid as "
-                  "uid FROM Authorized_user WHERE Record_Service_User_uid = ?)");
-    query.bindValue(0, uid);
-    query.exec();
-
-    QList <QString> uidlist;
-
-    QList < User* > list;
-    while (query.next()) {
-        QString* uid = new QString(query.value(0).toString());
-        QString* ipv6 = new QString(query.value(1).toString());
-        QSslCertificate* cert = new QSslCertificate(query.value(2).toByteArray(), QSsl::Pem);
-
-        list.append(new User(uid, ipv6, cert));
-        uidlist.append(*uid);
-    }
-
-    // also get users that shared something to me
-    query.prepare("SELECT uid, ipv6, certificate FROM User WHERE uid IN (SELECT Record_Service_User_uid as "
-                  "uid FROM Authorized_user WHERE User_uid = ? AND Record_Service_User_uid != ?)");
-    query.bindValue(0, uid);
-    query.bindValue(1, uid);
-    query.exec();
-
-    while (query.next()) {
-        QString* uid = new QString(query.value(0).toString());
-        QString* ipv6 = new QString(query.value(1).toString());
-        QSslCertificate* cert = new QSslCertificate(query.value(2).toByteArray(), QSsl::Pem);
-        if (!uidlist.contains(*uid)) {
-            list.append(new User(uid, ipv6, cert));
-        }
+    
+    QList < User* > list; // list of users to build
+    QJsonArray arr = responseJdoc.array();
+    foreach (QJsonValue objtest, arr) {
+        QJsonObject user = objtest.toObject();
+        QSslCertificate* cert = new QSslCertificate(user["certificate"].toString().toUtf8(), QSsl::Pem);
+        list.append(new User(new QString(user["uid"].toString()), new QString(user["ipv6"].toString()),
+                cert));
     }
 
-    db.close();
-    qryMut.unlock();
     return list;
 }
 
 void DatabaseHandler::pushCert(const QSslCertificate& cert) {
-    qryMut.lock();
-    QSqlDatabase db = QSqlDatabase::database();
-    while (!db.isOpen()) {
-        db.open();
-        qDebug() << "Trying to reach DB";
-        QThread::sleep(1);
-    }
-    QSqlQuery query = QSqlQuery(db);
-    query.prepare("UPDATE User SET certificate=? WHERE uid = ?");
-    query.bindValue(0, cert.toPem());
-    query.bindValue(1, uid);
-    query.exec();
-    qryMut.unlock();
+    QJsonObject jsObj;
+    jsObj["uid"] = uid;
+    jsObj["cert"] = QString(cert.toPem());
+    QByteArray jsonStr = QJsonDocument(jsObj).toJson(QJsonDocument::Compact);
+    QByteArray postDataSize = QByteArray::number(jsonStr.size());
+    QNetworkRequest request(QUrl(strServiceURL + "/pushCert"));
+    request.setRawHeader("User-Agent", "FriendsVPN app");
+    request.setRawHeader("X-Custom-User-Agent", "FriendsVPN app");
+    request.setRawHeader("Content-Type", "application/json");
+    request.setRawHeader("Content-Length", postDataSize);
+
+    QNetworkAccessManager manager;
+    QNetworkReply * reply = manager.post(request, jsonStr);
+
+    QEventLoop loop; // local event loop to wait for the qnetwork reply
+    QObject::connect(reply, SIGNAL(finished()), &loop, SLOT(quit()));
+    // Execute the event loop here, now we will wait here until finished() signal is emitted
+    // which in turn will trigger event loop quit.
+    loop.exec();
 }
 
 QString DatabaseHandler::getLocalUid() {
@@ -271,87 +216,101 @@ QString DatabaseHandler::getLocalUid() {
 }
 
 QString DatabaseHandler::getLocalIP() {
-    qryMut.lock();
-    QSqlDatabase db = QSqlDatabase::database();
-    while (!db.isOpen()) {
-        db.open();
-        qDebug() << "Trying to reach DB";
-        QThread::sleep(1);
-    }
-    QSqlQuery query = QSqlQuery(QSqlDatabase::database());
-    query.prepare("SELECT ipv6 FROM User WHERE uid = ?");
-    query.bindValue(0, uid);
-    query.exec();
+    QJsonObject jsObj;
+    jsObj["uid"] = uid;
+    QByteArray jsonStr = QJsonDocument(jsObj).toJson(QJsonDocument::Compact);
+    QByteArray postDataSize = QByteArray::number(jsonStr.size());
+    QNetworkRequest request(QUrl(strServiceURL + "/getLocalIP"));
+    request.setRawHeader("User-Agent", "FriendsVPN app");
+    request.setRawHeader("X-Custom-User-Agent", "FriendsVPN app");
+    request.setRawHeader("Content-Type", "application/json");
+    request.setRawHeader("Content-Length", postDataSize);
 
-    if (query.next()) {
-        QString ipv6 = query.value(0).toString();
-        db.close(); qryMut.unlock();
-        return ipv6;
-    } else {
-        // error
-        qDebug() << "No ipv6 for user " << uid;
-        db.close(); qryMut.unlock();
-        return "::1";
+    QNetworkAccessManager manager;
+    QNetworkReply * reply = manager.post(request, jsonStr);
+
+    QEventLoop loop; // local event loop to wait for the qnetwork reply
+    QObject::connect(reply, SIGNAL(finished()), &loop, SLOT(quit()));
+    // Execute the event loop here, now we will wait here until finished() signal is emitted
+    // which in turn will trigger event loop quit.
+    loop.exec();
+
+    QJsonParseError jerror;
+    QJsonDocument responseJdoc = QJsonDocument::fromJson(reply->readAll(), &jerror);
+    if (jerror.error != QJsonParseError::NoError) {
+        qWarning() << "Error parsing JSON:" << jerror.errorString() << "it may be that the user has no IP stored in the database!";
+        qWarning() << jerror.errorString();
+        return QString(); // error parsing JSON
     }
+
+    QJsonObject ipObj = responseJdoc.object();
+    return ipObj["ipv6"].toString();
 }
 
 QString DatabaseHandler::getName(QString uid) {
-    qryMut.lock();
-    QSqlDatabase db = QSqlDatabase::database();
-    while (!db.isOpen()) {
-        db.open();
-        qDebug() << "Trying to reach DB";
-        QThread::sleep(1);
-    }
-    QSqlQuery query = QSqlQuery(QSqlDatabase::database());
-    query.prepare("SELECT firstname, lastname FROM User WHERE uid = ?");
-    query.bindValue(0, uid);
-    query.exec();
+    QJsonObject jsObj;
+    jsObj["uid"] = uid;
+    QByteArray jsonStr = QJsonDocument(jsObj).toJson(QJsonDocument::Compact);
+    QByteArray postDataSize = QByteArray::number(jsonStr.size());
+    QNetworkRequest request(QUrl(strServiceURL + "/getName"));
+    request.setRawHeader("User-Agent", "FriendsVPN app");
+    request.setRawHeader("X-Custom-User-Agent", "FriendsVPN app");
+    request.setRawHeader("Content-Type", "application/json");
+    request.setRawHeader("Content-Length", postDataSize);
 
-    if (query.next()) {
-        QString firstname = query.value(0).toString();
-        QString lastname = query.value(1).toString();
-        db.close();
-        qryMut.unlock();
-        return QString(firstname + "_" + lastname);
-    } else {
-        // error
-        qDebug() << "User" << uid << "not in db";
-        db.close();
-        qryMut.unlock();
-        return QString();
+    QNetworkAccessManager manager;
+    QNetworkReply * reply = manager.post(request, jsonStr);
+
+    QEventLoop loop; // local event loop to wait for the qnetwork reply
+    QObject::connect(reply, SIGNAL(finished()), &loop, SLOT(quit()));
+    // Execute the event loop here, now we will wait here until finished() signal is emitted
+    // which in turn will trigger event loop quit.
+    loop.exec();
+
+    QJsonParseError jerror;
+    QJsonDocument responseJdoc = QJsonDocument::fromJson(reply->readAll(), &jerror);
+    if (jerror.error != QJsonParseError::NoError) {
+        qWarning() << "Error parsing JSON:" << jerror.errorString() << "the user is probably not in the database";
+        return QString(); // error parsing JSON
     }
+
+    QJsonObject ipObj = responseJdoc.object();
+    return ipObj["firstname"].toString() + "_" + ipObj["lastname"].toString();
 }
 
 QString DatabaseHandler::getUidFromIP(QHostAddress IP) {
     if (ipUid.contains(IP)) {
         return ipUid.value(IP);
     }
-    qryMut.lock();
-    QSqlDatabase db = QSqlDatabase::database();
-    while (!db.isOpen()) {
-        db.open();
-        qDebug() << "Trying to reach DB";
-        QThread::sleep(1);
-    }
-    QSqlQuery query = QSqlQuery(QSqlDatabase::database());
-    query.prepare("SELECT uid FROM User WHERE ipv6 = ?");
-    query.bindValue(0, IP.toString());
-    query.exec();
 
-    if (query.next()) {
-        QString user_uid = query.value(0).toString();
-        db.close();
-        qryMut.unlock();
-        ipUid.insert(IP, user_uid);
-        return user_uid;
-    } else {
-        // error
-        qDebug() << "No uid for ip " << IP;
-        db.close();
-        qryMut.unlock();
-        return QString();
+    QJsonObject jsObj;
+    jsObj["ip"] = IP.toString();
+    QByteArray jsonStr = QJsonDocument(jsObj).toJson(QJsonDocument::Compact);
+    QByteArray postDataSize = QByteArray::number(jsonStr.size());
+    QNetworkRequest request(QUrl(strServiceURL + "/getUidFromIP"));
+    request.setRawHeader("User-Agent", "FriendsVPN app");
+    request.setRawHeader("X-Custom-User-Agent", "FriendsVPN app");
+    request.setRawHeader("Content-Type", "application/json");
+    request.setRawHeader("Content-Length", postDataSize);
+
+    QNetworkAccessManager manager;
+    QNetworkReply * reply = manager.post(request, jsonStr);
+
+    QEventLoop loop; // local event loop to wait for the qnetwork reply
+    QObject::connect(reply, SIGNAL(finished()), &loop, SLOT(quit()));
+    // Execute the event loop here, now we will wait here until finished() signal is emitted
+    // which in turn will trigger event loop quit.
+    loop.exec();
+
+    QJsonParseError jerror;
+    QJsonDocument responseJdoc = QJsonDocument::fromJson(reply->readAll(), &jerror);
+    if (jerror.error != QJsonParseError::NoError) {
+        qWarning() << "Error parsing JSON:" << jerror.errorString() << "the user is probably not in the database";
+        return QString(); // error parsing JSON
     }
+
+    QJsonObject ipObj = responseJdoc.object();
+    return ipObj["uid"].toString();
 }
 
 void DatabaseHandler::addUidForIP(QHostAddress IP, QString uid) {
@@ -360,34 +319,43 @@ void DatabaseHandler::addUidForIP(QHostAddress IP, QString uid) {
 
 
 QList < BonjourRecord* > DatabaseHandler::getRecordsFor(QString friendUid) {
-    qryMut.lock();
-    QSqlDatabase db = QSqlDatabase::database();
-    while (!db.isOpen()) {
-        db.open();
-        qDebug() << "Trying to reach DB";
-        QThread::sleep(1);
+    QJsonObject jsObj;
+    jsObj["friendUid"] = friendUid;
+    jsObj["uid"] = uid;
+    QByteArray jsonStr = QJsonDocument(jsObj).toJson(QJsonDocument::Compact);
+    QByteArray postDataSize = QByteArray::number(jsonStr.size());
+    QNetworkRequest request(QUrl(strServiceURL + "/getRecordsFor"));
+    request.setRawHeader("User-Agent", "FriendsVPN app");
+    request.setRawHeader("X-Custom-User-Agent", "FriendsVPN app");
+    request.setRawHeader("Content-Type", "application/json");
+    request.setRawHeader("Content-Length", postDataSize);
+
+    QNetworkAccessManager manager;
+    QNetworkReply * reply = manager.post(request, jsonStr);
+
+    QEventLoop loop; // local event loop to wait for the qnetwork reply
+    QObject::connect(reply, SIGNAL(finished()), &loop, SLOT(quit()));
+    // Execute the event loop here, now we will wait here until finished() signal is emitted
+    // which in turn will trigger event loop quit.
+    loop.exec();
+
+    QJsonParseError jerror;
+    QJsonDocument responseJdoc = QJsonDocument::fromJson(reply->readAll(), &jerror);
+    if (jerror.error != QJsonParseError::NoError) {
+        qWarning() << "Error parsing JSON:" << jerror.errorString();
+        return QList< BonjourRecord* >(); // error parsing JSON
     }
+
     QList < BonjourRecord * > list;
-    QSqlQuery qry(QSqlDatabase::database());
-
-    if (!qry.prepare("SELECT * FROM Authorized_user WHERE User_uid = ? AND Record_Service_User_uid = ?")) {
-        qDebug() << "ERROR SQL " << qry.lastError();
-        db.close();
-        qryMut.unlock();
-        return list;
-    }
-
-    qry.bindValue(0, friendUid);
-    qry.bindValue(1, uid);
-    qry.exec();
-
     QList < BonjourRecord * > allActiveRecords = BonjourDiscoverer::getInstance()->getAllActiveRecords();
 
-    while (qry.next()) {
-        // used for comparison
-        BonjourRecord newRecord(qry.value("Record_name").toString(),
+    QJsonArray arr = responseJdoc.array();
+    foreach (QJsonValue objtest, arr) {
+        QJsonObject record = objtest.toObject();
+
+        BonjourRecord newRecord(record["Record_name"].toString(),
                                 // using the bonjour service name notation
-                                qry.value("Record_Service_name").toString(),
+                                record["Record_Service_name"].toString(),
                                 "local.");
 
         foreach (BonjourRecord* rec, allActiveRecords) { // if record found in active record, save it
@@ -397,8 +365,7 @@ QList < BonjourRecord* > DatabaseHandler::getRecordsFor(QString friendUid) {
             }
         }
     }
-    db.close();
-    qryMut.unlock();
+
     return list;
 }
 

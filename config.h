@@ -5,7 +5,7 @@
  * @brief Configuration macros. These set various settings based on the environment where this
  * app is run. These can be used to tweak the application for a particular setup.
  */
-//#define TEST
+//#define TEST_PROD
 #ifdef __APPLE__
 #endif
 #define PRODUCTION

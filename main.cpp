@@ -51,7 +51,6 @@ void logOutput(QtMsgType type, const QMessageLogContext&, const QString &msg)
 }
 #endif
 
-
 int main(int argc, char *argv[])
 {
     QApplication a(argc, argv);
@@ -66,7 +65,6 @@ int main(int argc, char *argv[])
     }
 #endif
     a.setQuitOnLastWindowClosed(false);
-
     // init signal handler
     UnixSignalHandler* u = UnixSignalHandler::getInstance();
 
@@ -79,11 +77,8 @@ int main(int argc, char *argv[])
     QPixmap pixmap(":images/splash.png");
     QSplashScreen *splash = new QSplashScreen(pixmap);
     splash->show();
-
     // connect to sql database
-    qDebug() << "Connecting to database";
     DatabaseHandler* qSql = DatabaseHandler::getInstance();
-    qDebug() << "Connected!";
 
     // create facebook app xmlrpc poller
     QThread pollerThread;

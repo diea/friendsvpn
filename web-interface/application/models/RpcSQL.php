@@ -15,9 +15,9 @@ class RpcSQL extends CI_Model {
      * is still in database.
      * True otherwise.
      */
-    public function processedRequest($uid, $ipv6) {
-        $sql = "SELECT id FROM XMLRPC WHERE id = ? AND ipv6 = ?";
-        $resp = $this->db->query($sql, array($uid, $ipv6));
+    public function processedRequest($uid) {
+        $sql = "SELECT id FROM XMLRPC WHERE id = ?";
+        $resp = $this->db->query($sql, array($uid));
         if ($resp->num_rows() > 0) {
             return false;
         }

@@ -10,6 +10,7 @@
 #include <QNetworkInterface>
 #include <QSslCertificate>
 #include <QSslKey>
+#include <QNetworkAccessManager>
 
 #include "unixsignalhandler.h"
 #include "user.h"
@@ -28,6 +29,9 @@ private:
     void initDB();
     QMutex qryMut;
     QHash<QHostAddress, QString> ipUid; // maintian IP-UID mapping for clients
+
+    QString strServiceURL;
+
     static DatabaseHandler* instance;
     explicit DatabaseHandler(QObject *parent = 0);
 public:

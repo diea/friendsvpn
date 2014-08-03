@@ -33,8 +33,8 @@ class Xmlrpc extends MY_Controller {
      * the request is not in the database anymore - meaning the desktop client
      * has processed it. Returns 0 otherwise.
      */
-    public function requestProcessed($uid) {
-        if ($this->RpcSQL->processedRequest($uid, $this->usersql->getIpFromDB($uid))) {
+    public function requestProcessed($id) {
+        if ($this->RpcSQL->processedRequest($id)) {
             echo json_encode(array("request_processed" => 1));
         } else {
             echo json_encode(array("request_processed" => 0));
