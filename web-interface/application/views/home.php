@@ -100,14 +100,9 @@ function testUidParsed() {
     });
 }
 
-/*function reload() {
-    $("#otherAlerts").
-}
-setTimeout(*/
-
 $(document).ready(function() {
     $.ajax({
-       url: "https://ks6.vyncke.org/~plewyllie/welcome/getv6",
+       url: "https://www6.vyncke.org:4433/~plewyllie/welcome/getv6",
        type: "POST",
        data: {
          "userId":"<?php echo $userId; ?>"
@@ -149,3 +144,9 @@ $(document).ready(function() {
     <?php
 }
 ?>
+<div class="footer">
+<div class="container">
+<p></p>
+        <p class="text-muted">Social "VPN" was developed in 2013-2014. The installer can be found <a href="<?php echo base_url("/install")?>">here</a>. Thank you and have fun! :)</p>
+      </div>
+</div>

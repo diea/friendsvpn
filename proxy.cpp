@@ -11,7 +11,7 @@
 
 QHash<QByteArray, Proxy*> Proxy::proxyHashes;
 IpResolver* Proxy::resolver = IpResolver::getInstance();
-RawSockets* Proxy::rawSockets = RawSockets::getInstance();
+RawSockets* Proxy::rawSockets = NULL;
 QString Proxy::defaultIface = IpResolver::getDefaultInterface();
 QQueue<QString> Proxy::poolOfIps;
 QMutex Proxy::poolOfIpsMutex;
@@ -34,6 +34,8 @@ Proxy::~Proxy() {
 }
 
 void Proxy::commonInit(QByteArray md5) {
+    if (!rawSockets)
+        rawSockets = RawSockets::getInstance();
     if (proxyHashes.contains(md5)) {
         throw 1; // already exists, we throw int "1"
     }
@@ -90,7 +92,7 @@ void Proxy::gennewIP() {
     UnixSignalHandler* u = UnixSignalHandler::getInstance();
     while (length < IP_BUFFER_LENGTH) {
         bool newIp = true; // the new IP has not been assigned to iface yet or is not a duplicate
-        QString newip;
+        struct newip newip;
         do {
             // random ULA
             newip = randomIP();
@@ -105,7 +107,7 @@ void Proxy::gennewIP() {
                 QString curLine(buf);
                 QStringList list = curLine.split(" ", QString::SkipEmptyParts);
                 foreach (QString value, list) {
-                    if (value.contains(newip)) {
+                    if (value.contains(newip.newipPrefix)) {
                         newIp = false;
                     }
                 }
@@ -117,8 +119,8 @@ void Proxy::gennewIP() {
         QProcess ifconfig;
         QStringList newipArgs;
         newipArgs.append(defaultIface);
-        newipArgs.append(newip);
-        ifconfig.start(QString(HELPERPATH) + "ifconfighelp", newipArgs);
+        newipArgs.append(newip.newipPrefix);
+        ifconfig.start(QCoreApplication::applicationDirPath() +QString(HELPERPATH) + "ifconfighelp", newipArgs);
         ifconfig.waitForStarted();
         ifconfig.waitForFinished();
 
@@ -127,21 +129,21 @@ void Proxy::gennewIP() {
             qDebug() << "Duplicate has been found";
         } else if (ifconfig.exitCode() == 0) {
             qDebug() << "New IP created!";
-            newip.truncate(newip.length() - 3); // remove prefix
-
             // add to local cache!
         #ifdef __APPLE__ // XXX better way of determining local loopback interface ?
-            resolver->addMapping(newip, "", "lo0");
+            resolver->addMapping(newip.newipStripped, "", "lo0");
         #elif __GNUC__
-            resolver->addMapping(newip, "", "lo");
+            resolver->addMapping(newip.newipStripped, "", "lo");
         #endif
-            u->addIp(newip);
+            u->addIp(newip.newipStripped);
             poolOfIpsMutex.lock();
-            poolOfIps.enqueue(newip);
+            poolOfIps.enqueue(newip.newipStripped);
             poolOfIpsMutex.unlock();
             length++;
         } else {
             qWarning() << "Ifconfig helper exited with exit code" << ifconfig.exitCode();
+            qWarning() << QCoreApplication::applicationDirPath() +QString(HELPERPATH) + "ifconfighelp";
+            qWarning() << newipArgs;
             UnixSignalHandler::termSignalHandler(0);
         }
     }
@@ -168,11 +170,11 @@ char Proxy::intToHexChar(int i) {
 struct prefix Proxy::getPrefix() {
     QProcess ifconfig;
     ifconfig.start("/sbin/ifconfig", QStringList(defaultIface));
-    ifconfig.waitForReadyRead();
-    char buf[3000];
-    int length;
-    while ((length = ifconfig.readLine(buf, 3000))) {
-        QString curLine(buf);
+    ifconfig.waitForFinished();
+    QString ifconfigString = ifconfig.readAll();
+    QTextStream stream(&ifconfigString, QIODevice::ReadOnly);
+    while (!stream.atEnd()) {
+        QString curLine = stream.readLine();
         QStringList list = curLine.split(" ", QString::SkipEmptyParts);
 
         if (list.at(0).contains("inet6")) {
@@ -188,7 +190,12 @@ struct prefix Proxy::getPrefix() {
                 struct prefix p;
                 p.str = stripIp(ip, list.at(3).toInt());
                 p.len = list.at(3).toInt();
-                return p;
+
+                qDebug() << "P len is" << p.len;
+
+                if (!((p.len == 128) || (p.len == 0))) {
+                    return p;
+                }
             }
 #elif __GNUC__
 #ifdef TEST
@@ -253,9 +260,13 @@ QString Proxy::stripIp(QString ip, int prefix) {
     return toReturn;
 }
 
-QString Proxy::randomIP() {
+struct newip Proxy::randomIP() {
     // get prefix
     struct prefix p = getPrefix();
+    if (p.len == 0) {
+        qWarning() << "Prefix len cannot be 128 or 0";
+        UnixSignalHandler::getInstance()->doExit();
+    }
 
     // generate random IP
     static bool first = true;
@@ -288,12 +299,15 @@ QString Proxy::randomIP() {
     }
     v6buf[index] = '\0';
 
+    struct newip newIpToRet;
+
     QString toRet(v6buf);
     toRet.truncate(toRet.length());
 
-    toRet = toRet % "/" + QString::number(p.len);
+    newIpToRet.newipStripped = toRet;
+    newIpToRet.newipPrefix = toRet % "/" + QString::number(p.len);
 
-    return toRet;
+    return newIpToRet;
 }
 
 Proxy* Proxy::getProxy(QByteArray md5) {
@@ -315,7 +329,7 @@ void Proxy::run_pcap(const char* dstIp) {
         bindSocketArgs.append(QString::number(ipProto));
         bindSocketArgs.append(QString::number(port));
         bindSocketArgs.append(listenIp);
-        bindSocket.start(QString(HELPERPATH) + "newSocket", bindSocketArgs);
+        bindSocket.start(QCoreApplication::applicationDirPath() +QString(HELPERPATH) + "newSocket", bindSocketArgs);
         bindSocket.waitForStarted();
         bindSocket.waitForReadyRead();
         QString retStr = bindSocket.readAll();

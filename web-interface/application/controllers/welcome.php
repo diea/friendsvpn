@@ -36,6 +36,10 @@ class Welcome extends MY_Controller {
 	    $this->UserSQL->initUser($userId);
     	echo json_encode(array("ipv6" => $_SERVER["REMOTE_ADDR"]));
 	}
+	
+	public function install() {
+    	$this->render('install');
+	}
 }
 
 /* End of file welcome.php */

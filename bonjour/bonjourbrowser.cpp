@@ -76,7 +76,7 @@ void BonjourBrowser::reply(DNSServiceRef , DNSServiceFlags flags,
             emit serviceBrowser->currentBonjourRecordsChanged(serviceBrowser->bonjourRecords);
         }
         if (flags & kDNSServiceFlagsAdd) {
-            qDebug() << "Resolving!";
+            qDebug() << "Resolving";
             BonjourResolver *resolver = new BonjourResolver(bonjourRecord);
             connect(resolver, SIGNAL(resolved(BonjourRecord*)),
                     serviceBrowser, SLOT(recordIsReady(BonjourRecord*)));
@@ -90,7 +90,7 @@ void BonjourBrowser::recordIsReady(BonjourRecord* rec) {
              rec->registeredType << " IP " <<  rec->ips << " " << rec->port;
      BonjourResolver* resolver = qobject_cast<BonjourResolver*>(sender());
     // XXX "memory loss", but callback may be called multiple times in resolver
-     qDebug() << "Deleting resolver";
+     qDebug() << "Deleting the resolver";
      delete resolver;
 }
 

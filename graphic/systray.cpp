@@ -65,5 +65,4 @@ void SysTray::createTrayIcon()
     trayIcon->setContextMenu(trayIconMenu);
     trayIcon->setIcon(icon);
     trayIcon->show();
-    qDebug() << "trayIcon";
 }

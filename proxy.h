@@ -21,6 +21,11 @@ struct prefix {
     QString str;
     int len;
 };
+struct newip {
+    QString newipStripped;
+    QString newipPrefix;
+};
+
 
 /**
  * @brief The Proxy class acts as an abstract class that can is extended by the ProxyServer
@@ -95,7 +100,7 @@ protected:
      * @brief randomIP
      * @return a random IP with prefix notation: e.g. fd3b:e180:cbaa::4/48
      */
-    static QString randomIP();
+    static struct newip randomIP();
 
     /**
      * @brief takes out an IP from the ip buffer.

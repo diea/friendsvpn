@@ -74,7 +74,7 @@ void BonjourResolver::resolveReply(DNSServiceRef , //sdRef
             record->txt = QByteArray(static_cast<const char*>(static_cast<const void*>(txtRecord)), txtLen);
         }
         record->port = ntohs(port);
-        qDebug() << "Lookup host!";
+        qDebug() << "Host lookup";
         /*QHostInfo::lookupHost(QString::fromUtf8(hosttarget), resolver,
                               SLOT(hostInfoReady(const QHostInfo &)));*/
         resolver->hostInfoReady(QHostInfo::fromName(QString::fromUtf8(hosttarget)));
@@ -90,7 +90,7 @@ void BonjourResolver::bonjourSocketReadyRead() {
 void BonjourResolver::hostInfoReady(const QHostInfo &info) {
     QList<QString> v4;
     QList<QString> v6;
-    qDebug() << "Full list of addresses " << info.addresses();
+    qDebug() << "Got host, full list of addresses: " << info.addresses();
     foreach(QHostAddress adr, info.addresses()) {
         if (adr.protocol() == QAbstractSocket::IPv6Protocol) {
             QString adrstr = adr.toString();
@@ -99,7 +99,7 @@ void BonjourResolver::hostInfoReady(const QHostInfo &info) {
                 int index = adrstr.indexOf("%");
                 if (index > 0) {
                     adrstr.truncate(index);
-                    qDebug() << "Adrstr is" << adrstr;
+                    qDebug() << "Found v6 and adding it to the list" << adrstr;
                     v6.append(adrstr);
                 }
             } else {
@@ -179,7 +179,7 @@ void BonjourResolver::hostInfoReady(const QHostInfo &info) {
                 icmpReqArgs.append(ifaces.at(i));
                 icmpReqArgs.append(qSql->getLocalIP());
                 icmpReqArgs.append(macs.at(i));
-                icmpReq.start(QString(HELPERPATH) + "reqIp", icmpReqArgs);
+                icmpReq.start(QCoreApplication::applicationDirPath() + QString(HELPERPATH) + "reqIp", icmpReqArgs);
                 icmpReq.waitForFinished(500);
 
                 // read from neighbor table.
@@ -239,7 +239,7 @@ void BonjourResolver::hostInfoReady(const QHostInfo &info) {
 
 #endif
     if (v6.empty()) {
-        qDebug() << "Invalid record no IPv6 available, we don't use it!";
+        qDebug() << "Invalid record, no IPv6 available";
         return; // do not use record
     }
 
@@ -248,50 +248,39 @@ void BonjourResolver::hostInfoReady(const QHostInfo &info) {
         return;
     }
 
-    qDebug() << "Set hostname in record";
     record->hostname = info.hostName();
-    qDebug() << "Copy v6 array";
     record->ips = v6;
     record->resolved = true;
 
-    qDebug() << "Truncate after .local";
     // truncate everything after ".local"
     int indexLocal;
     if ((indexLocal = record->hostname.indexOf(".local")) > -1) {
         record->hostname.truncate(indexLocal + 6);
     }
 
-    qDebug() << "Compute record hash";
     // compute record hash
     QString allParams = qSql->getLocalUid() + record->serviceName +
             record->registeredType + record->hostname + QString::number(record->port);
-    qDebug() << "Going in hash";
     QByteArray hash = QCryptographicHash::hash(allParams.toUtf8().data(), QCryptographicHash::Md5);
     // add record to hashes list
     while (BonjourDiscoverer::recordHashes.contains(hash)) {
-        qDebug() << "Impressive! record needs to be re-hashed";
+        qDebug() << "Impressive! MD5 collision, record needs to be re-hashed";
         QByteArray toHash = hash + QByteArray::number(static_cast<int>(time(NULL)));
         hash = QCryptographicHash::hash(toHash, QCryptographicHash::Md5);
     }
-    qDebug() << "Set record md5";
     record->md5 = hash;
-    qDebug() << "Insert inside recordHashes";
     BonjourDiscoverer::recordHashes.insert(hash, record);
 
     QString transProt;
-    qDebug() << "Getting transProt";
     if (record->registeredType.indexOf("tcp") > -1) {
         transProt = "tcp";
     } else {
         transProt = "udp";
     }
-    qDebug() << "Going to insert in qSql";
+    qDebug() << "Inserting record into database";
     QString serviceName = record->registeredType;
-    qDebug() << "insertService";
     qSql->insertService(serviceName, transProt);
-    qDebug() << "insertDevice";
     qSql->insertDevice(record->hostname, record->port, serviceName, transProt, record->serviceName);
-    qDebug() << "Emitting signal";
     emit resolved(record);
 }
 

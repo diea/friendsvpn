@@ -55,7 +55,7 @@ void UnixSignalHandler::removeIp(QString ip) {
     cleanArgs.append(IpResolver::getDefaultInterface());
     cleanArgs.append(ip);
     qDebug() << "Cleanup" << cleanArgs;
-    cleanup.start(QString(HELPERPATH) + "/cleanup", cleanArgs);
+    cleanup.start(QCoreApplication::applicationDirPath() +QString(HELPERPATH) + "/cleanup", cleanArgs);
     cleanup.waitForFinished();
     listOfIps.removeAll(ip);
 }

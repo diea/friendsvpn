@@ -12,15 +12,17 @@
 #include <QPixMap>
 #include <QSplashScreen>
 
-/* used for test */
-#include "proxyserver.h"
-#include "helpers/raw_structs.h"
+int verbose = 0;
 
 #ifndef QT_NO_DEBUG_OUTPUT
 QTextStream out;
 
 void logOutput(QtMsgType type, const QMessageLogContext&, const QString &msg)
 {
+    if (!verbose) {
+        if (type == QtDebugMsg)
+            return; // don't log debug if not verbose!
+    }
     static QMutex logMutx;
     logMutx.lock();
     QString debugdate = QDateTime::currentDateTime().toString("yyyy.MM.dd hh:mm:ss");
@@ -64,6 +66,13 @@ int main(int argc, char *argv[])
         qDebug() << "Error opening log file '" << fileName << "'. All debug output redirected to console.";
     }
 #endif
+
+    if (argc == 2) {
+        if (!strcmp(argv[1], "-v")) {
+            verbose = 1;
+        }
+    }
+
     a.setQuitOnLastWindowClosed(false);
     // init signal handler
     UnixSignalHandler* u = UnixSignalHandler::getInstance();

@@ -72,6 +72,7 @@ ConnectionInitiator::ConnectionInitiator(QObject *parent) :
     keyBuf[length] = '\0';
     BIO_free(bio);
 
+    qDebug() << "Printing local key and certificate";
     qDebug() << keyBuf;
     qDebug() << certBuf;
 
